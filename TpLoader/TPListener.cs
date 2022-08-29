@@ -23,6 +23,7 @@ namespace TP {
     public event EventHandler ServiceStopped;
     public event EventHandler<(string, Exception)> ServiceError;
     public event EventHandler<(string, int)> CourtUpdate;
+    public event EventHandler<List<TP.Event>> EventUpdate;
 
     public bool IsListening {
       get {
@@ -71,12 +72,22 @@ namespace TP {
       using (var unzip = new GZipStream(connectionStream, CompressionMode.Decompress))
       {
         XmlReaderSettings xmlSettings = new XmlReaderSettings() {
-          Async = true
+          // Async = true
         };
+
+
+
         using (XmlReader xmlReader = XmlReader.Create(unzip, xmlSettings)) {
-          xmlReader.ReadToFollowing("ONCOURT");
-          using (XmlReader onCourt = xmlReader.ReadSubtree()) {
-            ReadOnCourt(onCourt);
+          if (xmlReader.ReadToFollowing("ONCOURT")) {
+            using (XmlReader onCourt = xmlReader.ReadSubtree()) {
+              ReadOnCourt(onCourt);
+            }
+          }
+
+          if (xmlReader.ReadToFollowing("EVENTS")) {
+            using (XmlReader eventsXml = xmlReader.ReadSubtree()) {
+              ReadEvents(eventsXml);
+            }
           }
         }
       }
@@ -100,6 +111,16 @@ namespace TP {
       foreach (string nowEmptyCourt in m_activeCourts.Select(kvp => kvp.Key).Except(courtsWithMatchesAssigned)) {
         CourtUpdate?.Invoke(this, (nowEmptyCourt, 0));
       }
+    }
+
+    protected void ReadEvents(XmlReader reader) {
+      List<Event> events = new List<Event>();
+      while (reader.ReadToFollowing("EVENT")) {
+        using (var subtree = reader.ReadSubtree()) {
+          events.Add(new Event(subtree));
+        }
+      }
+      EventUpdate?.Invoke(this, events);
     }
 
     public void Stop() {

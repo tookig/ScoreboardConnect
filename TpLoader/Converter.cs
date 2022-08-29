@@ -10,32 +10,34 @@ namespace TP {
   public class Converter {
     static readonly PlaceMap Places = new PlaceMap();
 
-    public static Task<(List<TournamentClass>, List<Exception>)> Extract(System.Data.IDbConnection dbConnection) {
+    public static Task<List<Event>> ExtractEvents(System.Data.IDbConnection dbConnection) {
+      return Task.Run(() => {
+        return Loader.LoadEvents(dbConnection.CreateCommand());
+      });
+    }
+ 
+    public static Task<List<TournamentClass>> Extract(System.Data.IDbConnection dbConnection) {
       return Task.Run(() => {
         var events = Loader.LoadEvents(dbConnection.CreateCommand());
-        var tpClasses = new List<TournamentClass>();
-        var errors = new List<Exception>();
-        foreach (Event e in events) {
-          try {
-            tpClasses.Add(ExtractClass(e));
-          } catch (Exception err) {
-            errors.Add(err);
-          }
-        }
-        return (tpClasses, errors);
+        return Extract(events);
       });
     }
 
-    public static Task<(List<TP.Court>, List<Exception>)> ExtractCourts(System.Data.IDbConnection dbConnection) {
+    public static List<TournamentClass> Extract(List<Event> events) {
+      var tpClasses = new List<TournamentClass>();
+      var errors = new List<Exception>();
+      foreach (Event e in events) {
+        tpClasses.Add(ExtractClass(e));
+      }
+      return tpClasses;
+    }
+
+    public static Task<List<TP.Court>> ExtractCourts(System.Data.IDbConnection dbConnection) {
       return Task.Run(() => {
         var errors = new List<Exception>();
         var courts = new List<TP.Court>();
-        try {
-          courts.AddRange(Loader.LoadCourts(dbConnection.CreateCommand()));
-        } catch (Exception e) {
-          errors.Add(e);
-        }
-        return (courts, errors);
+        courts.AddRange(Loader.LoadCourts(dbConnection.CreateCommand()));
+        return courts;
       });
     }
 
@@ -76,7 +78,6 @@ namespace TP {
         var matches = new List<MatchExtended>();
         AddMatch(draw, root, matches);
         var tournamentClass = draw.MakeScoreboardClass();
-        tournamentClass.Size = matches.Count + 1;
         tournamentClass.Category = e.CreateMatchCategoryString();
         matches.ForEach(m => m.Category = tournamentClass.Category);
         newClasses.Add(new TournamentClass(draw, tournamentClass, matches));

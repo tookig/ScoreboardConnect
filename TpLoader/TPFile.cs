@@ -26,19 +26,15 @@ namespace TP {
     }
 
     public async Task<List<Court>> GetCourts() {
-      (List<Court> courts, List<Exception> errors) p = await Converter.ExtractCourts(Connection);
-      if (p.errors.Count > 0) {
-        throw new AggregateException(p.errors);
-      }
-      return p.courts;
+      return await Converter.ExtractCourts(Connection);
     }
 
     public async Task<List<TP.TournamentClass>> GetTournamentClasses() {
-      (List<TP.TournamentClass> tournamentClasses, List<Exception> errors) p = await Converter.Extract(Connection);
-      if (p.errors.Count > 0) {
-        throw new AggregateException(p.errors);
-      }
-      return p.tournamentClasses;
+      return await Converter.Extract(Connection);
+    }
+
+    public async Task<List<TP.Event>> GetEvents() {
+      return await Converter.ExtractEvents(Connection);
     }
   }
 }

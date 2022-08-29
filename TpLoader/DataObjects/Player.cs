@@ -11,6 +11,18 @@ namespace TP {
     public Club Club { get; set; }
     public int CountryID { get; set; }
 
+    public Player(string bothNames, string club) {
+      int separator = bothNames.IndexOf(' ');
+      if (separator >= 0) {
+        FirstName = bothNames.Substring(0, separator);
+        LastName = bothNames.Substring(separator + 1, bothNames.Length - separator - 1);
+      } else {
+        FirstName = "";
+        LastName = bothNames;
+      }
+      Club = new Club(club);
+    }
+
     public Player(System.Data.IDataReader reader) {
       ID = GetInt(reader, "id");
       LastName = GetString(reader, "name");

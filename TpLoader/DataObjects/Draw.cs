@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml;
 using ScoreboardLiveApi;
+using System.Linq;
 
 namespace TP {
   public class Draw : TpObject {
@@ -11,25 +13,40 @@ namespace TP {
     public DrawTypes DrawType { get; set; }
     public int EventID { get; set; }
 
-    public List<PlayerMatch> Matches { get; private set; } 
+    public List<PlayerMatch> Matches { get; private set; } = new List<PlayerMatch>();
+    public int EntryCount { get; set; }
 
     public Draw(System.Data.IDataReader reader) {
       ID = GetInt(reader, "id");
       Name = GetString(reader, "name");
       DrawType = (DrawTypes)GetInt(reader, "drawType");
       EventID = GetInt(reader, "event");
-      Matches = new List<PlayerMatch>();
+    }
+
+    public Draw(XmlReader reader, List<Entry> entries) {
+      ID = GetInt(reader, "ID");
+      DrawType = (DrawTypes)GetInt(reader, "DRAWTYPE");
+      Name = GetString(reader, "DRAWNAME");
+      EntryCount = entries.Count;
+      while (reader.ReadToFollowing("MATCH")) {
+        Matches.Add(new PlayerMatch(reader));
+      }
+      Matches.ForEach(match => match.Entry = match.EntryID == 0 ? null : entries.Find(entry => entry.ID == match.EntryID));
     }
 
     public ScoreboardLiveApi.TournamentClass MakeScoreboardClass() {
       return new ScoreboardLiveApi.TournamentClass {
         Description = Name,
-        Size = Matches.Count + 1,
+        Size = DrawSize(),
         ClassType = DrawType switch {
           DrawTypes.RoundRobin => "roundrobin",
           _ => "cup"
         }
       };
+    }
+
+    public int DrawSize() {
+      return Matches.FindAll(match => match.Entry != null).Select(match => match.Entry).Distinct().Count();
     }
 
     public override string ToString() {

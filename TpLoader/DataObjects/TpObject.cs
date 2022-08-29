@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace TP {
   public abstract class TpObject {
@@ -25,6 +27,24 @@ namespace TP {
       int fieldIndex = reader.GetOrdinal(fieldName);
       if (reader.IsDBNull(fieldIndex)) return false;
       return reader.GetBoolean(fieldIndex);
+    }
+
+    protected static int GetInt(XmlReader reader, string attributeName) {
+      return int.TryParse(reader.GetAttribute(attributeName), out int val) ? val : 0;
+    }
+
+    protected static string GetString(XmlReader reader, string attributeName) {
+      return reader.GetAttribute(attributeName);
+    }
+
+    // https://stackoverflow.com/questions/21723697/regex-to-extract-date-time-from-given-string
+    protected static DateTime GetDateTime(XmlReader reader, string fieldName) {
+      Regex r = new Regex(@"\d{4}-\d{2}-\d{2} \d{2}:\d{2}");
+      Match m = r.Match(GetString(reader, fieldName));
+      if (m.Success) {
+        return DateTime.ParseExact(m.Value, "yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+      }
+      return new DateTime(1899, 12, 30);
     }
   }
 }

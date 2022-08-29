@@ -33,7 +33,7 @@ namespace TP {
       m_sbApi = api;
     }
 
-    public Task<(List<TP.Court>, List<Exception>)> GetTpCourts() {
+    public Task<List<TP.Court>> GetTpCourts() {
       return TP.Converter.ExtractCourts(m_tpConnection);
     }
 

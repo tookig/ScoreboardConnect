@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml;
 
 namespace TP {
   public class Entry : TpObject {
@@ -14,6 +15,18 @@ namespace TP {
       ID = GetInt(reader, "id");
       Player1ID = GetInt(reader, "player1");
       Player2ID = GetInt(reader, "player2");
+    }
+
+    public Entry(XmlReader reader) {
+      ID = GetInt(reader, "ID");
+      string name1 = GetString(reader, "NAME1");
+      string club1 = GetString(reader, "CLUB1");
+      Player1 = new Player(name1, club1);
+      string name2 = GetString(reader, "NAME2");
+      string club2 = GetString(reader, "CLUB2");
+      if (!string.IsNullOrWhiteSpace(name2)) {
+        Player2 = new Player(name2, club2);
+      }
     }
 
     public override string ToString() {
