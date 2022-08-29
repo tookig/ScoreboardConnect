@@ -15,9 +15,11 @@ using System.Xml;
 using System.Linq;
 
 namespace TP {
-  public class TPListener {
+  public class TPListener : ITPCourtEventProducer {
     private CancellationTokenSource m_doCancel;
     private Dictionary<string, int> m_activeCourts = new Dictionary<string, int>();
+
+    protected string m_debugFileDestinationDirectory;
 
     public event EventHandler ServiceStarted;
     public event EventHandler ServiceStopped;
@@ -34,6 +36,13 @@ namespace TP {
     public TPListener() {
     }
 
+    public TPListener(string debugFilesDestinationFolder) : this() {
+      m_debugFileDestinationDirectory = debugFilesDestinationFolder;
+      if (!m_debugFileDestinationDirectory.EndsWith('\\')) {
+        m_debugFileDestinationDirectory += '\\';
+      }
+    }
+
     public void Start() {
       m_doCancel = new CancellationTokenSource();
       Task.Run(() => {
@@ -41,6 +50,7 @@ namespace TP {
         TcpListener tcp = new TcpListener(IPAddress.Any, 13333);
         tcp.Start();
         bool doBreak = false;
+        m_activeCourts.Clear();
         while (!doBreak) {
           try {
             tcp.AcceptTcpClientAsync().ContinueWith(r => {
@@ -70,14 +80,22 @@ namespace TP {
       var connectionStream = connection.GetStream();
       connectionStream.Read(new byte[4], 0, 4);
       using (var unzip = new GZipStream(connectionStream, CompressionMode.Decompress))
-      {
+      using (MemoryStream ms = new MemoryStream()) {
+        Stream streamXMLReaderShouldUse = unzip;
+        
+        if (Directory.Exists(m_debugFileDestinationDirectory)) {
+          unzip.CopyTo(ms);
+          string debugFile = string.Format("{1}{0}.xml", DateTime.Now.ToString().Replace(':', '-'), m_debugFileDestinationDirectory);
+          File.WriteAllText(debugFile, Encoding.UTF8.GetString(ms.ToArray()));
+          ms.Position = 0;
+          streamXMLReaderShouldUse = ms;
+        }
+
         XmlReaderSettings xmlSettings = new XmlReaderSettings() {
           // Async = true
         };
 
-
-
-        using (XmlReader xmlReader = XmlReader.Create(unzip, xmlSettings)) {
+        using (XmlReader xmlReader = XmlReader.Create(streamXMLReaderShouldUse, xmlSettings)) {
           if (xmlReader.ReadToFollowing("ONCOURT")) {
             using (XmlReader onCourt = xmlReader.ReadSubtree()) {
               ReadOnCourt(onCourt);
@@ -108,7 +126,9 @@ namespace TP {
         }
         courtsWithMatchesAssigned.Add(tpCourtName);      
       }
+
       foreach (string nowEmptyCourt in m_activeCourts.Select(kvp => kvp.Key).Except(courtsWithMatchesAssigned)) {
+        m_activeCourts.Remove(nowEmptyCourt);
         CourtUpdate?.Invoke(this, (nowEmptyCourt, 0));
       }
     }
