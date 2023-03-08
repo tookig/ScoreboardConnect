@@ -36,5 +36,9 @@ namespace TP {
     public async Task<List<TP.Event>> GetEvents() {
       return await Converter.ExtractEvents(Connection);
     }
+
+    public async Task<List<TournamentInformation>> GetTournamentInformation() {
+      return await Converter.ExtractTournamentInformation(Connection);
+    }
   }
 }

@@ -15,6 +15,7 @@ namespace ScoreboardConnectWinUI3 {
     private object m_tpEventsLock = new object();
     private List<TP.Event> m_tpEvents;
     private List<TP.TournamentClass> m_tpTournamentClasses;
+    private string m_tpFileName;
 
     private Dictionary<int, string> m_defaultSetup = new Dictionary<int, string>();
 
@@ -60,35 +61,43 @@ namespace ScoreboardConnectWinUI3 {
       listCourts.PopulateScoreboardCourts(courts);
     }
 
-    private async Task LoadTP() {
+    private async Task<bool> LoadTP() {
       if (openTPFile.ShowDialog() != DialogResult.OK) {
-        return;
+        return false;
       }
+      m_tpFileName = openTPFile.FileName;
+      await ReloadTP();
+      return true;
+    }
+
+    private async Task<bool> ReloadTP() {
       TP.TPFile tpFile;
       try {
-        tpFile = new TP.TPFile(openTPFile.FileName);
+        tpFile = new TP.TPFile(m_tpFileName);
       } catch {
         ShowError("Could not open TP file");
-        return;
+        return false;
       }
 
       try {
-        PopulateTP(await tpFile.GetCourts());
-        SetStatusNotListening();
+        m_tpCourts = await tpFile.GetCourts();
         var tpEvents = await tpFile.GetEvents();
         lock (m_tpEventsLock) {
           m_tpEvents = tpEvents;
         }
+        m_tpTournamentClasses = TP.Converter.Extract(m_tpEvents);
       } catch {
         ShowError("Could not get court info from TP file");
+        return false;
+      } finally {
+        tpFile.Close();
       }
 
-      tpFile.Close();
+      return true;
     }
 
-    private void PopulateTP(List<TP.Court> courts) {
-      m_tpCourts = courts;
-      listCourts.PopulateTPCourts(courts);
+    private void PopulateTP() {
+      listCourts.PopulateTPCourts(m_tpCourts);
       listCourts.Enabled = true;
       UpdateDefaultSetup();
     }
@@ -105,13 +114,24 @@ namespace ScoreboardConnectWinUI3 {
         sbCourts.ForEach(sbCourt => m_helper.ClearCourt(m_device, sbCourt));
       } else {
         try {
-          var sbMatch = await m_helper.FindMatchBySequenceNumber(m_device, m_tournament, tpMatchId);
-          if (sbMatch.Count == 1) {
+          TP.Event matchEvent = null;
+          lock (m_tpEventsLock) {
+            matchEvent = m_tpEvents.Find(tpEvent => tpEvent.FindMatchAndEntries(playerMatch => playerMatch.ID == tpMatchId) != (null, null, null));
+          }
+
+          List<ScoreboardLiveApi.Match> sbMatch = null;
+          if (matchEvent != null) {
+            sbMatch = await m_helper.FindMatchByTag(m_device, TP.Converter.HashMatch(matchEvent.TournamentInformation?.TournamentName, tpMatchId));
+          } else {
+            sbMatch = await m_helper.FindMatchBySequenceNumber(m_device, m_tournament, tpMatchId);
+          }
+          if (sbMatch?.Count > 0) {
+            ScoreboardLiveApi.Match bestFit = sbMatch[0];
             if (tpMatchId > 0) {
-              await CheckIfScoreboardServerNeedsMatchUpdate(sbMatch[0], tpMatchId);
+              await CheckIfScoreboardServerNeedsMatchUpdate(bestFit, tpMatchId);
             }
-            sbCourts.ForEach(async sbCourt => await m_helper.AssignMatchToCourt(m_device, sbMatch[0], sbCourt));
-          } else if (sbMatch.Count == 0) {
+            sbCourts.ForEach(async sbCourt => await m_helper.AssignMatchToCourt(m_device, bestFit, sbCourt));
+          } else if (sbMatch?.Count == 0) {
             // The TP match could not be found on the SB server. Load the match from TP, and
             // create a new match for SB.
             TP.PlayerMatch newTPMatch = null;
@@ -137,6 +157,7 @@ namespace ScoreboardConnectWinUI3 {
             // Create match on SB server
             ScoreboardLiveApi.MatchExtended newSBMatch = newTPMatch.MakeScoreboardMatch(entry1, entry2);
             newSBMatch.Category = newMatchEvent.CreateMatchCategoryString();
+            newSBMatch.Tag = TP.Converter.HashMatch(matchEvent.TournamentInformation?.TournamentName, newTPMatch.ID);
             ScoreboardLiveApi.Match createdSBMatch = await m_helper.CreateOnTheFlyMatch(m_device, m_tournament, newSBMatch);
             // Assign to selected courts
             sbCourts.ForEach(async sbCourt => await m_helper.AssignMatchToCourt(m_device, createdSBMatch, sbCourt));
@@ -204,6 +225,14 @@ namespace ScoreboardConnectWinUI3 {
       }
     }
 
+    private async Task InitCourts() {
+      if (m_tpFileName == null) return;
+      if (!await ReloadTP()) return;
+      foreach (TP.Court court in m_tpCourts) {
+        await UpdateCourt(court.Name, court.TpMatchID);
+      }
+    }
+
     private void SetStatusSelectFile() {
       buttonAction.Text = "Select TP-file";
     }
@@ -229,9 +258,12 @@ namespace ScoreboardConnectWinUI3 {
 
     private async void buttonAction_Click(object sender, EventArgs e) {
       if (m_tpCourts == null) {
-        await LoadTP();
+        if (await LoadTP()) {
+          PopulateTP();
+          SetStatusNotListening();
+        }
       } else if (!Listener.IsListening) {
-        Listener.Start();
+        Listener.Start(m_tpCourts);
       } else {
         Listener.Stop();
       }
@@ -244,8 +276,9 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void listener_ServiceStarted(object sender, EventArgs e) {
-      Invoke((MethodInvoker)delegate {
+      Invoke((MethodInvoker) async delegate {
         SetStatusListening();
+        await InitCourts();
       });
     }
 

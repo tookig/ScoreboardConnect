@@ -15,7 +15,7 @@ using System.Xml;
 using System.Linq;
 
 namespace TP {
-  public class TPListener : ITPCourtEventProducer {
+  public class TPListener {
     private CancellationTokenSource m_doCancel;
     private Dictionary<string, int> m_activeCourts = new Dictionary<string, int>();
 
@@ -43,7 +43,7 @@ namespace TP {
       }
     }
 
-    public void Start() {
+    public void Start(List<TP.Court> initialCourtSetup = null) {
       m_doCancel = new CancellationTokenSource();
       Task.Run(() => {
         ServiceStarted?.Invoke(this, EventArgs.Empty);
@@ -51,6 +51,11 @@ namespace TP {
         tcp.Start();
         bool doBreak = false;
         m_activeCourts.Clear();
+        initialCourtSetup?.ForEach(initialCourt => {
+          if (initialCourt.TpMatchID > 0) {
+            m_activeCourts.Add(initialCourt.Name, initialCourt.TpMatchID);
+          }
+        });
         while (!doBreak) {
           try {
             tcp.AcceptTcpClientAsync().ContinueWith(r => {

@@ -9,16 +9,19 @@ namespace TP {
     public enum Genders { Unknown = 0, Men = 1, Women = 2, Mixed = 3, Boys = 4, Girls = 5 }
 
     public int ID { get; set; }
+    public int TournamentInformationID { get; set; }
     public string Name { get; set; }
     public EventTypes EventType { get; set; } = EventTypes.Doubles;
     public Genders Gender { get; set; } = Genders.Unknown;
     public List<Draw> Draws { get; private set; } = new List<Draw>();
+    public TournamentInformation TournamentInformation;
 
     public Event(System.Data.IDataReader reader) {
       ID = GetInt(reader, "id");
       Name = GetString(reader, "name");
       Gender = (Genders)GetInt(reader, "gender");
       EventType = (EventTypes)GetInt(reader, "eventtype");
+      TournamentInformationID = GetInt(reader, "tournamentinformationid");
     }
 
     public Event(XmlReader reader) {

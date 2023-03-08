@@ -47,9 +47,9 @@ namespace ScoreboardConnectWinUI3
       this.labelConnectionStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.labelConnectionStatus.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-      this.labelConnectionStatus.Location = new System.Drawing.Point(12, 9);
+      this.labelConnectionStatus.Location = new System.Drawing.Point(14, 12);
       this.labelConnectionStatus.Name = "labelConnectionStatus";
-      this.labelConnectionStatus.Size = new System.Drawing.Size(522, 48);
+      this.labelConnectionStatus.Size = new System.Drawing.Size(597, 64);
       this.labelConnectionStatus.TabIndex = 0;
       this.labelConnectionStatus.Text = "Scoreboard Connect";
       this.labelConnectionStatus.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -59,9 +59,9 @@ namespace ScoreboardConnectWinUI3
       this.labelSelectedUnit.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.labelSelectedUnit.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-      this.labelSelectedUnit.Location = new System.Drawing.Point(12, 57);
+      this.labelSelectedUnit.Location = new System.Drawing.Point(14, 76);
       this.labelSelectedUnit.Name = "labelSelectedUnit";
-      this.labelSelectedUnit.Size = new System.Drawing.Size(522, 21);
+      this.labelSelectedUnit.Size = new System.Drawing.Size(597, 28);
       this.labelSelectedUnit.TabIndex = 1;
       this.labelSelectedUnit.Text = "Scoreboard Connect";
       this.labelSelectedUnit.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -71,9 +71,10 @@ namespace ScoreboardConnectWinUI3
       this.pictureLoading.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.pictureLoading.Image = ((System.Drawing.Image)(resources.GetObject("pictureLoading.Image")));
-      this.pictureLoading.Location = new System.Drawing.Point(12, 116);
+      this.pictureLoading.Location = new System.Drawing.Point(14, 155);
+      this.pictureLoading.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.pictureLoading.Name = "pictureLoading";
-      this.pictureLoading.Size = new System.Drawing.Size(522, 52);
+      this.pictureLoading.Size = new System.Drawing.Size(597, 69);
       this.pictureLoading.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
       this.pictureLoading.TabIndex = 2;
       this.pictureLoading.TabStop = false;
@@ -81,9 +82,10 @@ namespace ScoreboardConnectWinUI3
       // buttonExit
       // 
       this.buttonExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.buttonExit.Location = new System.Drawing.Point(428, 494);
+      this.buttonExit.Location = new System.Drawing.Point(489, 659);
+      this.buttonExit.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.buttonExit.Name = "buttonExit";
-      this.buttonExit.Size = new System.Drawing.Size(106, 35);
+      this.buttonExit.Size = new System.Drawing.Size(121, 47);
       this.buttonExit.TabIndex = 3;
       this.buttonExit.Text = "Exit";
       this.buttonExit.UseVisualStyleBackColor = true;
@@ -92,9 +94,10 @@ namespace ScoreboardConnectWinUI3
       // buttonSettings
       // 
       this.buttonSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-      this.buttonSettings.Location = new System.Drawing.Point(12, 494);
+      this.buttonSettings.Location = new System.Drawing.Point(14, 659);
+      this.buttonSettings.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.buttonSettings.Name = "buttonSettings";
-      this.buttonSettings.Size = new System.Drawing.Size(106, 35);
+      this.buttonSettings.Size = new System.Drawing.Size(121, 47);
       this.buttonSettings.TabIndex = 4;
       this.buttonSettings.Text = "Settings";
       this.buttonSettings.UseVisualStyleBackColor = true;
@@ -106,9 +109,9 @@ namespace ScoreboardConnectWinUI3
             | System.Windows.Forms.AnchorStyles.Right)));
       this.labelTournament.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
       this.labelTournament.ForeColor = System.Drawing.Color.RoyalBlue;
-      this.labelTournament.Location = new System.Drawing.Point(12, 78);
+      this.labelTournament.Location = new System.Drawing.Point(14, 104);
       this.labelTournament.Name = "labelTournament";
-      this.labelTournament.Size = new System.Drawing.Size(522, 21);
+      this.labelTournament.Size = new System.Drawing.Size(597, 28);
       this.labelTournament.TabIndex = 5;
       this.labelTournament.Text = "Scoreboard Connect";
       this.labelTournament.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -117,10 +120,11 @@ namespace ScoreboardConnectWinUI3
       // 
       this.buttonTPCourtListen.Image = global::ScoreboardConnectWinUI3.Resource1.calendar;
       this.buttonTPCourtListen.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-      this.buttonTPCourtListen.Location = new System.Drawing.Point(13, 179);
+      this.buttonTPCourtListen.Location = new System.Drawing.Point(15, 239);
+      this.buttonTPCourtListen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.buttonTPCourtListen.Name = "buttonTPCourtListen";
-      this.buttonTPCourtListen.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
-      this.buttonTPCourtListen.Size = new System.Drawing.Size(256, 113);
+      this.buttonTPCourtListen.Padding = new System.Windows.Forms.Padding(23, 0, 0, 0);
+      this.buttonTPCourtListen.Size = new System.Drawing.Size(293, 151);
       this.buttonTPCourtListen.TabIndex = 6;
       this.buttonTPCourtListen.Text = "Listen for TP court updates";
       this.buttonTPCourtListen.UseVisualStyleBackColor = true;
@@ -131,10 +135,11 @@ namespace ScoreboardConnectWinUI3
       this.buttonImportTP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.buttonImportTP.Image = global::ScoreboardConnectWinUI3.Resource1.copy;
       this.buttonImportTP.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-      this.buttonImportTP.Location = new System.Drawing.Point(278, 179);
+      this.buttonImportTP.Location = new System.Drawing.Point(318, 239);
+      this.buttonImportTP.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.buttonImportTP.Name = "buttonImportTP";
-      this.buttonImportTP.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
-      this.buttonImportTP.Size = new System.Drawing.Size(256, 113);
+      this.buttonImportTP.Padding = new System.Windows.Forms.Padding(23, 0, 0, 0);
+      this.buttonImportTP.Size = new System.Drawing.Size(293, 151);
       this.buttonImportTP.TabIndex = 7;
       this.buttonImportTP.Text = "Upload TP tournament";
       this.buttonImportTP.UseVisualStyleBackColor = true;
@@ -145,16 +150,17 @@ namespace ScoreboardConnectWinUI3
       this.panelContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.panelContent.Location = new System.Drawing.Point(14, 179);
+      this.panelContent.Location = new System.Drawing.Point(16, 239);
+      this.panelContent.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.panelContent.Name = "panelContent";
-      this.panelContent.Size = new System.Drawing.Size(520, 309);
+      this.panelContent.Size = new System.Drawing.Size(594, 412);
       this.panelContent.TabIndex = 8;
       // 
       // FormMain
       // 
-      this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-      this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(546, 541);
+      this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
+      this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+      this.ClientSize = new System.Drawing.Size(624, 721);
       this.Controls.Add(this.buttonImportTP);
       this.Controls.Add(this.buttonTPCourtListen);
       this.Controls.Add(this.labelTournament);
@@ -165,6 +171,7 @@ namespace ScoreboardConnectWinUI3
       this.Controls.Add(this.labelConnectionStatus);
       this.Controls.Add(this.panelContent);
       this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+      this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.Name = "FormMain";
       this.Text = "Scoreboard Connect";
       this.Load += new System.EventHandler(this.FormMain_Load);

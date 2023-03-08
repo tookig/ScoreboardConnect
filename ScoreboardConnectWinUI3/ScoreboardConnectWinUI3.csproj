@@ -4,6 +4,11 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyVersion>1.0.0.3</AssemblyVersion>
+    <FileVersion>1.0.0.3</FileVersion>
+    <StartupObject>ScoreboardConnectWinUI3.Program</StartupObject>
+    <ApplicationIcon></ApplicationIcon>
+    <Win32Resource />
   </PropertyGroup>
 
   <ItemGroup>

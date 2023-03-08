@@ -5,10 +5,20 @@ using System.Text;
 using TP;
 using ScoreboardLiveApi;
 using System.Threading.Tasks;
+using System.Data.Odbc;
+using System.Security.Cryptography;
 
 namespace TP {
   public class Converter {
     static readonly PlaceMap Places = new PlaceMap();
+
+    private class IntermediateLink {
+      public Draw SourceDraw { get; set; }
+      public int SourcePlace { get; set; }
+      public Draw TargetDraw { get; set; }
+      public MatchExtended TargetMatch { get; set; }
+      public string TeamIdentifier { get; set; }
+    }
 
     public static Task<List<Event>> ExtractEvents(System.Data.IDbConnection dbConnection) {
       return Task.Run(() => {
@@ -50,25 +60,47 @@ namespace TP {
       } else if (root == null) {
         throw new Exception("No root draw in event");
       }
+      // List with all links
+      var links = new List<IntermediateLink>();
       // Create class
-      var tpClass = root.DrawType == Draw.DrawTypes.RoundRobin ? new List<TournamentClass>() { MakePoolClass(root, e) } : MakeCupClasses(root, e);
+      var tpClass = root.DrawType == Draw.DrawTypes.RoundRobin ? new List<TournamentClass>() { MakePoolClass(root, e) } : MakeCupClasses(root, e, links);
       if (tpClass.Count != 1) {
         throw new Exception(string.Format("Got too many/too few classes from root class; should be 1 but found {0}.", tpClass.Count));
       }
       // Create child classes
       e.Draws.FindAll(d => d.DrawType == Draw.DrawTypes.QualifierCups)
-        .ForEach(d => tpClass[0].ChildClasses.AddRange(MakeCupClasses(d, e)));
+        .ForEach(d => tpClass[0].ChildClasses.AddRange(MakeCupClasses(d, e, links)));
       e.Draws.FindAll(d => d.DrawType == Draw.DrawTypes.RoundRobin)
        .ForEach(d => tpClass[0].ChildClasses.Add(MakePoolClass(d, e)));
-      // Create links
-      /* root.Matches.FindAll(m => m.Link != null).Select(m => {
-        TpTournamentClass tpLinkSource = tpClass[0].ChildClasses.Find(cc => cc.SourceDraw.ID == m.Link.SourceDrawID);
-                
-      }); */
+
+      // Sort out links
+      links.ForEach(intermediateLink => {
+        TournamentClass sourceClass = tpClass[0].ChildClasses.Find(sc => sc.SourceDraw == intermediateLink.SourceDraw);
+        if (sourceClass == null) {
+          throw new Exception("Link source draw could not connect to a class.");
+        }
+        tpClass[0].Links.Add(new Link() {
+          SourcePosition = intermediateLink.SourcePlace,
+          SourceDrawID = intermediateLink.SourceDraw.ID,
+          SourceClass = sourceClass,
+          TargetMatch = intermediateLink.TargetMatch,
+          TeamIdentifier = intermediateLink.TeamIdentifier
+        });
+      });
+
       return tpClass[0];
     }
 
-    private static List<TournamentClass> MakeCupClasses(Draw draw, Event e) {
+    public static Task<List<TournamentInformation>> ExtractTournamentInformation(OdbcConnection connection) {
+      return Task.Run(() => {
+        var errors = new List<Exception>();
+        var tournaments = new List<TournamentInformation>();
+        tournaments.AddRange(Loader.LoadTournamentInformation(connection.CreateCommand()));
+        return tournaments;
+      });
+    }
+
+    private static List<TournamentClass> MakeCupClasses(Draw draw, Event e, List<IntermediateLink> links) {
       // Return object
       var newClasses = new List<TournamentClass>();
       // Find the root matches in the database
@@ -76,10 +108,13 @@ namespace TP {
       // Create a new class for each root
       roots.ForEach(root => {
         var matches = new List<MatchExtended>();
-        AddMatch(draw, root, matches);
+        AddMatch(draw, e, root, matches, links);
         var tournamentClass = draw.MakeScoreboardClass();
         tournamentClass.Category = e.CreateMatchCategoryString();
-        matches.ForEach(m => m.Category = tournamentClass.Category);
+        matches.ForEach(m => {
+          m.Category = tournamentClass.Category;
+          m.Tag = HashMatch(e.TournamentInformation?.TournamentName, m.TournamentMatchNumber);
+        });
         newClasses.Add(new TournamentClass(draw, tournamentClass, matches));
       });
       // Return
@@ -95,7 +130,10 @@ namespace TP {
       // Match entries
       var matches = draw.Matches.FindAll(m => (m.Van1 > 0) && (m.Van2 > 0) && (m.Van1 < m.Van2))
         .Select(m => m.MakeScoreboardMatch(poolPlayers.Find(pp => pp.Planning == m.Van1)?.Entry, poolPlayers.Find(pp => pp.Planning == m.Van2)?.Entry)).ToList();
-      matches.ForEach(m => m.Category = tc.Category);
+      matches.ForEach(m => {
+        m.Category = tc.Category;
+        m.Tag = HashMatch(e.TournamentInformation?.TournamentName, m.MatchID);
+      });
       // Return
       return new TournamentClass(draw, tc, matches);
     }
@@ -108,7 +146,7 @@ namespace TP {
       return match;
     }
 
-    private static void AddMatch(Draw draw, PlayerMatch match, List<MatchExtended> matches, int column = 1, int startRow = 1) {
+    private static void AddMatch(Draw draw, Event e, PlayerMatch match, List<MatchExtended> matches, List<IntermediateLink> links, int column = 1, int startRow = 1) {
       // If this match does not have any 'van1' or 'van2', it's a base item and should be ignored, search can stop here
       if ((match.Van1 == 0) || (match.Van2 == 0)) {
         return;
@@ -121,9 +159,44 @@ namespace TP {
       // Set the place item
       scoreboardMatch.Place = Places.GetPlace(column * 1000 + startRow);
       matches.Add(scoreboardMatch);
+      // Create any links
+      if (van1.Link != null) {
+        links.Add(CreateLink(van1, draw, e, "team1", scoreboardMatch));
+      }
+      if (van2.Link != null) {
+        links.Add(CreateLink(van2, draw, e, "team2", scoreboardMatch));
+      }
       // Create matches one level below
-      AddMatch(draw, van1, matches, column + 1, startRow * 2 - 1);
-      AddMatch(draw, van2, matches, column + 1, startRow * 2);
+      AddMatch(draw, e, van1, matches, links, column + 1, startRow * 2 - 1);
+      AddMatch(draw, e, van2, matches, links, column + 1, startRow * 2);
+    }
+
+    private static IntermediateLink CreateLink(PlayerMatch van, Draw targetDraw, Event e, string teamIdentifier, MatchExtended sbMatch) {
+      if (van.Link == null) {
+        throw new Exception("PlayerMatch link reference cannot be null when extracting link.");
+      }
+      Draw sourceDraw = e.Draws.Find(d => d.ID == van.Link.SourceDrawID);
+      if (sourceDraw == null) {
+        throw new Exception("Trying to find link to draw not in same event.");
+      }
+      return new IntermediateLink() { 
+        SourceDraw = sourceDraw, 
+        SourcePlace = van.Link.SourcePosition, 
+        TeamIdentifier = teamIdentifier, 
+        TargetMatch = sbMatch, 
+        TargetDraw = targetDraw 
+      };
+    }
+
+    public static string HashMatch(string tournamentName, int matchID) {
+      // Create the string to hash
+      string source = string.Format("{0} ?? {1}", tournamentName, matchID);
+      // Hash the match string and return
+      string hash;
+      using (SHA256 sha = SHA256.Create()) {
+        hash = ApiHelper.ByteArrayToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(source)));
+      }
+      return hash;
     }
   }
 }

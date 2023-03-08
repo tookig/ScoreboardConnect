@@ -37,9 +37,10 @@ namespace ScoreboardConnectWinUI3 {
       // buttonCancel
       // 
       this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.buttonCancel.Location = new System.Drawing.Point(120, 150);
+      this.buttonCancel.Location = new System.Drawing.Point(137, 200);
+      this.buttonCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.buttonCancel.Name = "buttonCancel";
-      this.buttonCancel.Size = new System.Drawing.Size(126, 34);
+      this.buttonCancel.Size = new System.Drawing.Size(144, 45);
       this.buttonCancel.TabIndex = 5;
       this.buttonCancel.Text = "Cancel";
       this.buttonCancel.UseVisualStyleBackColor = true;
@@ -47,9 +48,10 @@ namespace ScoreboardConnectWinUI3 {
       // buttonOK
       // 
       this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.buttonOK.Location = new System.Drawing.Point(252, 150);
+      this.buttonOK.Location = new System.Drawing.Point(288, 200);
+      this.buttonOK.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.buttonOK.Name = "buttonOK";
-      this.buttonOK.Size = new System.Drawing.Size(126, 34);
+      this.buttonOK.Size = new System.Drawing.Size(144, 45);
       this.buttonOK.TabIndex = 4;
       this.buttonOK.Text = "OK";
       this.buttonOK.UseVisualStyleBackColor = true;
@@ -58,9 +60,9 @@ namespace ScoreboardConnectWinUI3 {
       // label1
       // 
       this.label1.AutoSize = true;
-      this.label1.Location = new System.Drawing.Point(12, 24);
+      this.label1.Location = new System.Drawing.Point(14, 32);
       this.label1.Name = "label1";
-      this.label1.Size = new System.Drawing.Size(95, 15);
+      this.label1.Size = new System.Drawing.Size(119, 20);
       this.label1.TabIndex = 6;
       this.label1.Text = "Enter server URL:";
       // 
@@ -68,9 +70,10 @@ namespace ScoreboardConnectWinUI3 {
       // 
       this.textURL.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.textURL.Location = new System.Drawing.Point(12, 52);
+      this.textURL.Location = new System.Drawing.Point(14, 69);
+      this.textURL.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.textURL.Name = "textURL";
-      this.textURL.Size = new System.Drawing.Size(366, 23);
+      this.textURL.Size = new System.Drawing.Size(418, 27);
       this.textURL.TabIndex = 7;
       this.textURL.TextChanged += new System.EventHandler(this.textURL_TextChanged);
       // 
@@ -80,9 +83,9 @@ namespace ScoreboardConnectWinUI3 {
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.labelStatus.ForeColor = System.Drawing.Color.Red;
-      this.labelStatus.Location = new System.Drawing.Point(12, 81);
+      this.labelStatus.Location = new System.Drawing.Point(14, 108);
       this.labelStatus.Name = "labelStatus";
-      this.labelStatus.Size = new System.Drawing.Size(365, 56);
+      this.labelStatus.Size = new System.Drawing.Size(417, 75);
       this.labelStatus.TabIndex = 8;
       this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
       // 
@@ -91,9 +94,10 @@ namespace ScoreboardConnectWinUI3 {
       this.pictureLoading.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.pictureLoading.Image = ((System.Drawing.Image)(resources.GetObject("pictureLoading.Image")));
-      this.pictureLoading.Location = new System.Drawing.Point(12, 141);
+      this.pictureLoading.Location = new System.Drawing.Point(14, 188);
+      this.pictureLoading.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.pictureLoading.Name = "pictureLoading";
-      this.pictureLoading.Size = new System.Drawing.Size(102, 43);
+      this.pictureLoading.Size = new System.Drawing.Size(117, 57);
       this.pictureLoading.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
       this.pictureLoading.TabIndex = 9;
       this.pictureLoading.TabStop = false;
@@ -102,10 +106,9 @@ namespace ScoreboardConnectWinUI3 {
       // FormURL
       // 
       this.AcceptButton = this.buttonOK;
-      this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-      this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
       this.CancelButton = this.buttonCancel;
-      this.ClientSize = new System.Drawing.Size(390, 196);
+      this.ClientSize = new System.Drawing.Size(446, 261);
       this.ControlBox = false;
       this.Controls.Add(this.pictureLoading);
       this.Controls.Add(this.labelStatus);
@@ -114,6 +117,7 @@ namespace ScoreboardConnectWinUI3 {
       this.Controls.Add(this.buttonCancel);
       this.Controls.Add(this.buttonOK);
       this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+      this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.Name = "FormURL";
       this.ShowInTaskbar = false;
       this.Text = "Server URL";

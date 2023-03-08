@@ -46,7 +46,8 @@ namespace TP {
     }
 
     public int DrawSize() {
-      return Matches.FindAll(match => match.Entry != null).Select(match => match.Entry).Distinct().Count();
+      return Matches.FindAll(match => match.Entry != null).Select(match => match.Entry).Distinct().Count() +
+             Matches.FindAll(match => match.Link != null).Count();
     }
 
     public override string ToString() {

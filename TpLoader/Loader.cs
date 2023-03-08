@@ -18,6 +18,12 @@ namespace TP {
       return result;
     }
 
+    public static List<TournamentInformation> LoadTournamentInformation(IDbCommand cmd) {
+      cmd.CommandText = "SELECT * FROM TournamentInformation";
+      List <TournamentInformation> tournaments = LoadStuff<TournamentInformation>(cmd, reader => new TournamentInformation(reader));
+      return tournaments;
+    }
+
     public static List<Link> LoadLinks(IDbCommand cmd) {
       // Get links
       cmd.CommandText = "SELECT * FROM Link";
@@ -44,11 +50,15 @@ namespace TP {
       var draws = LoadDraws(cmd);
       // Get players
       var players = LoadPlayers(cmd);
+      // Get tournament informations
+      var tournaments = LoadTournamentInformation(cmd);
       // Get events
       cmd.CommandText = "SELECT * FROM Event";
       List<Event> events = LoadStuff<Event>(cmd, reader => new Event(reader));
-      events.ForEach(e => e.Draws.AddRange(draws.FindAll(d => d.EventID == e.ID)));
-
+      events.ForEach(e => {
+        e.Draws.AddRange(draws.FindAll(d => d.EventID == e.ID));
+        e.TournamentInformation = tournaments.Find(t => t.ID == e.TournamentInformationID);
+       });
       return events;
     }
 
