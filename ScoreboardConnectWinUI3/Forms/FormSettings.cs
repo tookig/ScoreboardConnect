@@ -25,7 +25,7 @@ namespace ScoreboardConnectWinUI3 {
 
     private Settings m_defaultSettings;
     private ApiHelper m_api;
-    private IKeyStore m_keyStore;
+    private LocalDomainKeyStore m_keyStore;
     private Device m_device;
 
     public string URL {
@@ -46,11 +46,12 @@ namespace ScoreboardConnectWinUI3 {
       }
     }
 
-    public FormSettings(Settings defaults, IKeyStore keyStore) {
+    public FormSettings(Settings defaults, LocalDomainKeyStore keyStore) {
       InitializeComponent();
       m_defaultSettings = defaults;
       textURL.Text = defaults.URL;
       m_keyStore = keyStore;
+      m_keyStore.DefaultDomain = defaults.URL;
       m_api = new ApiHelper(defaults.URL);
       SetDeviceStatusNotConnected();
     }
@@ -155,10 +156,11 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void buttonSetURL_Click(object sender, EventArgs e) {
-      FormURL url = new FormURL(m_defaultSettings.URL);
+      FormURL url = new FormURL(textURL.Text);
       if (url.ShowDialog() == DialogResult.OK) {
         textURL.Text = url.URL;
         m_api.BaseUrl = url.URL;
+        m_keyStore.DefaultDomain = url.URL;
         PopulateUnits(url.Units);
       }
     }

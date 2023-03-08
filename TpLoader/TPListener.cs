@@ -19,10 +19,13 @@ namespace TP {
     private CancellationTokenSource m_doCancel;
     private Dictionary<string, int> m_activeCourts = new Dictionary<string, int>();
 
+    protected string m_debugFileDestinationDirectory;
+
     public event EventHandler ServiceStarted;
     public event EventHandler ServiceStopped;
     public event EventHandler<(string, Exception)> ServiceError;
     public event EventHandler<(string, int)> CourtUpdate;
+    public event EventHandler<List<TP.Event>> EventUpdate;
 
     public bool IsListening {
       get {
@@ -33,13 +36,26 @@ namespace TP {
     public TPListener() {
     }
 
-    public void Start() {
+    public TPListener(string debugFilesDestinationFolder) : this() {
+      m_debugFileDestinationDirectory = debugFilesDestinationFolder;
+      if (!m_debugFileDestinationDirectory.EndsWith('\\')) {
+        m_debugFileDestinationDirectory += '\\';
+      }
+    }
+
+    public void Start(List<TP.Court> initialCourtSetup = null) {
       m_doCancel = new CancellationTokenSource();
       Task.Run(() => {
         ServiceStarted?.Invoke(this, EventArgs.Empty);
         TcpListener tcp = new TcpListener(IPAddress.Any, 13333);
         tcp.Start();
         bool doBreak = false;
+        m_activeCourts.Clear();
+        initialCourtSetup?.ForEach(initialCourt => {
+          if (initialCourt.TpMatchID > 0) {
+            m_activeCourts.Add(initialCourt.Name, initialCourt.TpMatchID);
+          }
+        });
         while (!doBreak) {
           try {
             tcp.AcceptTcpClientAsync().ContinueWith(r => {
@@ -69,14 +85,32 @@ namespace TP {
       var connectionStream = connection.GetStream();
       connectionStream.Read(new byte[4], 0, 4);
       using (var unzip = new GZipStream(connectionStream, CompressionMode.Decompress))
-      {
+      using (MemoryStream ms = new MemoryStream()) {
+        Stream streamXMLReaderShouldUse = unzip;
+        
+        if (Directory.Exists(m_debugFileDestinationDirectory)) {
+          unzip.CopyTo(ms);
+          string debugFile = string.Format("{1}{0}.xml", DateTime.Now.ToString().Replace(':', '-'), m_debugFileDestinationDirectory);
+          File.WriteAllText(debugFile, Encoding.UTF8.GetString(ms.ToArray()));
+          ms.Position = 0;
+          streamXMLReaderShouldUse = ms;
+        }
+
         XmlReaderSettings xmlSettings = new XmlReaderSettings() {
-          Async = true
+          // Async = true
         };
-        using (XmlReader xmlReader = XmlReader.Create(unzip, xmlSettings)) {
-          xmlReader.ReadToFollowing("ONCOURT");
-          using (XmlReader onCourt = xmlReader.ReadSubtree()) {
-            ReadOnCourt(onCourt);
+
+        using (XmlReader xmlReader = XmlReader.Create(streamXMLReaderShouldUse, xmlSettings)) {
+          if (xmlReader.ReadToFollowing("ONCOURT")) {
+            using (XmlReader onCourt = xmlReader.ReadSubtree()) {
+              ReadOnCourt(onCourt);
+            }
+          }
+
+          if (xmlReader.ReadToFollowing("EVENTS")) {
+            using (XmlReader eventsXml = xmlReader.ReadSubtree()) {
+              ReadEvents(eventsXml);
+            }
           }
         }
       }
@@ -97,9 +131,21 @@ namespace TP {
         }
         courtsWithMatchesAssigned.Add(tpCourtName);      
       }
+
       foreach (string nowEmptyCourt in m_activeCourts.Select(kvp => kvp.Key).Except(courtsWithMatchesAssigned)) {
+        m_activeCourts.Remove(nowEmptyCourt);
         CourtUpdate?.Invoke(this, (nowEmptyCourt, 0));
       }
+    }
+
+    protected void ReadEvents(XmlReader reader) {
+      List<Event> events = new List<Event>();
+      while (reader.ReadToFollowing("EVENT")) {
+        using (var subtree = reader.ReadSubtree()) {
+          events.Add(new Event(subtree));
+        }
+      }
+      EventUpdate?.Invoke(this, events);
     }
 
     public void Stop() {

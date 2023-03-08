@@ -34,9 +34,10 @@ namespace ScoreboardConnectWinUI3 {
       // buttonAction
       // 
       this.buttonAction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.buttonAction.Location = new System.Drawing.Point(292, 186);
+      this.buttonAction.Location = new System.Drawing.Point(334, 248);
+      this.buttonAction.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.buttonAction.Name = "buttonAction";
-      this.buttonAction.Size = new System.Drawing.Size(161, 41);
+      this.buttonAction.Size = new System.Drawing.Size(184, 55);
       this.buttonAction.TabIndex = 0;
       this.buttonAction.Text = "Start listening";
       this.buttonAction.UseVisualStyleBackColor = true;
@@ -46,9 +47,9 @@ namespace ScoreboardConnectWinUI3 {
       // 
       this.labelStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.labelStatus.Location = new System.Drawing.Point(0, 188);
+      this.labelStatus.Location = new System.Drawing.Point(0, 251);
       this.labelStatus.Name = "labelStatus";
-      this.labelStatus.Size = new System.Drawing.Size(285, 41);
+      this.labelStatus.Size = new System.Drawing.Size(326, 55);
       this.labelStatus.TabIndex = 1;
       this.labelStatus.Text = "label1";
       this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -61,9 +62,10 @@ namespace ScoreboardConnectWinUI3 {
       this.listCourts.FullRowSelect = true;
       this.listCourts.GridLines = true;
       this.listCourts.HideSelection = false;
-      this.listCourts.Location = new System.Drawing.Point(0, 10);
+      this.listCourts.Location = new System.Drawing.Point(0, 13);
+      this.listCourts.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.listCourts.Name = "listCourts";
-      this.listCourts.Size = new System.Drawing.Size(453, 141);
+      this.listCourts.Size = new System.Drawing.Size(517, 187);
       this.listCourts.TabIndex = 2;
       this.listCourts.UseCompatibleStateImageBehavior = false;
       this.listCourts.View = System.Windows.Forms.View.Details;
@@ -77,24 +79,25 @@ namespace ScoreboardConnectWinUI3 {
       // 
       this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.progressBar.Location = new System.Drawing.Point(0, 157);
+      this.progressBar.Location = new System.Drawing.Point(0, 209);
+      this.progressBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.progressBar.MarqueeAnimationSpeed = 30;
       this.progressBar.Maximum = 1000;
       this.progressBar.Name = "progressBar";
-      this.progressBar.Size = new System.Drawing.Size(453, 23);
+      this.progressBar.Size = new System.Drawing.Size(518, 31);
       this.progressBar.Step = 1;
       this.progressBar.TabIndex = 3;
       // 
       // ControlCourtListen
       // 
-      this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-      this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
       this.Controls.Add(this.progressBar);
       this.Controls.Add(this.listCourts);
       this.Controls.Add(this.labelStatus);
       this.Controls.Add(this.buttonAction);
+      this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.Name = "ControlCourtListen";
-      this.Size = new System.Drawing.Size(453, 232);
+      this.Size = new System.Drawing.Size(518, 309);
       this.Load += new System.EventHandler(this.ControlCourtListen_Load);
       this.ResumeLayout(false);
 

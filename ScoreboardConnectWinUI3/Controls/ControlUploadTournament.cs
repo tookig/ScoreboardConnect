@@ -14,7 +14,7 @@ namespace ScoreboardConnectWinUI3 {
     private ScoreboardLiveApi.ApiHelper m_helper;
     private ScoreboardLiveApi.Device m_device;
     private ScoreboardLiveApi.Tournament m_tournament;
-    private TP.TPFile m_tpFile;
+    private string m_tpFileName;
     private List<TP.TournamentClass> m_tournamentClasses = new List<TP.TournamentClass>();
     private CancellationTokenSource m_doCancel;
 
@@ -57,13 +57,17 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private async Task LoadTPFile() {
-      if (openTPFile.ShowDialog() != DialogResult.OK) {
-        return;
+      if (m_tpFileName == null) {
+        if (openTPFile.ShowDialog() != DialogResult.OK) {
+          return;
+        }
+        m_tpFileName = openTPFile.FileName;
       }
       try {
-        m_tpFile = new TP.TPFile(openTPFile.FileName);
-        m_tournamentClasses = await m_tpFile.GetTournamentClasses();
+        TP.TPFile tpFile = new TP.TPFile(m_tpFileName);
+        m_tournamentClasses = await tpFile.GetTournamentClasses();
         listClasses.Populate(m_tournamentClasses);
+        tpFile.Close();
         SetStatusLoaded();
       } catch (Exception e) {
         MessageBox.Show(string.Format("Could not load TP file:{1}{0}", e.Message, Environment.NewLine), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -76,7 +80,8 @@ namespace ScoreboardConnectWinUI3 {
       var tournamentClassesToUpload = listClasses.GetSelectedTournamentClasses();
       int totalNumberOfMatches = tournamentClassesToUpload.Sum(tpClass => CountMatches(tpClass));
       int totalNumberOfClasses = tournamentClassesToUpload.Sum(tpClass => CountClasses(tpClass));
-      progressBar.Maximum = totalNumberOfClasses + totalNumberOfMatches;
+      int totalNumberOfLinks = tournamentClassesToUpload.Sum(tpCLass => CountLinks(tpCLass));
+      progressBar.Maximum = totalNumberOfClasses + totalNumberOfMatches + totalNumberOfLinks;
       m_doCancel = new CancellationTokenSource();
       try {
         foreach (TP.TournamentClass tpClass in tournamentClassesToUpload) {
@@ -93,8 +98,12 @@ namespace ScoreboardConnectWinUI3 {
       m_doCancel = null;
     }
 
-    private async Task UploadTournamentClass(TP.TournamentClass tpClass) {
+    private async Task<ScoreboardLiveApi.TournamentClass> UploadTournamentClass(TP.TournamentClass tpClass) {
+      // Save classes so that links can lookup correct ids
+      Dictionary<TP.TournamentClass, int> tpClassIDS = new Dictionary<TP.TournamentClass, int>();
+
       var serverClass = await m_helper.CreateTournamentClass(m_device, m_tournament, tpClass.ScoreboardTournamentClass);
+      tpClassIDS.Add(tpClass, serverClass.ID);
       m_doCancel.Token.ThrowIfCancellationRequested();
       ++progressBar.Value;
 
@@ -113,7 +122,7 @@ namespace ScoreboardConnectWinUI3 {
         tpClass.Matches.ForEach(m => m.MatchID = serverMatches.Find(sm => sm.Place == m.Place)?.MatchID ?? 0);
         foreach (ScoreboardLiveApi.MatchExtended match in tpClass.Matches) {
           if (match.MatchID > 0) {
-            await m_helper.UpdateMatch(m_device, match);
+            var serverMatch = await m_helper.UpdateMatch(m_device, match);
             if (ExtendedMatchNeedsScoreUpdate(match)) {
               await m_helper.SetScore(m_device, match);
             }
@@ -125,8 +134,23 @@ namespace ScoreboardConnectWinUI3 {
 
       foreach (TP.TournamentClass childClass in tpClass.ChildClasses) {
         childClass.ScoreboardTournamentClass.ParentClassID = serverClass?.ID ?? 0;
-        await UploadTournamentClass(childClass);
+        var serverChildClass = await UploadTournamentClass(childClass);
+        tpClassIDS.Add(childClass, serverChildClass.ID);
       }
+
+      foreach (TP.Link tpLink in tpClass.Links) {
+        ScoreboardLiveApi.Link sbLink = new ScoreboardLiveApi.Link() {
+          SourceClassID = tpClassIDS[tpLink.SourceClass],
+          SourcePlace = tpLink.SourcePosition,
+          TargetMatchID = tpClass.Matches.Find(m => m == tpLink.TargetMatch).MatchID,
+          TargetTeam = tpLink.TeamIdentifier
+        };
+        await m_helper.CreateLink(m_device, m_tournament, sbLink);
+        m_doCancel.Token.ThrowIfCancellationRequested();
+        ++progressBar.Value;
+      }
+
+      return serverClass;
     }
 
     private bool ExtendedMatchNeedsScoreUpdate(ScoreboardLiveApi.MatchExtended m) {
@@ -142,8 +166,12 @@ namespace ScoreboardConnectWinUI3 {
       return 1 + tpClass.ChildClasses.Sum(childClass => CountClasses(childClass));
     }
 
+    private int CountLinks(TP.TournamentClass tpClass) {
+      return tpClass.Links.Count + tpClass.ChildClasses.Sum(childClass => CountLinks(childClass));
+    }
+
     private async void buttonAction_Click(object sender, EventArgs e) {
-      if (m_tpFile == null) {
+      if (m_tpFileName == null) {
         await LoadTPFile();
       } else if (buttonAction.Text == "Abort") {
         m_doCancel.Cancel();

@@ -31,7 +31,7 @@ namespace ScoreboardConnectWinUI3 {
 
     public static Settings Load(string filename) {
       if (!File.Exists(filename)) {
-        return new Settings("https://dosan.scoreboardlive.se");
+        return new Settings("https://www.scoreboardlive.se");
       }
       FileStream stream = new FileStream(filename, FileMode.Open);
       using (stream) {

@@ -36,9 +36,10 @@ namespace ScoreboardConnectWinUI3 {
       // buttonCancel
       // 
       this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.buttonCancel.Location = new System.Drawing.Point(13, 122);
+      this.buttonCancel.Location = new System.Drawing.Point(15, 163);
+      this.buttonCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.buttonCancel.Name = "buttonCancel";
-      this.buttonCancel.Size = new System.Drawing.Size(126, 34);
+      this.buttonCancel.Size = new System.Drawing.Size(144, 45);
       this.buttonCancel.TabIndex = 5;
       this.buttonCancel.Text = "Cancel";
       this.buttonCancel.UseVisualStyleBackColor = true;
@@ -47,9 +48,10 @@ namespace ScoreboardConnectWinUI3 {
       // 
       this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
       this.buttonOK.Enabled = false;
-      this.buttonOK.Location = new System.Drawing.Point(145, 122);
+      this.buttonOK.Location = new System.Drawing.Point(166, 163);
+      this.buttonOK.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.buttonOK.Name = "buttonOK";
-      this.buttonOK.Size = new System.Drawing.Size(126, 34);
+      this.buttonOK.Size = new System.Drawing.Size(144, 45);
       this.buttonOK.TabIndex = 4;
       this.buttonOK.Text = "OK";
       this.buttonOK.UseVisualStyleBackColor = true;
@@ -58,19 +60,20 @@ namespace ScoreboardConnectWinUI3 {
       // label1
       // 
       this.label1.AutoSize = true;
-      this.label1.Location = new System.Drawing.Point(65, 9);
+      this.label1.Location = new System.Drawing.Point(74, 12);
       this.label1.Name = "label1";
-      this.label1.Size = new System.Drawing.Size(158, 15);
+      this.label1.Size = new System.Drawing.Size(200, 20);
       this.label1.TabIndex = 6;
       this.label1.Text = "Enter a valid activation code:";
       // 
       // textDeviceCode
       // 
       this.textDeviceCode.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-      this.textDeviceCode.Location = new System.Drawing.Point(81, 41);
+      this.textDeviceCode.Location = new System.Drawing.Point(93, 55);
+      this.textDeviceCode.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.textDeviceCode.MaxLength = 6;
       this.textDeviceCode.Name = "textDeviceCode";
-      this.textDeviceCode.Size = new System.Drawing.Size(117, 23);
+      this.textDeviceCode.Size = new System.Drawing.Size(133, 27);
       this.textDeviceCode.TabIndex = 7;
       this.textDeviceCode.TextChanged += new System.EventHandler(this.textDeviceCode_TextChanged);
       // 
@@ -79,9 +82,10 @@ namespace ScoreboardConnectWinUI3 {
       this.pictureLoading.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.pictureLoading.Image = ((System.Drawing.Image)(resources.GetObject("pictureLoading.Image")));
-      this.pictureLoading.Location = new System.Drawing.Point(81, 70);
+      this.pictureLoading.Location = new System.Drawing.Point(93, 93);
+      this.pictureLoading.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.pictureLoading.Name = "pictureLoading";
-      this.pictureLoading.Size = new System.Drawing.Size(117, 43);
+      this.pictureLoading.Size = new System.Drawing.Size(134, 57);
       this.pictureLoading.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
       this.pictureLoading.TabIndex = 10;
       this.pictureLoading.TabStop = false;
@@ -90,10 +94,9 @@ namespace ScoreboardConnectWinUI3 {
       // FormDeviceActivation
       // 
       this.AcceptButton = this.buttonOK;
-      this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-      this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
       this.CancelButton = this.buttonCancel;
-      this.ClientSize = new System.Drawing.Size(283, 168);
+      this.ClientSize = new System.Drawing.Size(323, 224);
       this.ControlBox = false;
       this.Controls.Add(this.pictureLoading);
       this.Controls.Add(this.textDeviceCode);
@@ -101,6 +104,7 @@ namespace ScoreboardConnectWinUI3 {
       this.Controls.Add(this.buttonCancel);
       this.Controls.Add(this.buttonOK);
       this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+      this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.Name = "FormDeviceActivation";
       this.ShowInTaskbar = false;
       this.Text = "Register Device";

@@ -17,7 +17,6 @@ namespace ScoreboardConnectWinUI3 {
     public TournamentClassView() {
       InitializeComponent();
       InitColumns();
-      View = View.Details;
       FullRowSelect = true;
       HeaderStyle = ColumnHeaderStyle.None;
       CheckBoxes = true;

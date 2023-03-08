@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
+using System.Xml;
 using ScoreboardLiveApi;
 
 namespace TP {
@@ -10,6 +11,7 @@ namespace TP {
 
     public enum Winners { None = 0, Entry1 = 1, Entry2 = 2 }
     
+    public int ID { get; set; }
     public int DrawID { get; set; }
     public int Planning { get; set; }
     public int EntryID { get; set; }
@@ -39,6 +41,7 @@ namespace TP {
     public Link Link { get; set; }
 
     public PlayerMatch(IDataReader reader) {
+      ID = GetInt(reader, "id");
       DrawID = GetInt(reader, "draw");
       Planning = GetInt(reader, "planning");
       EntryID = GetInt(reader, "entry");
@@ -62,6 +65,14 @@ namespace TP {
       MatchNr = GetInt(reader, "id");
       WalkOver = GetBool(reader, "walkover");
       Retired = GetBool(reader, "retired");
+    }
+
+    public PlayerMatch(XmlReader reader) {
+      ID = GetInt(reader, "id");
+      Planning = GetInt(reader, "PLANNING");
+      EntryID = GetInt(reader, "ENTRY");
+      PlanDate = GetDateTime(reader, "PLAYTIME");
+      MatchNr = ID;
     }
 
     public MatchExtended MakeScoreboardMatch(Entry team1, Entry team2) {
