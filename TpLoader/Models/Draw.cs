@@ -24,7 +24,7 @@ namespace TP {
     }
 
     public IEnumerable<Entry> GetEntries() {
-      return Matches.Select(match => match.Entries.Item1).Concat(Matches.Select(match => match.Entries.Item2)).Distinct();
+      return Matches.Select(match => match.Entries.Item1).Concat(Matches.Select(match => match.Entries.Item2)).Where(entry => entry != null).Distinct();
     }
 
 

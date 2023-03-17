@@ -55,58 +55,71 @@ namespace TP {
       OnBeginUpload();
 
       foreach (ExportClassItem eci in convertedData) {
-        var cupServerMatches = new Dictionary<ScoreboardLiveApi.TournamentClass, List<ScoreboardLiveApi.Match>>();
-        // Upload all classes, and save any cup matches created in the process
-        cupServerMatches.Add(eci.MainDraw, await UploadClass(eci.MainDraw, apiHelper, device, tournament));
-        foreach (ScoreboardLiveApi.TournamentClass qualifier in eci.Qualifiers) {
-          qualifier.ParentClassID = eci.MainDraw.ID;
-          cupServerMatches.Add(qualifier, await UploadClass(qualifier, apiHelper, device, tournament));
-          CheckIfToCancel();
-        }
-        // Update match IDs with those downloaded from the created cup classes. 
-        foreach (ExportMatchItem emi in eci.Matches.Where(match => match.BelongsTo.ClassType != "roundrobin")) {
-          emi.MatchData.MatchID = cupServerMatches[emi.BelongsTo].FirstOrDefault(sm => sm.Place == emi.MatchData.Place)?.MatchID ?? 0;
-          CheckIfToCancel();
-        }
-        // Create all matches
-        foreach (ExportMatchItem emi in eci.Matches) {
-          UploadMatch(emi, apiHelper, device, tournament);
-          CheckIfToCancel();
-        }
+        await UploadClass(eci, apiHelper, device, tournament);
       }
       m_doCancel = null;
       OnEndUpload();
     }
 
-    private async void UploadMatch(ExportMatchItem emi, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
-      if (emi.BelongsTo.ClassType == "roundrobin") {
-        var createdMatch = await apiHelper.CreateMatch(device, null, emi.BelongsTo, emi.MatchData);
-        emi.MatchData.MatchID = createdMatch.MatchID;
+    private async Task UploadClass(ExportClassItem eci, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
+      if (eci.MainClass.ClassType == "roundrobin") {
+        await UploadRoundRobin(eci, apiHelper, device, tournament);
       } else {
-        await apiHelper.UpdateMatch(device, emi.MatchData);
+        await UploadCup(eci, apiHelper, device, tournament);
       }
-      if (ExtendedMatchNeedsScoreUpdate(emi.MatchData)) {
-        await apiHelper.SetScore(device, emi.MatchData);
+      if (eci.SubClasses?.Count() > 0) {
+        foreach(ExportClassItem subEci in eci.SubClasses) {
+          subEci.MainClass.ParentClassID = eci.MainClass.ID;
+          await UploadClass(subEci, apiHelper, device, tournament);
+        }
       }
-      OnProgressUpload(++progress, totalNumberOfUploads, emi.BelongsTo.Description);
     }
 
-    private async Task<List<ScoreboardLiveApi.Match>> UploadClass(ScoreboardLiveApi.TournamentClass sbClass, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
-      var createdClass = await apiHelper.CreateTournamentClass(device, tournament, sbClass);
-      sbClass.ID = createdClass.ID;
-      var serverMatches = new List<ScoreboardLiveApi.Match>();
-      if (sbClass.ClassType != "roundrobin") {
-        serverMatches = await apiHelper.FindMatchesByClass(device, createdClass.ID);
+    private async Task UploadCup(ExportClassItem eci, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
+      // Create cup class
+      var createdClass = await apiHelper.CreateTournamentClass(device, tournament, eci.MainClass);
+      eci.MainClass.ID = createdClass.ID;
+      // Download cup matches
+      List<ScoreboardLiveApi.Match> cupMatches = await apiHelper.FindMatchesByClass(device, createdClass.ID);
+      OnProgressUpload(++progress, totalNumberOfUploads, eci.MainClass.Description);
+      CheckIfToCancel();
+
+      // Update match IDs and upload matches 
+      foreach (ScoreboardLiveApi.MatchExtended match in eci.Matches) {
+        match.MatchID = cupMatches.FirstOrDefault(sm => sm.Place == match.Place)?.MatchID ?? 0;
+        await apiHelper.UpdateMatch(device, match);
+        if (ExtendedMatchNeedsScoreUpdate(match)) {
+          await apiHelper.SetScore(device, match);
+        }
+        OnProgressUpload(++progress, totalNumberOfUploads, eci.MainClass.Description);
+        CheckIfToCancel();
       }
-      OnProgressUpload(++progress, totalNumberOfUploads, sbClass.Description);
-      return serverMatches;
     }
 
-    private int CountOperations(IEnumerable<ExportClassItem> ecis) {
+    private async Task UploadRoundRobin(ExportClassItem eci, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
+      // Create roundrobin class
+      var createdClass = await apiHelper.CreateTournamentClass(device, tournament, eci.MainClass);
+      eci.MainClass.ID = createdClass.ID;
+      OnProgressUpload(++progress, totalNumberOfUploads, eci.MainClass.Description);
+      CheckIfToCancel();
+      // Upload matches
+      foreach (ScoreboardLiveApi.MatchExtended match in eci.Matches) {
+        await apiHelper.CreateMatch(device, tournament, eci.MainClass, match);
+        if (ExtendedMatchNeedsScoreUpdate(match)) {
+          await apiHelper.SetScore(device, match);
+        }
+        OnProgressUpload(++progress, totalNumberOfUploads, eci.MainClass.Description);
+        CheckIfToCancel();
+      }
+    }
+
+      private int CountOperations(IEnumerable<ExportClassItem> ecis) {
       int count = 0;
       foreach (ExportClassItem eci in ecis) {
-        count += 1 + eci.Qualifiers.Count();
-        count += eci.Matches.Count();
+        count += 1 + eci.Matches.Count();
+        if (eci.SubClasses?.Count() > 0) {
+          count += CountOperations(eci.SubClasses);
+        }
       }
       return count;
     }
@@ -120,7 +133,7 @@ namespace TP {
       Task.Factory.StartNew(() => BeginUpload?.Invoke(this, new TournamentUploadEventArgs(0.0, "")));
     }
     private void OnProgressUpload(int requestsComplete, int totalNumberOfRequests, string message) {
-      Task.Factory.StartNew(() => ProgressUpload?.Invoke(this, new TournamentUploadEventArgs((double)requestsComplete / (double)totalNumberOfRequests, message)));
+      Task.Factory.StartNew(() => ProgressUpload?.Invoke(this, new TournamentUploadEventArgs((double)requestsComplete * 100.0 / (double)totalNumberOfRequests, message)));
     }
     private void OnEndUpload() {
       Task.Factory.StartNew(() => EndUpload?.Invoke(this, new TournamentUploadEventArgs(100.0, "")));
