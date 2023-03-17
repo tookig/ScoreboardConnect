@@ -1,8 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="_old\**" />
+    <EmbeddedResource Remove="_old\**" />
+    <None Remove="_old\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Converter.cs" />
+    <Compile Remove="Loader.cs" />
+    <Compile Remove="TournamentClass.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Collections" Version="4.3.0" />

@@ -22,19 +22,19 @@ namespace ScoreboardConnectWinUI3 {
       CheckBoxes = true;
     }
 
-    public List<TP.TournamentClass> GetSelectedTournamentClasses() {
-      List<TP.TournamentClass> checkedTournamentClasses = new List<TP.TournamentClass>();
+    public List<TP.Event> GetSelectedTournamentEvents() {
+      List<TP.Event> checkedTournamentClasses = new List<TP.Event>();
       foreach (ListViewItem lvi in Items) {
         if (lvi.Checked) {
-          checkedTournamentClasses.Add((TP.TournamentClass)lvi.Tag);
+          checkedTournamentClasses.Add((TP.Event)lvi.Tag);
         }
       }
       return checkedTournamentClasses;
     }
 
-    public void Populate(List<TP.TournamentClass> tpClasses) {
-      foreach (TP.TournamentClass tpClass in tpClasses) {
-        Items.Add(new ListViewItem(tpClass.ScoreboardTournamentClass.Description) {
+    public void Populate(IEnumerable<TP.Event> tpClasses) {
+      foreach (TP.Event tpClass in tpClasses) {
+        Items.Add(new ListViewItem(tpClass.Name) {
           Tag = tpClass
         });
       }

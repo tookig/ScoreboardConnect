@@ -34,7 +34,7 @@ namespace TP {
     }
 
     public Task<List<TP.Court>> GetTpCourts() {
-      return TP.Converter.ExtractCourts(m_tpConnection);
+      return null; //  TP.Converter.ExtractCourts(m_tpConnection);
     }
 
     public Task<List<ScoreboardLiveApi.Court>> GetSbCourts() {
@@ -64,19 +64,20 @@ namespace TP {
     }
 
     private async Task<(List<TP.Court>, List<ScoreboardLiveApi.Court>)> Load() {
+      return (null, null); 
       // Open the connection
       // m_tpConnection.Open();
       // Load courts
       // var tpCourts = TpLoader.Loader.LoadCourts(m_tpConnection.CreateCommand());
-      var tpCourts = await Task.Run(() => {
-        return Loader.LoadCourts(m_tpConnection.CreateCommand());
-      });
+      // var tpCourts = await Task.Run(() => {
+      //   return Loader.LoadCourts(m_tpConnection.CreateCommand());
+      // });
       // Close connection
       // m_tpConnection.Close();
       // Load sb courts
-      var sbCourts = await m_sbApi.GetCourts(m_sbDevice);
+      // var sbCourts = await m_sbApi.GetCourts(m_sbDevice);
       // Return
-      return (tpCourts, sbCourts);
+      // return (tpCourts, sbCourts);
     }
   }
 }

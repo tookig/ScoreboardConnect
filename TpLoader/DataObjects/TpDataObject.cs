@@ -5,8 +5,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 
-namespace TP {
-  public abstract class TpObject {
+namespace TP.Data {
+  public abstract class TpDataObject {
     protected static int GetInt(IDataReader reader, string fieldName) {
       int fieldIndex = reader.GetOrdinal(fieldName);
       if (reader.IsDBNull(fieldIndex)) return 0;
@@ -40,7 +40,7 @@ namespace TP {
     // https://stackoverflow.com/questions/21723697/regex-to-extract-date-time-from-given-string
     protected static DateTime GetDateTime(XmlReader reader, string fieldName) {
       Regex r = new Regex(@"\d{4}-\d{2}-\d{2} \d{2}:\d{2}");
-      Match m = r.Match(GetString(reader, fieldName));
+      System.Text.RegularExpressions.Match m = r.Match(GetString(reader, fieldName));
       if (m.Success) {
         return DateTime.ParseExact(m.Value, "yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture);
       }

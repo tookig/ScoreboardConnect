@@ -2,21 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using System.Linq;
 
 namespace TP {
-  public class Entry : TpObject {
-    public int ID { get; set; }
-    public int Player1ID { get; set; }
-    public int Player2ID { get; set; }
+  public class Entry : TP.Data.EntryData {
     public Player Player1 { get; set; }
     public Player Player2 { get; set; }
-
-    public Entry(System.Data.IDataReader reader) {
-      ID = GetInt(reader, "id");
-      Player1ID = GetInt(reader, "player1");
-      Player2ID = GetInt(reader, "player2");
-    }
-
     public Entry(XmlReader reader) {
       ID = GetInt(reader, "ID");
       string name1 = GetString(reader, "NAME1");
@@ -27,6 +18,20 @@ namespace TP {
       if (!string.IsNullOrWhiteSpace(name2)) {
         Player2 = new Player(name2, club2);
       }
+    }
+
+    protected Entry(Data.EntryData raw, Player player1, Player player2 = null) : base(raw) {
+      Player1 = player1;
+      Player2 = player2;
+    }
+
+    public static Entry Parse(Data.EntryData raw, IEnumerable<Player> players) {
+      Player player1 = players.First(p => p.ID == raw.Player1ID);
+      Player player2 = players.FirstOrDefault(p => p.ID == raw.Player2ID);
+      if (player1 == null) {
+        throw new Exception("Entry player not found");
+      }
+      return new Entry(raw, player1, player2);
     }
 
     public override string ToString() {

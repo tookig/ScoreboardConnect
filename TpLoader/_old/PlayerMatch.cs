@@ -5,8 +5,8 @@ using System.Text;
 using System.Xml;
 using ScoreboardLiveApi;
 
-namespace TP {
-  public class PlayerMatch : TpObject {
+namespace TP._OLD {
+  public class PlayerMatch : TP.Data.TpDataObject {
     private static readonly string NAMEFORMAT = "{0} {1}";
 
     public enum Winners { None = 0, Entry1 = 1, Entry2 = 2 }
