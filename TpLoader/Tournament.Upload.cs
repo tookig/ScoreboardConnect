@@ -57,8 +57,19 @@ namespace TP {
       foreach (ExportClassItem eci in convertedData) {
         await UploadClass(eci, apiHelper, device, tournament);
       }
+
+      var links = CreateLinks(convertedData);
+      foreach (ScoreboardLiveApi.Link link in links) {
+        await UploadLink(link, apiHelper, device, tournament);
+      }
+
       m_doCancel = null;
       OnEndUpload();
+    }
+
+    private async Task UploadLink(ScoreboardLiveApi.Link link, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
+      await apiHelper.CreateLink(device, tournament, link);
+      CheckIfToCancel();
     }
 
     private async Task UploadClass(ExportClassItem eci, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
@@ -85,11 +96,11 @@ namespace TP {
       CheckIfToCancel();
 
       // Update match IDs and upload matches 
-      foreach (ScoreboardLiveApi.MatchExtended match in eci.Matches) {
-        match.MatchID = cupMatches.FirstOrDefault(sm => sm.Place == match.Place)?.MatchID ?? 0;
-        await apiHelper.UpdateMatch(device, match);
-        if (ExtendedMatchNeedsScoreUpdate(match)) {
-          await apiHelper.SetScore(device, match);
+      foreach (ExportMatchItem emi in eci.Matches) {
+        emi.SB.MatchID = cupMatches.FirstOrDefault(sm => sm.Place == emi.SB.Place)?.MatchID ?? 0;
+        await apiHelper.UpdateMatch(device, emi.SB);
+        if (ExtendedMatchNeedsScoreUpdate(emi.SB)) {
+          await apiHelper.SetScore(device, emi.SB);
         }
         OnProgressUpload(++progress, totalNumberOfUploads, eci.MainClass.Description);
         CheckIfToCancel();
@@ -103,17 +114,17 @@ namespace TP {
       OnProgressUpload(++progress, totalNumberOfUploads, eci.MainClass.Description);
       CheckIfToCancel();
       // Upload matches
-      foreach (ScoreboardLiveApi.MatchExtended match in eci.Matches) {
-        await apiHelper.CreateMatch(device, tournament, eci.MainClass, match);
-        if (ExtendedMatchNeedsScoreUpdate(match)) {
-          await apiHelper.SetScore(device, match);
+      foreach (ExportMatchItem emi in eci.Matches) {
+        emi.SB.MatchID = (await apiHelper.CreateMatch(device, tournament, eci.MainClass, emi.SB)).MatchID;
+        if (ExtendedMatchNeedsScoreUpdate(emi.SB)) {
+          await apiHelper.SetScore(device, emi.SB);
         }
         OnProgressUpload(++progress, totalNumberOfUploads, eci.MainClass.Description);
         CheckIfToCancel();
       }
     }
 
-      private int CountOperations(IEnumerable<ExportClassItem> ecis) {
+      private int CountOperations(IEnumerable<ExportClassItem> ecis, IEnumerable<ScoreboardLiveApi.Link> links = null) {
       int count = 0;
       foreach (ExportClassItem eci in ecis) {
         count += 1 + eci.Matches.Count();
@@ -121,7 +132,7 @@ namespace TP {
           count += CountOperations(eci.SubClasses);
         }
       }
-      return count;
+      return count + (links?.Count() ?? 0);
     }
 
     private bool ExtendedMatchNeedsScoreUpdate(ScoreboardLiveApi.MatchExtended m) {

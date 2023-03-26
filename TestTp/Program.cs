@@ -32,12 +32,9 @@ namespace TestTp {
         Console.WriteLine("-- MAIN DRAW --");
         Console.WriteLine(eci.MainDraw?.ToString());
         Console.WriteLine("-- SUB DRAWS --");
-        foreach (ScoreboardLiveApi.TournamentClass tc in eci.Qualifiers) {
-          Console.WriteLine(tc.ToString());
-        }
         Console.WriteLine("-- MATCHES --");
         foreach (var m in eci.Matches) {
-          Console.WriteLine("Match {0} ({1}), Class {2}", m.MatchData.TournamentMatchNumber, m.MatchData.ClassDescription, m.BelongsTo?.Description);
+//          Console.WriteLine("Match {0} ({1}), Class {2}", m.MatchData.TournamentMatchNumber, m.MatchData.ClassDescription, m.BelongsTo?.Description);
         }
         Console.WriteLine("--   END     --");
       }
