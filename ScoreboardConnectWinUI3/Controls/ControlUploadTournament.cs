@@ -43,6 +43,7 @@ namespace ScoreboardConnectWinUI3 {
 
     private void SetStatusLoading() {
       labelUploadStatus.Text = "Uploading to server...";
+      progressBar.Value = 0;
       listClasses.Show();
       listClasses.Enabled = false;
       buttonAction.Text = "Abort";
@@ -65,7 +66,9 @@ namespace ScoreboardConnectWinUI3 {
       try {
         TP.TPFile tpFile = new TP.TPFile(m_tpFileName);
         m_tpTournament = await TP.Tournament.LoadFromTP(tpFile);
+        m_tpTournament.BeginUpload += M_tpTournament_BeginUpload;
         m_tpTournament.ProgressUpload += tpTournament_ProgressUpload;
+        m_tpTournament.EndUpload += M_tpTournament_EndUpload;
         tpFile.Close();
         listClasses.Populate(m_tpTournament.Events);
         SetStatusLoaded();
@@ -77,6 +80,14 @@ namespace ScoreboardConnectWinUI3 {
 
     private void tpTournament_ProgressUpload(object sender, TP.Tournament.TournamentUploadEventArgs e) {
       progressBar.Invoke(new Action(() => progressBar.Value = (int)e.Progress));
+      labelUploadStatus.Invoke(new Action(() => labelUploadStatus.Text = e.Message));
+    }
+
+    private void M_tpTournament_EndUpload(object sender, TP.Tournament.TournamentUploadEventArgs e) {
+    }
+    private void M_tpTournament_BeginUpload(object sender, TP.Tournament.TournamentUploadEventArgs e) {
+      progressBar.Value = 0;
+      labelUploadStatus.Invoke(new Action(() => labelUploadStatus.Text = e.Message));
     }
 
     private async Task UploadTournamentClasses() {

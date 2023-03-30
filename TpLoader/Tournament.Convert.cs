@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace TP {
   public partial class Tournament {
@@ -10,13 +11,13 @@ namespace TP {
     private static Helpers.PlaceMap PlaceMap = new Helpers.PlaceMap();
 
     public class ExportClassItem {
-      public ScoreboardLiveApi.TournamentClass MainClass { get; }
-      public Draw MainDraw { get; }
+      public ScoreboardLiveApi.TournamentClass SBClass { get; }
+      public Draw TPDraw { get; }
       public List<ExportClassItem> SubClasses { get; } = new List<ExportClassItem>();
       public List<ExportMatchItem> Matches { get; } = new List<ExportMatchItem>();
       public ExportClassItem(ScoreboardLiveApi.TournamentClass mainClass, Draw mainDraw, IEnumerable<ExportClassItem> subClasses = null, IEnumerable<ExportMatchItem> matches = null) {
-        MainClass = mainClass;
-        MainDraw = mainDraw;
+        SBClass = mainClass;
+        TPDraw = mainDraw;
         if (subClasses != null) {
           SubClasses.AddRange(subClasses);
         }
@@ -34,33 +35,55 @@ namespace TP {
     public IEnumerable<ExportClassItem> ExportClasses(Func<Event, bool> eventFilter) {
       List<ExportClassItem> exportItems = new List<ExportClassItem>();
       foreach (Event ev in Events.Where(eventFilter)) {
-        List<ExportMatchItem> mainClassMatches = new List<ExportMatchItem>();
         var rootDraw = FindMainDraw(ev);
-        var rootClass = ConvertDraw(ev, rootDraw);
-        mainClassMatches.AddRange(ConvertDrawMatches(rootDraw, rootClass));
+        var rootClass = ConvertDraw(ev, rootDraw).First();
 
         var subDraws = FindSubDraws(ev, rootDraw);
-        var subClasses = subDraws.Select(subDraw => {
-          var sbClass = ConvertDraw(ev, subDraw);
-          sbClass.Category = rootClass.Category;
-          return new ExportClassItem(sbClass, subDraw, matches: ConvertDrawMatches(subDraw, sbClass));
-        });
+        var subClasses = new List<ExportClassItem>();
+        foreach (Draw subDraw in subDraws) {
+          subClasses.AddRange(ConvertDraw(ev, subDraw));
+        }
 
-        exportItems.Add(new ExportClassItem(rootClass, rootDraw, subClasses, mainClassMatches));
+        rootClass.SubClasses.AddRange(subClasses);
+
+        exportItems.Add(rootClass);
       }
       return exportItems;
     }
 
-    private static ScoreboardLiveApi.TournamentClass ConvertDraw(Event ev, Draw draw) {
+    private static List<ExportClassItem> ConvertDraw(Event ev, Draw draw) {
+      List<ExportClassItem> classItems = new List<ExportClassItem>();
+      
+      if (draw.DrawType == Data.DrawData.DrawTypes.QualifierCups) {
+        // This draw can have multiple classes
+        var rootMatches = draw.Matches.Where(match => match.WN == 0).OrderBy(match => match.Planning);
+        int i = 1;
+        foreach (var rootMatch in rootMatches) {
+          var classItem = new ExportClassItem(CreateClass(ev, draw), draw);
+          classItem.SBClass.Description += string.Format(" {0}", i++);
+          classItem.Matches.AddRange(ConvertDrawMatches(draw, classItem.SBClass, rootMatch));
+          classItem.SBClass.Size = CalculateClassSize(classItem.Matches);
+          classItems.Add(classItem);
+        }
+      } else {
+        // This draw should have only one class
+        var sbClass = CreateClass(ev, draw);
+        var matches = ConvertDrawMatches(draw, sbClass);
+        sbClass.Size = CalculateClassSize(matches);
+        classItems.Add(new ExportClassItem(sbClass, draw, matches: matches));
+      }
+      return classItems;
+    }
+
+    private static ScoreboardLiveApi.TournamentClass CreateClass(Event ev, Draw draw) {
       return new ScoreboardLiveApi.TournamentClass() {
         Category = CreateMatchCategoryString(ev),
         Description = draw.Name,
-        Size = CalculateDrawSize(draw),
         ClassType = CreateClassType(draw),
       };
     }
 
-    private static IEnumerable<ExportMatchItem> ConvertDrawMatches(Draw draw, ScoreboardLiveApi.TournamentClass sbClass) {
+    private static IEnumerable<ExportMatchItem> ConvertDrawMatches(Draw draw, ScoreboardLiveApi.TournamentClass sbClass, Match rootMatch = null) {
       if (draw.DrawType == Data.DrawData.DrawTypes.RoundRobin) {
         return draw.Matches.Select(tpMatch => {
           return new ExportMatchItem() {
@@ -69,26 +92,33 @@ namespace TP {
           };
         });
       }
-      return TraverseMatchTree(draw, sbClass);
+      return TraverseMatchTree(draw, sbClass, rootMatch);
     }
 
-    private static List<ExportMatchItem> TraverseMatchTree(Draw draw, ScoreboardLiveApi.TournamentClass sbClass) {
+    private static List<ExportMatchItem> TraverseMatchTree(Draw draw, ScoreboardLiveApi.TournamentClass sbClass, Match rootMatch) {
       List<ExportMatchItem> matches = new List<ExportMatchItem>();
-      Match rootMatch = draw.Matches.FirstOrDefault(match => match.WN == 0);
-      if (rootMatch == null) {
+      Match root = rootMatch ?? draw.Matches.FirstOrDefault(match => match.WN == 0);
+      if (root == null) {
         throw new Exception("No root match could be found in draw");
       }
-      ParseCupMatch(rootMatch, sbClass, matches);
-      return matches;
+      ParseCupMatch(root, sbClass, matches);
+
+      // Remove all matches without valid roots
+      int maxTierPlanning = (matches.Max(match => match.TP.Planning) / 1000) * 1000;
+      return matches.FindAll(emi => (emi.TP.Planning < maxTierPlanning) ||
+        (((emi.TP.Entries.Item1 != null) || (emi.TP.Links.Item1 != null)) && ((emi.TP.Entries.Item2 != null) || (emi.TP.Links.Item2 != null)))
+      );
     }
 
     private static void ParseCupMatch(TP.Match tpMatch, ScoreboardLiveApi.TournamentClass sbClass, List<ExportMatchItem> items, int column=1, int startRow=1) {
       ScoreboardLiveApi.MatchExtended sbMatch = ConvertMatch(tpMatch, sbClass);
       sbMatch.Place = PlaceMap.GetPlace(column * 1000 + startRow);
+
       items.Add(new ExportMatchItem() {
         SB = sbMatch,
         TP = tpMatch
       });
+
       if (tpMatch.Source.Item1 != null) {
         ParseCupMatch(tpMatch.Source.Item1, sbClass, items, column + 1, startRow * 2 - 1);
       }
@@ -157,8 +187,17 @@ namespace TP {
       };
     }
 
-    protected static int CalculateDrawSize(Draw draw) {
-      return draw.GetEntries().Count() + draw.Links.Count();
+    protected static int CalculateClassSize(IEnumerable<ExportMatchItem> matchItems) {
+      // Count number of unique entries
+      int entryCount = matchItems.Select(mi => mi.TP.Entries.Item1?.ID)
+                  .Concat(matchItems.Select(mi => mi.TP.Entries.Item2?.ID))
+                  .Where(id => id.GetValueOrDefault() > 0).Distinct().Count();
+      // Get link count
+      int linkCount = matchItems.Select(mi => mi.TP.Links.Item1?.ID)
+                  .Concat(matchItems.Select(mi => mi.TP.Links.Item2?.ID))
+                  .Where(id => id.GetValueOrDefault() > 0).Distinct().Count();
+      // Return sum
+      return entryCount + linkCount;
     }
 
     protected static string CreateClassType(Draw draw) {
@@ -204,23 +243,34 @@ namespace TP {
       return eci.Matches.Where(emi => (emi.TP.Links.Item1 != null) || (emi.TP.Links.Item2 != null));
     }
 
-    private static ScoreboardLiveApi.TournamentClass FindLinkSource(Data.LinkData link, IEnumerable<ExportClassItem> classes) {
+    private static ScoreboardLiveApi.TournamentClass FindLinkSource(Link link, IEnumerable<ExportClassItem> classes) {
       return classes.Aggregate(new List<ExportClassItem>(), (c, next) => {
         c.Add(next);
         if (next.SubClasses != null) {
           c.AddRange(next.SubClasses);
         }
         return c;
-      }).First(c => c.MainDraw.ID == link.SourceDrawID).MainClass;
+      }).Where(c => c.TPDraw.ID == link.SourceDrawID)
+      .ElementAt(link.GetSourceClassIndex())
+      .SBClass;
     }
 
-    private static ScoreboardLiveApi.Link ConvertLink(Data.LinkData tpLink, ScoreboardLiveApi.TournamentClass tpSourceClass, ScoreboardLiveApi.Match sbTargetMatch, int targetTeamIndex) {
+    private static ScoreboardLiveApi.Link ConvertLink(Link tpLink, ScoreboardLiveApi.TournamentClass tpSourceClass, ScoreboardLiveApi.Match sbTargetMatch, int targetTeamIndex) {
       return new ScoreboardLiveApi.Link() {
         SourceClassID = tpSourceClass.ID,
-        SourcePlace = tpLink.SourcePosition,
+        SourcePlace = tpLink.GetSourcePlacement(),
         TargetMatchID = sbTargetMatch.MatchID,
         TargetTeam = targetTeamIndex == 1 ? "team1" : "team2"
       };
+    }
+
+    public static string CreateMatchTag(Match match, ScoreboardLiveApi.Tournament tournament) {
+      string source = string.Format("{0} ?? {1}", match.ID, tournament.TournamentID);
+      string hash;
+      using (SHA256 sha = SHA256.Create()) {
+        hash = ScoreboardLiveApi.ApiHelper.ByteArrayToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(source)));
+      }
+      return hash;
     }
   }
 }

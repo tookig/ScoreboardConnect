@@ -12,7 +12,7 @@ namespace TP {
     public Draw(Data.DrawData raw) : base(raw) {
       Matches = new List<Match>();
     }
-    public static Draw Parse(Data.DrawData raw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Data.LinkData> links) {
+    public static Draw Parse(Data.DrawData raw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Link> links) {
       Draw draw = new Draw(raw);
       if (draw.DrawType == DrawTypes.RoundRobin) {
         draw.Matches = Match.ParsePoolDraw(draw, playerMatches, entries, links);

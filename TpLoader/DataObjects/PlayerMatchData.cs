@@ -48,8 +48,8 @@ namespace TP.Data {
       Van2 = cpy.Van2;
       WN = cpy.WN;
       Team1Set1 = cpy.Team1Set1;
-      Team1Set3 = cpy.Team1Set2;
-      Team1Set2 = cpy.Team1Set3;
+      Team1Set2 = cpy.Team1Set2;
+      Team1Set3 = cpy.Team1Set3;
       Team1Set4 = cpy.Team1Set4;
       Team1Set5 = cpy.Team1Set5;
       Team2Set1 = cpy.Team2Set1;

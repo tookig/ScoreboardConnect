@@ -14,8 +14,11 @@ namespace TP {
       IEnumerable<Player> players = (await file.LoadPlayers()).Select(pd => Player.Parse(pd, clubs));
       IEnumerable<Entry> entries = (await file.LoadEntries()).Select(ed => Entry.Parse(ed, players));
       IEnumerable<Data.PlayerMatchData> playerMatchData = await file.LoadPlayerMatches();
-      IEnumerable<Data.LinkData> links = await file.LoadLinks();
-      IEnumerable<Draw> draws = (await file.LoadDraws()).Select(draw => Draw.Parse(draw, playerMatchData, entries, links));
+
+      IEnumerable<Data.DrawData> rawDraws = await file.LoadDraws();
+      IEnumerable<Link> links = (await file.LoadLinks()).Select(link => Link.Parse(link, rawDraws));
+      IEnumerable<Draw> draws = rawDraws.Select(draw => Draw.Parse(draw, playerMatchData, entries, links));
+
 
       IEnumerable<Event> events = (await file.LoadEvents()).Select(ev => Event.Parse(ev, draws, tournamentInformation));
 

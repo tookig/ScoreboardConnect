@@ -9,7 +9,19 @@ using System.Linq;
 
 namespace TestTp {
   class Program {
-    static async Task Main(string[] args) {
+    static void Main(string[] args) {
+      TP.TPListener listener = new TP.TPListener("D:\\Tmp\\lergok.tp"/* , "D:\\Tmp" */);
+      listener.ServiceStarted += (sender, e) => Console.WriteLine("Listener started");
+      listener.ServiceError += (sender, e) => Console.WriteLine(e.Item2.Message);
+      listener.ServiceStopped += (sender, e) => Console.WriteLine("Listener stopped");
+      listener.CourtUpdate += (sender, e) => Console.WriteLine("Court '{0}' updated with match {1}", e.Item1, e.Item2);
+      listener.Start();
+      Console.WriteLine("Press any key to stop");
+      Console.ReadKey();
+      listener.Stop();
+    }
+
+    static async Task MainX(string[] args) {
       string filename = "D:\\Tmp\\lergok.tp";
       TP.TPFile file = new TP.TPFile(filename);
       TP.Tournament tournament = await TP.Tournament.LoadFromTP(file);
@@ -27,14 +39,14 @@ namespace TestTp {
       }
 
       */
-      
+
       foreach (TP.Tournament.ExportClassItem eci in tournament.ExportClasses((x) => true)) {
         Console.WriteLine("-- MAIN DRAW --");
-        Console.WriteLine(eci.MainDraw?.ToString());
+        Console.WriteLine(eci.TPDraw?.ToString());
         Console.WriteLine("-- SUB DRAWS --");
         Console.WriteLine("-- MATCHES --");
         foreach (var m in eci.Matches) {
-//          Console.WriteLine("Match {0} ({1}), Class {2}", m.MatchData.TournamentMatchNumber, m.MatchData.ClassDescription, m.BelongsTo?.Description);
+          //          Console.WriteLine("Match {0} ({1}), Class {2}", m.MatchData.TournamentMatchNumber, m.MatchData.ClassDescription, m.BelongsTo?.Description);
         }
         Console.WriteLine("--   END     --");
       }

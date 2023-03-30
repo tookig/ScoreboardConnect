@@ -6,7 +6,7 @@ using System.Linq;
 namespace TP {
   public class Match : TP.Data.PlayerMatchData {
     public (Entry, Entry) Entries { get; set; }
-    public (Data.LinkData, Data.LinkData) Links { get; set; }
+    public (Link, Link) Links { get; set; }
     public Match Parent { get; set; }
     public (Match, Match) Source { get; set; }
 
@@ -26,7 +26,7 @@ namespace TP {
       return flatTree;
     }
 
-    public static Match Parse(Data.PlayerMatchData raw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Data.LinkData> links) {
+    public static Match Parse(Data.PlayerMatchData raw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Link> links) {
       // If this match does not have any 'van1' or 'van2', it's a base item and should be ignored, search can stop here
       if ((raw.Van1 == 0) || (raw.Van2 == 0)) {
         return null;
@@ -37,18 +37,18 @@ namespace TP {
       // Create match
       Match match = new Match(raw, entries.FirstOrDefault(entry => entry.ID == van1?.EntryID), entries.FirstOrDefault(entry => entry.ID == van2?.EntryID));
       // Find any links
-      Data.LinkData link1 = (van1?.LinkID > 0) ? links.FirstOrDefault(link => link.ID == van1.LinkID) : null;
-      Data.LinkData link2 = (van2?.LinkID > 0) ? links.FirstOrDefault(link => link.ID == van2.LinkID) : null;
+      Link link1 = (van1?.LinkID > 0) ? links.FirstOrDefault(link => link.ID == van1.LinkID) : null;
+      Link link2 = (van2?.LinkID > 0) ? links.FirstOrDefault(link => link.ID == van2.LinkID) : null;
       match.Links = (link1, link2);
       return match;
     }
 
-    public static IEnumerable<Match> ParsePoolDraw(Draw draw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Data.LinkData> links) {
+    public static IEnumerable<Match> ParsePoolDraw(Draw draw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Link> links) {
       return playerMatches.Where(pm => (pm.DrawID == draw.ID) && (pm.Van1 > 0) && (pm.Van2 > 0) && (pm.Van1 < pm.Van2))
                           .Select(pm => Parse(pm, playerMatches, entries, links));
     }
 
-    public static IEnumerable<Match> TraverseCupDraw(Draw draw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Data.LinkData> links) {
+    public static IEnumerable<Match> TraverseCupDraw(Draw draw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Link> links) {
       // Find the root matches (a TP draw can have many roots, used for example in qualifiers)
       IEnumerable<Data.PlayerMatchData> roots = playerMatches.Where(pm => (pm.DrawID == draw.ID) && (pm.WN == 0));
       List<Match> matches = new List<Match>();
@@ -62,7 +62,7 @@ namespace TP {
       return matches;
     }
 
-    private static Match ParseMatchNode(Data.PlayerMatchData node, Match parent, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Data.LinkData> links) {
+    private static Match ParseMatchNode(Data.PlayerMatchData node, Match parent, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Link> links) {
       Match match = Parse(node, playerMatches, entries, links);
       if (match == null) {
         return null;

@@ -12,18 +12,21 @@ namespace TP.Data {
     public string Name { get; set; }
     public DrawTypes DrawType { get; set; }
     public int EventID { get; set; }
+    public int DrawEndSize { get; set; }
     public DrawData() { }
     public DrawData(DrawData cpy) {
       ID = cpy.ID;
       Name = cpy.Name;
       DrawType = cpy.DrawType;
       EventID = cpy.EventID;
+      DrawEndSize = cpy.DrawEndSize;
     }
     public DrawData(System.Data.IDataReader reader) {
       ID = GetInt(reader, "id");
       Name = GetString(reader, "name");
       DrawType = (DrawTypes)GetInt(reader, "drawType");
       EventID = GetInt(reader, "event");
+      DrawEndSize = GetInt(reader, "drawendsize");
     }
   }
 }
