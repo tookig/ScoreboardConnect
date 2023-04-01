@@ -2,19 +2,49 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Xml;
 
 namespace TP {
   public class Event : TP.Data.EventData {
     public Data.TournamentInformation TournamentInformation { get; private set; }
-    public IEnumerable<Draw> Draws { get; private set; } = new List<Draw>();
+    public List<Draw> Draws { get; private set; } = new List<Draw>();
 
     public Event(Data.EventData raw) : base(raw) { }
 
     public static Event Parse(Data.EventData raw, IEnumerable<Draw> draws, IEnumerable<Data.TournamentInformation> tournamentInformation) {
       Event tpEvent = new Event(raw);
-      tpEvent.Draws = draws.Where(draw => draw.EventID == tpEvent.ID);
+      tpEvent.Draws = draws.Where(draw => draw.EventID == tpEvent.ID).ToList();
       tpEvent.TournamentInformation = tournamentInformation.FirstOrDefault(ti => ti.ID == tpEvent.TournamentInformationID);
       return tpEvent;
+    }
+
+    public static Event Parse(XmlReader reader) {
+      List<Entry> entries = new List<Entry>();
+      reader.ReadToFollowing("ENTRIES");
+      using (var entriesXml = reader.ReadSubtree()) {
+        entriesXml.Read();
+        while (entriesXml.ReadToFollowing("ENTRY")) {
+          entries.Add(Entry.Parse(entriesXml));
+        }
+      }
+
+      List<Draw> draws = new List<Draw>();
+      reader.ReadToFollowing("DRAWS");
+      using (var drawsXml = reader.ReadSubtree()) {
+        while (drawsXml.ReadToFollowing("DRAW")) {
+          using (var subtree = drawsXml.ReadSubtree()) {
+            subtree.Read();
+            draws.Add(Draw.Parse(subtree, entries));
+          }
+        }
+      }
+
+      Event newEvent = new Event(new Data.EventData(reader)) {
+        Draws = draws
+      };
+
+
+      return newEvent;
     }
 
     /*

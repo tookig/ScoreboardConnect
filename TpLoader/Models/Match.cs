@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Xml;
 
 namespace TP {
   public class Match : TP.Data.PlayerMatchData {
@@ -43,9 +44,33 @@ namespace TP {
       return match;
     }
 
+    /*
+    public static Match Parse(XmlReader reader) {
+      for (int i = 1; i<= 4; i++) {
+        string playerName = string.Format("{0} {1}",
+                                          GetString(reader, string.Format("N{0}", i)),
+                                          GetString(reader, string.Format("N{0}", i)));
+
+      }
+    }*/
+
     public static IEnumerable<Match> ParsePoolDraw(Draw draw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Link> links) {
-      return playerMatches.Where(pm => (pm.DrawID == draw.ID) && (pm.Van1 > 0) && (pm.Van2 > 0) && (pm.Van1 < pm.Van2))
-                          .Select(pm => Parse(pm, playerMatches, entries, links));
+      List<Match> matches = new List<Match>();
+      foreach (var pm in  playerMatches.Where(pm => (pm.DrawID == draw.ID) && (pm.Van1 > 0) && (pm.Van2 > 0) && (pm.Van1 < pm.Van2))) {
+        matches.Add(Parse(pm, playerMatches, entries, links));
+      }
+      return matches;
+    }
+
+    public static IEnumerable<Match> ParsePoolDrawXML(Draw draw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries) {
+      // Find valid matches
+      var validMatches = playerMatches.Where(pm => (pm.Planning % 1000 != 0) && (pm.Planning / 1000 < pm.Planning % 1000));
+      // Set the VAN, so we can use the same parse as for the TP file
+      foreach (var match in validMatches) {
+        match.Van1 = (match.Planning / 1000) * 1000;
+        match.Van2 = (match.Planning % 1000) * 1000;
+      }
+      return validMatches.Select(match => Parse(match, playerMatches, entries, new List<Link>()));
     }
 
     public static IEnumerable<Match> TraverseCupDraw(Draw draw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Link> links) {
@@ -62,6 +87,29 @@ namespace TP {
       return matches;
     }
 
+    public static IEnumerable<Match> TraverseCupDrawXML(Draw draw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries) {
+      // Find the root matches (the ones with the lowest planning "thousands")
+      int lowestPlanningThousands = playerMatches.Aggregate(100, (lowest, match) => match.Planning / 1000 < lowest ? match.Planning / 1000 : lowest);
+      var roots = playerMatches.Where(match => match.Planning / 1000 == lowestPlanningThousands);
+      // Find the highest order planning "thousands"
+      int highestPlanningThousands = playerMatches.Aggregate(1, (highest, match) => match.Planning / 1000 > highest ? match.Planning / 1000 : highest);
+      // Set the VANS, so that we can use the tp-file parser
+      foreach (var match in playerMatches) {
+        if (match.Planning / 1000 >= highestPlanningThousands) continue;
+        match.Van1 = (match.Planning / 1000 + 1) * 1000 + (match.Planning % 1000) * 2 - 1;
+        match.Van2 = (match.Planning / 1000 + 1) * 1000 + (match.Planning % 1000) * 2;
+      }
+      // Go through all roots and add matches
+      List<Match> matches = new List<Match>();
+      foreach (Data.PlayerMatchData root in roots) {
+        Match parsedRoot = ParseMatchNode(root, null, playerMatches, entries, new List<Link>());
+        if (parsedRoot != null) {
+          matches.AddRange(parsedRoot.Flatten());
+        }
+      }
+      return matches;
+    }
+    
     private static Match ParseMatchNode(Data.PlayerMatchData node, Match parent, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Link> links) {
       Match match = Parse(node, playerMatches, entries, links);
       if (match == null) {
@@ -79,7 +127,7 @@ namespace TP {
 
     public override string ToString() {
       StringBuilder sb = new StringBuilder();
-      sb.AppendLine(string.Format("Match {0}", ID));
+      sb.AppendLine(string.Format("Match {0} ({1})", ID, PlanDate.ToString()));
       sb.AppendLine(Entries.Item1?.ToString() ?? "<empty>");
       sb.AppendLine(Entries.Item2?.ToString() ?? "<empty>");
       return sb.ToString();

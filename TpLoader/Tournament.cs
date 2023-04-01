@@ -1,14 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
+using System.Diagnostics;
 
 namespace TP {
   public partial class Tournament {
-    public IEnumerable<Data.TournamentInformation> TournamentInformation { get; private set; }
-    public IEnumerable<Data.LocationData> Locations { get; private set; }
-    public IEnumerable<Court> Courts { get; private set; }
-    public IEnumerable<Entry> Entries { get; private set; }
-    public IEnumerable<Event> Events { get; private set; }
+    public List<Data.TournamentInformation> TournamentInformation { get; private set; } = new List<Data.TournamentInformation>();
+    public List<Data.LocationData> Locations { get; private set; } = new List<Data.LocationData>();
+    public List<Court> Courts { get; private set; } = new List<Court>();
+    public List<Entry> Entries { get; private set; } = new List<Entry>();
+    public List<Event> Events { get; private set; } = new List<Event>();
+
+    public Match FindMatchByID(int id) {
+      foreach (Event e in Events) {
+        foreach (Draw draw in e.Draws) {
+          var match = draw.Matches.Where(m => m.ID == id).FirstOrDefault();
+          if (match != null) {
+            return match;
+          }
+        }
+      }
+      return null;
+    }
 
     public override string ToString() {
       StringBuilder sb = new StringBuilder();

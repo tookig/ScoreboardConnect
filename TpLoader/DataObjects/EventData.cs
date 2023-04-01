@@ -28,5 +28,9 @@ namespace TP.Data {
       EventType = (EventTypes)GetInt(reader, "eventtype");
       TournamentInformationID = GetInt(reader, "tournamentinformationid");
     }
+    public EventData(XmlReader reader) {
+      ID = GetInt(reader, "ID");
+      Name = GetString(reader, "NAME");
+    }
   }
 }

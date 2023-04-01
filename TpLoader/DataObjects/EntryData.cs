@@ -19,5 +19,9 @@ namespace TP.Data {
       Player1ID = GetInt(reader, "player1");
       Player2ID = GetInt(reader, "player2");
     }
+
+    public EntryData(XmlReader reader) {
+      ID = GetInt(reader, "ID");
+    }
   }
 }

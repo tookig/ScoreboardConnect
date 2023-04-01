@@ -8,17 +8,6 @@ namespace TP {
   public class Entry : TP.Data.EntryData {
     public Player Player1 { get; set; }
     public Player Player2 { get; set; }
-    public Entry(XmlReader reader) {
-      ID = GetInt(reader, "ID");
-      string name1 = GetString(reader, "NAME1");
-      string club1 = GetString(reader, "CLUB1");
-      Player1 = new Player(name1, club1);
-      string name2 = GetString(reader, "NAME2");
-      string club2 = GetString(reader, "CLUB2");
-      if (!string.IsNullOrWhiteSpace(name2)) {
-        Player2 = new Player(name2, club2);
-      }
-    }
 
     protected Entry(Data.EntryData raw, Player player1, Player player2 = null) : base(raw) {
       Player1 = player1;
@@ -32,6 +21,17 @@ namespace TP {
         throw new Exception("Entry player not found");
       }
       return new Entry(raw, player1, player2);
+    }
+
+    public static Entry Parse(XmlReader reader) {
+      string name1 = GetString(reader, "NAME1");
+      string club1 = GetString(reader, "CLUB1");
+      string name2 = GetString(reader, "NAME2");
+      string club2 = GetString(reader, "CLUB2");
+      return new Entry(new Data.EntryData(reader),
+                       new Player(name1, club1),
+                       string.IsNullOrWhiteSpace(name2) ? null : new Player(name2, club2)
+      );
     }
 
     public override string ToString() {

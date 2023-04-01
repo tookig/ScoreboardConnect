@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 
 namespace TP {
   public class Draw : TP.Data.DrawData {
-    public IEnumerable<Match> Matches { get; private set; }
-    public IEnumerable<Data.LinkData> Links { get; private set; }
+    public List<Match> Matches { get; private set; } = new List<Match>();
+    public List<Link> Links { get; private set; }
     public Draw(System.Data.IDataReader reader) : base(reader) {
       Matches = new List<Match>();
     }
@@ -15,11 +16,30 @@ namespace TP {
     public static Draw Parse(Data.DrawData raw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Link> links) {
       Draw draw = new Draw(raw);
       if (draw.DrawType == DrawTypes.RoundRobin) {
-        draw.Matches = Match.ParsePoolDraw(draw, playerMatches, entries, links);
+        draw.Matches = Match.ParsePoolDraw(draw, playerMatches, entries, links).ToList();
       } else {
-        draw.Matches = Match.TraverseCupDraw(draw, playerMatches, entries, links);
+        draw.Matches = Match.TraverseCupDraw(draw, playerMatches, entries, links).ToList();
       }
-      draw.Links = draw.Matches.Select(m => m.Links.Item1).Concat(draw.Matches.Select(m => m.Links.Item2)).Distinct().Where(link => link != null);
+      draw.Links = draw.Matches.Select(m => m.Links.Item1).Concat(draw.Matches.Select(m => m.Links.Item2)).Distinct().Where(link => link != null).ToList();
+      return draw;
+    }
+
+    public static Draw Parse(XmlReader reader, List<Entry> entries) {
+      Draw draw = new Draw(new Data.DrawData(reader));
+      List<Data.PlayerMatchData> playerMatches = new List<Data.PlayerMatchData>();
+      while (reader.ReadToFollowing("MATCH")) {
+        using (var matchXml = reader.ReadSubtree()) {
+          matchXml.Read();
+          playerMatches.Add(new Data.PlayerMatchData(matchXml) {
+            DrawID = draw.ID
+          });
+        }
+      }
+      if (draw.DrawType == DrawTypes.RoundRobin) {
+        draw.Matches.AddRange(Match.ParsePoolDrawXML(draw, playerMatches, entries));
+      } else {
+        draw.Matches.AddRange(Match.TraverseCupDrawXML(draw, playerMatches, entries));
+      }
       return draw;
     }
 

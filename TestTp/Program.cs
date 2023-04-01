@@ -10,15 +10,29 @@ using System.Linq;
 namespace TestTp {
   class Program {
     static void Main(string[] args) {
-      TP.TPListener listener = new TP.TPListener("D:\\Tmp\\lergok.tp"/* , "D:\\Tmp" */);
+      TP.TPListener listener = new TP.TPListener("D:\\Tmp\\lergok.tp", "D:\\Tmp");
       listener.ServiceStarted += (sender, e) => Console.WriteLine("Listener started");
       listener.ServiceError += (sender, e) => Console.WriteLine(e.Item2.Message);
       listener.ServiceStopped += (sender, e) => Console.WriteLine("Listener stopped");
       listener.CourtUpdate += (sender, e) => Console.WriteLine("Court '{0}' updated with match {1}", e.Item1, e.Item2);
+      // listener.TournamentUpdate += (sender, e) => PrintTournament(e);
       listener.Start();
       Console.WriteLine("Press any key to stop");
       Console.ReadKey();
       listener.Stop();
+    }
+
+    static void PrintTournament(TP.Tournament tournament) {
+      foreach (TP.Event ev in tournament.Events) {
+        Console.WriteLine("EVENT: {0}", ev.Name);
+        foreach (TP.Draw draw in ev.Draws) {
+          Console.WriteLine("DRAW: {0}", draw.Name);
+          foreach (TP.Match match in draw.Matches) {
+            Console.WriteLine("MATCH: {0}", match);
+          }
+        }
+        Console.WriteLine();
+      }
     }
 
     static async Task MainX(string[] args) {

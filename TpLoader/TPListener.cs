@@ -11,18 +11,22 @@ using System.IO.Compression;
 using System.IO;
 using System.Text;
 using System.Xml;
+using System.Diagnostics;
 
 namespace TP {
   public class TPListener {
     private CancellationTokenSource m_doCancel;
     private string m_debugFileDestinationDirectory;
-    private Dictionary<string, int> m_activeCourts = new Dictionary<string, int>();
+    private List<Data.CourtData> m_activeCourts = new List<Data.CourtData>();
     private string m_tpFile;
+    private Tournament m_tournament;
 
     public event EventHandler ServiceStarted;
     public event EventHandler ServiceStopped;
     public event EventHandler<(string, Exception)> ServiceError;
-    public event EventHandler<(string, int)> CourtUpdate;
+    public event EventHandler<(string, Match)> CourtUpdate;
+    public event EventHandler<Tournament> TournamentUpdate;
+
 
     public bool IsListening {
       get {
@@ -98,42 +102,66 @@ namespace TP {
         }
 
         XmlReaderSettings xmlSettings = new XmlReaderSettings() {
-          // Async = true
+          // Async = true,
+          IgnoreWhitespace = true
         };
 
+        List<Data.CourtData> courtsToUpdate = null;
+        Tournament tournament = null;
         using (XmlReader xmlReader = XmlReader.Create(streamXMLReaderShouldUse, xmlSettings)) {
           if (xmlReader.ReadToFollowing("ONCOURT")) {
             using (XmlReader onCourt = xmlReader.ReadSubtree()) {
-              ReadOnCourt(onCourt);
+              courtsToUpdate = ReadOnCourt(onCourt);
             }
           }
-        }
-      }
-    }
-    private void ReadOnCourt(XmlReader reader) {
-      List<string> courtsWithMatchesAssigned = new List<string>();
-      while (reader.ReadToFollowing("MATCH")) {
-        int.TryParse(reader.GetAttribute("ID"), out int tpMatchId);
-        if (tpMatchId == 0) continue;
-
-        string tpCourtName = reader.GetAttribute("CT");
-
-        lock (m_activeCourts) {
-          m_activeCourts.TryGetValue(tpCourtName, out int currentMatchId);
-          if ((currentMatchId == 0) || (currentMatchId != tpMatchId)) {
-            m_activeCourts[tpCourtName] = tpMatchId;
-            OnCourtUpdate(tpCourtName, tpMatchId);
+          if (xmlReader.ReadToFollowing("EVENTS")) {
+            tournament = Tournament.LoadFromXML(xmlReader.ReadSubtree());
           }
         }
-        courtsWithMatchesAssigned.Add(tpCourtName);
+
+        // Send update event
+        courtsToUpdate.ForEach(item => OnCourtUpdate(item.Name, tournament.FindMatchByID(item.TpMatchID)));
+      }
+    }
+    private List<Data.CourtData> ReadOnCourt(XmlReader reader) {
+      // Read from XML
+      List<string> courtsWithMatchesAssigned = new List<string>();
+      List<Data.CourtData> onCourts = new List<Data.CourtData>();
+      while (reader.ReadToFollowing("MATCH")) {
+        onCourts.Add(new Data.CourtData(reader));
       }
 
-      lock (m_activeCourts) {
-        foreach (string nowEmptyCourt in m_activeCourts.Select(kvp => kvp.Key).Except(courtsWithMatchesAssigned)) {
-          m_activeCourts.Remove(nowEmptyCourt);
-          OnCourtUpdate(nowEmptyCourt, 0);
+      // Find courts with new matches
+      List<Data.CourtData> sendUpdates = new List<Data.CourtData>();
+      foreach (Data.CourtData court in onCourts) {
+        if (court.TpMatchID == 0) continue;
+        lock (m_activeCourts) {
+          Data.CourtData activeCourt = m_activeCourts.FirstOrDefault(activeCourt => activeCourt.Name == court.Name);
+          if (activeCourt == null) {
+            // Court was previously unassigned, but now has a match
+            m_activeCourts.Add(court);
+            sendUpdates.Add(court);
+          } else if (activeCourt?.TpMatchID != court.TpMatchID) {
+            // Court has got a new match
+            activeCourt.TpMatchID = court.TpMatchID;
+            sendUpdates.Add(court);
+          }
         }
+        courtsWithMatchesAssigned.Add(court.Name);
       }
+      
+      // Find previously assigned but now empty courts
+      lock (m_activeCourts) {
+        sendUpdates.AddRange(
+          m_activeCourts.FindAll(activeCourt => !courtsWithMatchesAssigned.Contains(activeCourt.Name)).Select(activeCourt => {
+            activeCourt.TpMatchID = 0;
+            return activeCourt;
+          })
+        );
+        m_activeCourts.RemoveAll(activeCourt => !courtsWithMatchesAssigned.Contains(activeCourt.Name));
+      }
+
+      return sendUpdates;
     }
 
     private async Task SetInitialState() {
@@ -144,14 +172,24 @@ namespace TP {
       try {
         tpFile = new TPFile(m_tpFile);
         var courts = await tpFile.LoadCourts();
+
+        Stopwatch sw = Stopwatch.StartNew();
+        Tournament t = await Tournament.LoadFromTP(tpFile);
+        m_tournament = t;
+        Console.WriteLine("Tournament loaded in {0} ms.", sw.ElapsedMilliseconds);
+        sw.Stop();
+
         lock (m_activeCourts) {
           foreach (Data.CourtData court in courts) {
             if (court.TpMatchID > 0) {
-              m_activeCourts.Add(court.Name, court.TpMatchID);
+              m_activeCourts.Add(court);
             }
-            OnCourtUpdate(court.Name, court.TpMatchID);
+            Match match = m_tournament.FindMatchByID(court.TpMatchID);
+            OnCourtUpdate(court.Name, match);
           }
         }
+
+
       } catch (Exception e) {
         OnServiceError(e, "Could not load initial state for courts from TP file.");
       } finally {
@@ -170,8 +208,12 @@ namespace TP {
       ServiceStopped?.Invoke(this, EventArgs.Empty);
     }
 
-    private void OnCourtUpdate(string tpCourtName, int tpMatchId) {
-      CourtUpdate?.Invoke(this, (tpCourtName, tpMatchId));
+    private void OnCourtUpdate(string tpCourtName, Match tpMatch) {
+      CourtUpdate?.Invoke(this, (tpCourtName, tpMatch));
+    }
+
+    private void OnTournamentUpdate(Tournament tournament) {
+      TournamentUpdate?.Invoke(this, tournament);
     }
   }
 }

@@ -10,6 +10,7 @@ namespace TP.Data {
     public enum Winners { None = 0, Entry1 = 1, Entry2 = 2 }
     
     public int ID { get; set; }
+    public int EventID { get; set; }
     public int DrawID { get; set; }
     public int Planning { get; set; }
     public int EntryID { get; set; }
@@ -38,6 +39,7 @@ namespace TP.Data {
     public PlayerMatchData() { }
     public PlayerMatchData(PlayerMatchData cpy) {
       ID = cpy.ID;
+      EventID = cpy.EventID;
       DrawID = cpy.DrawID;
       Planning = cpy.Planning;
       EntryID = cpy.EntryID;
@@ -66,6 +68,7 @@ namespace TP.Data {
     public PlayerMatchData(IDataReader reader) {
       ID = GetInt(reader, "id");
       DrawID = GetInt(reader, "draw");
+      EventID = GetInt(reader, "event");
       Planning = GetInt(reader, "planning");
       EntryID = GetInt(reader, "entry");
       Winner = (Winners)GetInt(reader, "winner");
@@ -88,6 +91,32 @@ namespace TP.Data {
       MatchNr = GetInt(reader, "id");
       WalkOver = GetBool(reader, "walkover");
       Retired = GetBool(reader, "retired");
+    }
+
+    public PlayerMatchData(XmlReader reader) {
+      ID = GetInt(reader, "ID");
+      EventID = GetInt(reader, "EID");
+      Planning = GetInt(reader, "PLANNING");
+      EntryID = GetInt(reader, "ENTRY");
+      MatchNr = GetInt(reader, "MATCHNR");
+      PlanDate = GetDateTime(reader, "PLAYTIME");
+      List<(int, int)> sets = new List<(int, int)>();
+      if (reader.ReadToFollowing("SETS")) {
+        using (XmlReader s = reader.ReadSubtree()) {
+          while (s.ReadToFollowing("SET")) {
+            sets.Add((GetInt(s, "S1"), GetInt(s, "S2")));
+          }
+        }
+      }
+      for (int i = 1; i <= 5; i++) {
+        if (sets.Count >= i) {
+          GetType().GetProperty(string.Format("Team1Set{0}", i)).SetValue(this, sets[i - 1].Item1);
+          GetType().GetProperty(string.Format("Team2Set{0}", i)).SetValue(this, sets[i - 1].Item2);
+        } else {
+          GetType().GetProperty(string.Format("Team1Set{0}", i)).SetValue(this, 0);
+          GetType().GetProperty(string.Format("Team2Set{0}", i)).SetValue(this, 0);
+        }
+      }
     }
   }
 }

@@ -28,5 +28,13 @@ namespace TP.Data {
       EventID = GetInt(reader, "event");
       DrawEndSize = GetInt(reader, "drawendsize");
     }
+
+    public DrawData(XmlReader reader) {
+      ID = GetInt(reader, "ID");
+      Name = GetString(reader, "DRAWNAME");
+      DrawType = (DrawTypes)GetInt(reader, "DRAWTYPE");
+      EventID = GetInt(reader, "EVENT");
+      DrawEndSize = GetInt(reader, "DRAWENDSIZE");
+    }
   }
 }

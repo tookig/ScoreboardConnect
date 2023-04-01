@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml;
+
 
 namespace TP.Data {
   public class CourtData : TpDataObject {
@@ -21,6 +23,11 @@ namespace TP.Data {
       Name = GetString(reader, "name");
       LocationID = GetInt(reader, "location");
       TpMatchID = GetInt(reader, "playermatch");
+    }
+
+    public CourtData(XmlReader reader) {
+      Name = GetString(reader, "CT");
+      TpMatchID = GetInt(reader, "ID");
     }
   }
 }
