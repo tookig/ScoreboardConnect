@@ -19,7 +19,6 @@ namespace TP {
     private string m_debugFileDestinationDirectory;
     private List<Data.CourtData> m_activeCourts = new List<Data.CourtData>();
     private string m_tpFile;
-    private Tournament m_tournament;
 
     public event EventHandler ServiceStarted;
     public event EventHandler ServiceStopped;
@@ -173,18 +172,14 @@ namespace TP {
         tpFile = new TPFile(m_tpFile);
         var courts = await tpFile.LoadCourts();
 
-        Stopwatch sw = Stopwatch.StartNew();
         Tournament t = await Tournament.LoadFromTP(tpFile);
-        m_tournament = t;
-        Console.WriteLine("Tournament loaded in {0} ms.", sw.ElapsedMilliseconds);
-        sw.Stop();
 
         lock (m_activeCourts) {
           foreach (Data.CourtData court in courts) {
             if (court.TpMatchID > 0) {
               m_activeCourts.Add(court);
             }
-            Match match = m_tournament.FindMatchByID(court.TpMatchID);
+            Match match = t.FindMatchByID(court.TpMatchID);
             OnCourtUpdate(court.Name, match);
           }
         }

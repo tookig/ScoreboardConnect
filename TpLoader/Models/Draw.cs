@@ -7,10 +7,7 @@ namespace TP {
   public class Draw : TP.Data.DrawData {
     public List<Match> Matches { get; private set; } = new List<Match>();
     public List<Link> Links { get; private set; }
-    public Draw(System.Data.IDataReader reader) : base(reader) {
-      Matches = new List<Match>();
-    }
-    public Draw(Data.DrawData raw) : base(raw) {
+    protected Draw(Data.DrawData raw) : base(raw) {
       Matches = new List<Match>();
     }
     public static Draw Parse(Data.DrawData raw, IEnumerable<Data.PlayerMatchData> playerMatches, IEnumerable<Entry> entries, IEnumerable<Link> links) {

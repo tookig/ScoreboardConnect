@@ -13,11 +13,13 @@ namespace TP {
     public class ExportClassItem {
       public ScoreboardLiveApi.TournamentClass SBClass { get; }
       public Draw TPDraw { get; }
+      public Event TPEvent { get; }
       public List<ExportClassItem> SubClasses { get; } = new List<ExportClassItem>();
       public List<ExportMatchItem> Matches { get; } = new List<ExportMatchItem>();
-      public ExportClassItem(ScoreboardLiveApi.TournamentClass mainClass, Draw mainDraw, IEnumerable<ExportClassItem> subClasses = null, IEnumerable<ExportMatchItem> matches = null) {
+      public ExportClassItem(ScoreboardLiveApi.TournamentClass mainClass, Event tpEvent, Draw mainDraw, IEnumerable<ExportClassItem> subClasses = null, IEnumerable<ExportMatchItem> matches = null) {
         SBClass = mainClass;
         TPDraw = mainDraw;
+        TPEvent = tpEvent;
         if (subClasses != null) {
           SubClasses.AddRange(subClasses);
         }
@@ -59,7 +61,7 @@ namespace TP {
         var rootMatches = draw.Matches.Where(match => match.WN == 0).OrderBy(match => match.Planning);
         int i = 1;
         foreach (var rootMatch in rootMatches) {
-          var classItem = new ExportClassItem(CreateClass(ev, draw), draw);
+          var classItem = new ExportClassItem(CreateClass(ev, draw), ev, draw);
           classItem.SBClass.Description += string.Format(" {0}", i++);
           classItem.Matches.AddRange(ConvertDrawMatches(draw, classItem.SBClass, rootMatch));
           classItem.SBClass.Size = CalculateClassSize(classItem.Matches);
@@ -70,7 +72,7 @@ namespace TP {
         var sbClass = CreateClass(ev, draw);
         var matches = ConvertDrawMatches(draw, sbClass);
         sbClass.Size = CalculateClassSize(matches);
-        classItems.Add(new ExportClassItem(sbClass, draw, matches: matches));
+        classItems.Add(new ExportClassItem(sbClass, ev, draw, matches: matches));
       }
       return classItems;
     }
@@ -264,8 +266,8 @@ namespace TP {
       };
     }
 
-    public static string CreateMatchTag(Match match, ScoreboardLiveApi.Tournament tournament) {
-      string source = string.Format("{0} ?? {1}", match.ID, tournament.TournamentID);
+    public static string CreateMatchTag(Match match, Event e, Draw draw) {
+      string source = string.Format("{0} ?? {1} ?? {2} ?? {3}", match.ID, e.TournamentInformation?.TournamentName, e.Name, draw.Name);
       string hash;
       using (SHA256 sha = SHA256.Create()) {
         hash = ScoreboardLiveApi.ApiHelper.ByteArrayToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(source)));
