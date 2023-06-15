@@ -38,11 +38,9 @@ namespace TP {
     public static Tournament LoadFromXML(XmlReader reader) {
       List<Event> events = new List<Event>();
       
-      // while (await reader.ReadAsync()) {
-        while (reader.ReadToFollowing("EVENT")) {
-          events.Add(Event.Parse(reader.ReadSubtree()));
-        }
-      //}
+      while (reader.ReadToFollowing("EVENT")) {
+        events.Add(Event.Parse(reader.ReadSubtree()));
+      }
 
       Tournament tournament = new Tournament() {
         Events = events

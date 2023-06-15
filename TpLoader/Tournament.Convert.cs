@@ -267,7 +267,7 @@ namespace TP {
     }
 
     public static string CreateMatchTag(Match match, Event e, Draw draw) {
-      string source = string.Format("{0} ?? {1} ?? {2} ?? {3}", match.ID, e.TournamentInformation?.TournamentName, e.Name, draw.Name);
+      string source = string.Format("{0} ?? {1}.{2} ?? {3}.{4}", match.ID, e.ID, e.Name, draw.ID, draw.Name);
       string hash;
       using (SHA256 sha = SHA256.Create()) {
         hash = ScoreboardLiveApi.ApiHelper.ByteArrayToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(source)));

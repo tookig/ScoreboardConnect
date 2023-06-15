@@ -28,7 +28,8 @@ namespace TP {
         using (var matchXml = reader.ReadSubtree()) {
           matchXml.Read();
           playerMatches.Add(new Data.PlayerMatchData(matchXml) {
-            DrawID = draw.ID
+            DrawID = draw.ID,
+            EventID = draw.EventID
           });
         }
       }

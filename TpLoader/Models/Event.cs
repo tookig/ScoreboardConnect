@@ -19,6 +19,9 @@ namespace TP {
     }
 
     public static Event Parse(XmlReader reader) {
+      reader.Read();
+      Event newEvent = new Event(new Data.EventData(reader));
+
       List<Entry> entries = new List<Entry>();
       reader.ReadToFollowing("ENTRIES");
       using (var entriesXml = reader.ReadSubtree()) {
@@ -38,10 +41,7 @@ namespace TP {
           }
         }
       }
-
-      Event newEvent = new Event(new Data.EventData(reader)) {
-        Draws = draws
-      };
+      newEvent.Draws = draws;
 
 
       return newEvent;

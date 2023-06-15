@@ -15,6 +15,13 @@ using System.Diagnostics;
 
 namespace TP {
   public class TPListener {
+    public class TPCourtUpdateEventArgs {
+      public string CourtName { get; set; }
+      public Match Match { get; set; }
+      public Event Event { get; set; }
+      public Draw Draw { get; set; }
+    } 
+
     private CancellationTokenSource m_doCancel;
     private string m_debugFileDestinationDirectory;
     private List<Data.CourtData> m_activeCourts = new List<Data.CourtData>();
@@ -23,7 +30,7 @@ namespace TP {
     public event EventHandler ServiceStarted;
     public event EventHandler ServiceStopped;
     public event EventHandler<(string, Exception)> ServiceError;
-    public event EventHandler<(string, Match)> CourtUpdate;
+    public event EventHandler<TPCourtUpdateEventArgs> CourtUpdate;
     public event EventHandler<Tournament> TournamentUpdate;
 
 
@@ -119,7 +126,7 @@ namespace TP {
         }
 
         // Send update event
-        courtsToUpdate.ForEach(item => OnCourtUpdate(item.Name, tournament.FindMatchByID(item.TpMatchID)));
+        courtsToUpdate.ForEach(item => OnCourtUpdate(item.Name, tournament.FindMatchByID(item.TpMatchID), tournament));
       }
     }
     private List<Data.CourtData> ReadOnCourt(XmlReader reader) {
@@ -180,7 +187,7 @@ namespace TP {
               m_activeCourts.Add(court);
             }
             Match match = t.FindMatchByID(court.TpMatchID);
-            OnCourtUpdate(court.Name, match);
+            OnCourtUpdate(court.Name, match, t);
           }
         }
 
@@ -203,8 +210,20 @@ namespace TP {
       ServiceStopped?.Invoke(this, EventArgs.Empty);
     }
 
-    private void OnCourtUpdate(string tpCourtName, Match tpMatch) {
-      CourtUpdate?.Invoke(this, (tpCourtName, tpMatch));
+    private void OnCourtUpdate(string tpCourtName, Match tpMatch, Tournament tournament) {
+      Event tpEvent = null;
+      Draw tpDraw = null;
+      if (tpMatch != null) {
+        tpEvent = tournament.FindEventByID(tpMatch.EventID);
+        tpDraw = tournament.FindDrawByID(tpMatch.DrawID);
+      }
+
+      CourtUpdate?.Invoke(this, new TPCourtUpdateEventArgs() {
+        CourtName = tpCourtName,
+        Match = tpMatch,
+        Event = tpEvent,
+        Draw = tpDraw
+      });
     }
 
     private void OnTournamentUpdate(Tournament tournament) {

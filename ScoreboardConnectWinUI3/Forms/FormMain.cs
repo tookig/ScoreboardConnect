@@ -42,6 +42,7 @@ namespace ScoreboardConnectWinUI3 {
       buttonImportTP.Visible = false;
       buttonTPCourtListen.Visible = false;
       panelContent.Hide();
+      buttonRetryConnection.Visible = false;
     }
 
     private async Task SetStatusConnected(ScoreboardLiveApi.Device device) {
@@ -65,6 +66,7 @@ namespace ScoreboardConnectWinUI3 {
       buttonImportTP.Visible = true;
       buttonTPCourtListen.Visible = true;
       panelContent.Hide();
+      buttonRetryConnection.Visible = false;
     }
 
     private async Task Connect() {
@@ -89,7 +91,8 @@ namespace ScoreboardConnectWinUI3 {
         }
       } catch (Exception e) {
         SetStatusDisconnected();
-        MessageBoxError(string.Format("Could not verify activation code:{1}{0}", e.Message, Environment.NewLine));
+        MessageBoxError(string.Format("Could not verify activation code, make sure settings{1}are correct.{1}{1}{0}", e.Message, Environment.NewLine));
+        buttonRetryConnection.Visible = true;
       }
     }
 
@@ -137,14 +140,34 @@ namespace ScoreboardConnectWinUI3 {
       buttonImportTP.Visible = false;
       buttonTPCourtListen.Visible = false;
       panelContent.Controls.Clear();
-      ControlCourtListen ccl = new ControlCourtListen(m_api, m_device, m_tournament);
-      ccl.CourtAssignmentChanged += Ccl_CourtAssignmentChanged;
-      if (m_settings.CourtSetup.TryGetValue(m_device.UnitID, out var courtSetup)) {
-        ccl.SetDefaultSetup(courtSetup);
-      }
-      panelContent.Controls.Add(ccl);
-      ccl.Dock = DockStyle.Fill;
+
+      CourtListenControl clc = new CourtListenControl();
+      clc.Init(new ScoreboardSetup() {
+        Helper = m_api,
+        Device = m_device,
+        Tournament = m_tournament
+      }, m_settings);
+      clc.Cancelled += Listen_Cancelled;
+      clc.CourtAssignmentChanged += Clc_CourtAssignmentChanged;
+      
+      panelContent.Controls.Add(clc);
+      clc.Dock = DockStyle.Fill;
       panelContent.Show();
+    }
+
+    private void Clc_CourtAssignmentChanged(object sender, (int sbCourtID, string tpCourtName) e) {
+      if (!m_settings.CourtSetup.ContainsKey(m_settings.UnitID)) {
+        m_settings.CourtSetup[m_settings.UnitID] = new Dictionary<int, string>();
+      }
+      m_settings.CourtSetup[m_settings.UnitID][e.sbCourtID] = e.tpCourtName;
+      m_settings.Save(settingsFile);
+    }
+
+    private void Listen_Cancelled(object sender, EventArgs e) {
+      buttonImportTP.Visible = true;
+      buttonTPCourtListen.Visible = true;
+      panelContent.Controls.Clear();
+      panelContent.Hide();
     }
 
     private void buttonImportTP_Click(object sender, EventArgs e) {
@@ -164,12 +187,8 @@ namespace ScoreboardConnectWinUI3 {
       panelContent.Hide();
     }
 
-    private void Ccl_CourtAssignmentChanged(object sender, (int sbCourtID, string tpCourtName) e) {
-      if (!m_settings.CourtSetup.ContainsKey(m_settings.UnitID)) {
-        m_settings.CourtSetup[m_settings.UnitID] = new Dictionary<int, string>();
-      }
-      m_settings.CourtSetup[m_settings.UnitID][e.sbCourtID] = e.tpCourtName;
-      m_settings.Save(settingsFile);
+    private async void buttonRetryConnection_Click(object sender, EventArgs e) {
+      await Connect();
     }
   }
 }

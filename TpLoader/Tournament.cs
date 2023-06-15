@@ -24,6 +24,20 @@ namespace TP {
       return null;
     }
 
+    public Event FindEventByID(int id) {
+      return Events.Where(e => e.ID == id).FirstOrDefault();
+    }
+
+    public Draw FindDrawByID(int id) {
+      foreach (Event e in Events) {
+        var draw = e.Draws.Where(d => d.ID == id).FirstOrDefault();
+        if (draw != null) {
+          return draw;
+        }
+      }
+      return null;
+    }
+
     public override string ToString() {
       StringBuilder sb = new StringBuilder();
       sb.AppendLine("-- TOURNAMENT --");

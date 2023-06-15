@@ -52,15 +52,6 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private async Task LoadCourts() {
-      try {
-        PopulateCourts(await m_helper.GetCourts(m_device));
-      } catch {
-        ShowError("Could not get court info from server");
-      }
-    }
-
-    private void PopulateCourts(List<ScoreboardLiveApi.Court> courts) {
-      listCourts.PopulateScoreboardCourts(courts);
     }
 
     private async Task<bool> LoadTP() {
@@ -100,8 +91,8 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void PopulateTP() {
-      listCourts.PopulateTPCourts(m_tpCourts);
-      listCourts.Enabled = true;
+      // listCourts.PopulateTPCourts(m_tpCourts);
+      // listCourts.Enabled = true;
       UpdateDefaultSetup();
     }
 

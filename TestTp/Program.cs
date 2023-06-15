@@ -14,7 +14,7 @@ namespace TestTp {
       listener.ServiceStarted += (sender, e) => Console.WriteLine("Listener started");
       listener.ServiceError += (sender, e) => Console.WriteLine(e.Item2.Message);
       listener.ServiceStopped += (sender, e) => Console.WriteLine("Listener stopped");
-      listener.CourtUpdate += (sender, e) => Console.WriteLine("Court '{0}' updated with match {1}", e.Item1, e.Item2);
+      listener.CourtUpdate += (sender, e) => Console.WriteLine("Court '{0}' updated with match {1}", e.CourtName, e.Match);
       // listener.TournamentUpdate += (sender, e) => PrintTournament(e);
       listener.Start();
       Console.WriteLine("Press any key to stop");
