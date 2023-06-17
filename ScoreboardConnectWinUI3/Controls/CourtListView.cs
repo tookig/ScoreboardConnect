@@ -76,6 +76,14 @@ namespace ScoreboardConnectWinUI3 {
       return scoreboardCourtsFound;
     }
 
+    public Dictionary<ScoreboardLiveApi.Court, TP.Court> GetSnapshot() {
+      var snapshot = new Dictionary<ScoreboardLiveApi.Court, TP.Court>();
+      foreach (ListViewItem item in Items) {
+        snapshot.Add((ScoreboardLiveApi.Court)item.Tag, item.SubItems[1].Tag as TP.Court);
+      }
+      return snapshot;
+    }
+
     protected void InitColumns() {
       Columns.Clear();
       Columns.Add(new ColumnHeader() {

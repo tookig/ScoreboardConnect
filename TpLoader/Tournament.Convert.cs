@@ -89,7 +89,7 @@ namespace TP {
       if (draw.DrawType == Data.DrawData.DrawTypes.RoundRobin) {
         return draw.Matches.Select(tpMatch => {
           return new ExportMatchItem() {
-            SB = ConvertMatch(tpMatch, sbClass),
+            SB = ConvertMatch(tpMatch, sbClass.Category),
             TP = tpMatch
           };
         });
@@ -113,7 +113,7 @@ namespace TP {
     }
 
     private static void ParseCupMatch(TP.Match tpMatch, ScoreboardLiveApi.TournamentClass sbClass, List<ExportMatchItem> items, int column=1, int startRow=1) {
-      ScoreboardLiveApi.MatchExtended sbMatch = ConvertMatch(tpMatch, sbClass);
+      ScoreboardLiveApi.MatchExtended sbMatch = ConvertMatch(tpMatch, sbClass.Category);
       sbMatch.Place = PlaceMap.GetPlace(column * 1000 + startRow);
 
       items.Add(new ExportMatchItem() {
@@ -129,12 +129,12 @@ namespace TP {
       }
     }
 
-    private static ScoreboardLiveApi.MatchExtended ConvertMatch(TP.Match tpMatch, ScoreboardLiveApi.TournamentClass sbClass) {
+    public static ScoreboardLiveApi.MatchExtended ConvertMatch(TP.Match tpMatch, string category) {
       var entryTextsTeam1 = tpMatch.Entries.Item1 != null ? ConvertEntry(tpMatch.Entries.Item1) : ("", "", "", "");
       var entryTextsTeam2 = tpMatch.Entries.Item2 != null ? ConvertEntry(tpMatch.Entries.Item2) : ("", "", "", "");
 
       ScoreboardLiveApi.MatchExtended sbMatch = new ScoreboardLiveApi.MatchExtended() {
-        Category = sbClass.Category,
+        Category = category,
         StartTime = tpMatch.PlanDate,
         TournamentMatchNumber = tpMatch.MatchNr,
         BallCount = tpMatch.Shuttles,
@@ -170,7 +170,7 @@ namespace TP {
       return sbMatch;
     }
 
-    private static (string, string, string, string) ConvertEntry(TP.Entry entry) {
+    public static (string, string, string, string) ConvertEntry(TP.Entry entry) {
       return (
         entry.Player1 == null ? "" : string.Format(NAMEFORMAT, entry.Player1.FirstName, entry.Player1.LastName),
         entry.Player1 == null ? "" : (entry.Player1.Club?.Name ?? ""),
@@ -179,7 +179,7 @@ namespace TP {
       );
     }
 
-    protected static string CreateMatchCategoryString(Event ev) {
+    public static string CreateMatchCategoryString(Event ev) {
       return ev.Gender switch {
         Event.Genders.Men => ev.EventType == Event.EventTypes.Singles ? "ms" : "md",
         Event.Genders.Boys => ev.EventType == Event.EventTypes.Singles ? "ms" : "md",
@@ -266,8 +266,8 @@ namespace TP {
       };
     }
 
-    public static string CreateMatchTag(Match match, Event e, Draw draw) {
-      string source = string.Format("{0} ?? {1}.{2} ?? {3}.{4}", match.ID, e.ID, e.Name, draw.ID, draw.Name);
+    public static string CreateMatchTag(ScoreboardLiveApi.Tournament sbTournament, Match match, Event e, Draw draw) {
+      string source = string.Format("{0} ?? {1}.{2} ?? {3}.{4} ?? {5}", match.ID, e.ID, e.Name, draw.ID, draw.Name, sbTournament.TournamentID);
       string hash;
       using (SHA256 sha = SHA256.Create()) {
         hash = ScoreboardLiveApi.ApiHelper.ByteArrayToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(source)));

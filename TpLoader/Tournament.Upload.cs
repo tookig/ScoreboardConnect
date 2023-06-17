@@ -98,7 +98,7 @@ namespace TP {
       // Update match IDs and upload matches 
       foreach (ExportMatchItem emi in eci.Matches) {
         emi.SB.MatchID = cupMatches.FirstOrDefault(sm => sm.Place == emi.SB.Place)?.MatchID ?? 0;
-        emi.SB.Tag = CreateMatchTag(emi.TP, eci.TPEvent, eci.TPDraw);
+        emi.SB.Tag = CreateMatchTag(tournament, emi.TP, eci.TPEvent, eci.TPDraw);
         await apiHelper.UpdateMatch(device, emi.SB);
         if (ExtendedMatchNeedsScoreUpdate(emi.SB)) {
           await apiHelper.SetScore(device, emi.SB);
@@ -116,7 +116,7 @@ namespace TP {
       CheckIfToCancel();
       // Upload matches
       foreach (ExportMatchItem emi in eci.Matches) {
-        emi.SB.Tag = CreateMatchTag(emi.TP, eci.TPEvent, eci.TPDraw);
+        emi.SB.Tag = CreateMatchTag(tournament, emi.TP, eci.TPEvent, eci.TPDraw);
         emi.SB.MatchID = (await apiHelper.CreateMatch(device, tournament, eci.SBClass, emi.SB)).MatchID;
         if (ExtendedMatchNeedsScoreUpdate(emi.SB)) {
           await apiHelper.SetScore(device, emi.SB);

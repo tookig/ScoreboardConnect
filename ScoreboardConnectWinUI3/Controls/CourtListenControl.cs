@@ -7,10 +7,10 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading.Tasks;
 using System.Linq;
-
+using ScoreboardLiveApi;
 
 namespace ScoreboardConnectWinUI3 {
-  partial class CourtListenControl : UserControl {
+  partial class CourtListenControl : UserControl, TP.SBUploader.ICourtMapper {
     private ScoreboardSetup m_serverSetup;
     private Settings m_settings;
     private TabPage m_forceTab;
@@ -18,11 +18,14 @@ namespace ScoreboardConnectWinUI3 {
     private List<TP.Court> m_tpCourts = new List<TP.Court>();
     private List<ScoreboardLiveApi.Court> m_sbCourts = new List<ScoreboardLiveApi.Court>();
 
-    private TP.TPListener m_listener;
+    private TP.LinkService m_listener;
     private object m_listenerLock = new object();
 
     private bool m_isCancelled = false;
     private object m_isCancelledLock = new object();
+
+    private Dictionary<ScoreboardLiveApi.Court, TP.Court> m_currentCourtSetup;
+    private object m_currentCourtSetupLock = new object();
 
     public event EventHandler Cancelled;
     public event EventHandler<(int, string)> CourtAssignmentChanged;
@@ -52,7 +55,7 @@ namespace ScoreboardConnectWinUI3 {
       } else if (tabPages.SelectedTab == tabPageSetupCourts) {
         UpdateDefaultSetup();
       } else if (tabPages.SelectedTab == tabPageListening) {
-        if (!m_listener.IsListening) {
+        if (!m_listener.IsStarted) {
           m_listener.Start();
         }
       }
@@ -114,44 +117,52 @@ namespace ScoreboardConnectWinUI3 {
           m_listener.ServiceStarted -= listener_ServiceStarted;
           m_listener.ServiceStopped -= listener_ServiceStopped;
           m_listener.ServiceError -= listener_ServiceError;
+          m_listener.ServiceWarning -= listener_ServiceWarning;
           m_listener.CourtUpdate -= listener_CourtUpdate;
           m_listener.Stop();
         }
-        m_listener = new TP.TPListener(tpFileName);
+        m_listener = new TP.LinkService(tpFileName, m_serverSetup.Helper, m_serverSetup.Device, m_serverSetup.Tournament, this);
         m_listener.ServiceStarted += listener_ServiceStarted;
         m_listener.ServiceStopped += listener_ServiceStopped;
         m_listener.ServiceError += listener_ServiceError;
+        m_listener.ServiceWarning += listener_ServiceWarning;
         m_listener.CourtUpdate += listener_CourtUpdate;
       }
     }
 
-    private void listener_CourtUpdate(object sender, TP.TPListener.TPCourtUpdateEventArgs args) {
+    private void CreateCurrentCourtSetupSnapshot() {
+      lock (m_currentCourtSetupLock) {
+        m_currentCourtSetup = courtList.GetSnapshot();
+      }
+    }
+
+    private void listener_CourtUpdate(object sender, (ScoreboardLiveApi.Court, ScoreboardLiveApi.Match) e) {
       Invoke((MethodInvoker)delegate {
-        // var updateControl = new ListenerErrorControl("Test test", new Exception("A non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense errorA non-sense error"));
-        // updateControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-        Control updateControl = null;
-        if (args.Match != null) {
-          updateControl = new ListenerUpdateControl(args.CourtName, args.Match);
-        } else {
-          updateControl = new ListenerEmptyCourt(args.CourtName);
-        }
-        // updateControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-        updateControl.Width = flowListener.Width - SystemInformation.VerticalScrollBarWidth*2;
-        flowListener.Controls.Add(updateControl);
+        string header = e.Item1?.Name ?? "Unknown court";
+        string message = e.Item2 == null ?
+                         "Court cleared" :
+                         string.Format("Match {0} assigned to court", e.Item2.MatchID);
+        flowListener.Controls.Add(new ListenerMessageControl(header, message));
       });
     }
 
     private void listener_ServiceError(object sender, (string, Exception) e) {
       Invoke((MethodInvoker)delegate {
-        if (m_listener.IsListening) {
+        if (m_listener.IsStarted) {
           // Add error to flow
-          flowListener.Controls.Add(new ListenerErrorControl(e.Item1, e.Item2));
+          flowListener.Controls.Add(new ListenerMessageControl(e.Item1, e.Item2.Message, ListenerMessageControl.MessageType.Error));
         } else {
           // Show error box
           ShowError(e.Item1, e.Item2);
           m_forceTab = tabPageSetupCourts;
           tabPages.SelectedTab = tabPageSetupCourts;
         }
+      });
+    }
+
+    private void listener_ServiceWarning(object sender, string e) {
+      Invoke((MethodInvoker)delegate {
+        flowListener.Controls.Add(new ListenerMessageControl("Warning", e, ListenerMessageControl.MessageType.Warning));
       });
     }
 
@@ -184,8 +195,6 @@ namespace ScoreboardConnectWinUI3 {
       }
 
       MessageBox.Show(this, sb.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-      // labelStatus.Text = errorText;
-      // labelStatus.ForeColor = Color.Red;
     }
 
     private void doCancel() {
@@ -231,12 +240,34 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void buttonStartListening_Click(object sender, EventArgs e) {
+      CreateCurrentCourtSetupSnapshot();
       m_forceTab = tabPageListening;
       tabPages.SelectedTab = tabPageListening;
     }
 
     private void flowListener_ControlAdded(object sender, ControlEventArgs e) {
+      e.Control.Width = flowListener.Width - SystemInformation.VerticalScrollBarWidth * 2;
       flowListener.ScrollControlIntoView(e.Control);
+    }
+
+    delegate Court CourtInvoker();
+    public Task<Court> MapTPCourtToSBCourt(string tpCourtName) {
+      Court result = null;
+      lock (m_currentCourtSetupLock) {
+        foreach (var kvp in m_currentCourtSetup) {
+          if (kvp.Value.Name == tpCourtName) {
+            result = kvp.Key;
+            break;
+          }
+        }
+      }
+      return Task<Court>.Factory.StartNew(() => result);
+
+      /*var sbCourtObject = Invoke((CourtInvoker)delegate {
+        return courtList.GetScoreboardCourtsAssignedToTPCourt(tpCourtName).FirstOrDefault();
+      }) as Court; 
+      return new Task<Court>(() => sbCourtObject);
+      */
     }
   }
 }
