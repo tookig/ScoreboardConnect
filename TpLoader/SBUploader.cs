@@ -51,6 +51,9 @@ namespace TP {
       if (sbMatch == null) {
         // No match on the server; create a new on-the-fly match.
         sbMatch = await CreateOnTheFlyMatch(tpEvent, tpMatch, tag);
+      } else if (CheckPlayerNames(sbMatch, tpMatch)) {
+        // Update server player names
+        sbMatch = await UpdateMatchPlayerNames(sbMatch);
       }
       // Assign match to court
       await UpdateCourtWithMatch(sbCourt, sbMatch);
@@ -70,11 +73,61 @@ namespace TP {
 
     protected async Task<ScoreboardLiveApi.Match> CreateOnTheFlyMatch(Event tpEvent, Match tpMatch, string tag) {
       var localSBMatch = Tournament.ConvertMatch(tpMatch, Tournament.CreateMatchCategoryString(tpEvent));
+      localSBMatch.Tag = tag;
       return await m_helper.CreateMatch(m_device, m_tournament, null, localSBMatch);
     }
 
     protected async Task UpdateCourtWithMatch(ScoreboardLiveApi.Court sbCourt, ScoreboardLiveApi.Match sbMatch) {
       await m_helper.AssignMatchToCourt(m_device, sbMatch, sbCourt);
+    }
+
+    protected bool CheckPlayerNames(ScoreboardLiveApi.Match serverMatch, TP.Match localMatch) {
+      // Get fresh names
+      var (team1player1name, team1player1team, team1player2name, team1player2team) = Tournament.ConvertEntry(localMatch.Entries.Item1);
+      var (team2player1name, team2player1team, team2player2name, team2player2team) = Tournament.ConvertEntry(localMatch.Entries.Item2);
+      // Don't update if names are incomplete
+      if (string.IsNullOrWhiteSpace(team1player1name) || string.IsNullOrWhiteSpace(team2player1name)) {
+        return false;
+      }
+      // Check all names
+      bool hasChanged = false;
+      if (serverMatch.Team1Player1Name != team1player1name) {
+        serverMatch.Team1Player1Name = team1player1name;
+        serverMatch.Team1Player1Team = team1player1team;
+        hasChanged = true;
+      }
+      if (serverMatch.Team2Player1Name != team2player1name) {
+        serverMatch.Team2Player1Name = team2player1name;
+        serverMatch.Team2Player1Team = team2player1team;
+        hasChanged = true;
+      }
+      if (!serverMatch.Category.ToLower().EndsWith("s")) {
+        if (serverMatch.Team1Player2Name != team1player2name) {
+          serverMatch.Team1Player2Name = team1player2name;
+          serverMatch.Team1Player2Team = team1player2team;
+          hasChanged = true;
+        }
+        if (serverMatch.Team2Player2Name != team2player2name) {
+          serverMatch.Team2Player2Name = team2player2name;
+          serverMatch.Team2Player2Team = team2player2team;
+          hasChanged = true;
+        }
+      }
+      return hasChanged;
+    }
+
+    protected async Task<ScoreboardLiveApi.Match> UpdateMatchPlayerNames(ScoreboardLiveApi.Match sbMatch) {
+      ScoreboardLiveApi.Match updatedMatch = sbMatch;
+      int loopStep = sbMatch.Category.ToLower().EndsWith("s") ? 2 : 1;
+      for (int i = 0; i <= 3; i += loopStep) {
+        var playerStrings = sbMatch.GetPlayerAtIndex(i);
+        if (string.IsNullOrEmpty(playerStrings.Item1)) {
+          updatedMatch = await m_helper.DetachPlayer(m_device, sbMatch.MatchID, i);
+        } else {
+          updatedMatch = await m_helper.AttachPlayer(m_device, sbMatch.MatchID, i, playerStrings);
+        }
+      }
+      return updatedMatch;
     }
   }
 }
