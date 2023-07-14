@@ -44,6 +44,8 @@ namespace TP {
         throw new Exception("Upload in progress");
       }
 
+      m_doCancel = new CancellationTokenSource();
+
       OnBeginUpload("Loading data...");
 
       var convertedData = await Task.Run(() => ExportClasses(ev => eventsToUpload.Any(ev2 => ev.ID == ev2.ID)));
@@ -62,7 +64,7 @@ namespace TP {
       foreach (ScoreboardLiveApi.Link link in links) {
         await UploadLink(link, apiHelper, device, tournament);
       }
-
+      
       m_doCancel = null;
       OnEndUpload();
     }

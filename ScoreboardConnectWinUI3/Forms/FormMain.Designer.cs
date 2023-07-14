@@ -192,6 +192,7 @@ namespace ScoreboardConnectWinUI3
       this.Name = "FormMain";
       this.Text = "Scoreboard Connect";
       this.Load += new System.EventHandler(this.FormMain_Load);
+      this.Shown += new System.EventHandler(this.FormMain_Shown);
       ((System.ComponentModel.ISupportInitialize)(this.pictureLoading)).EndInit();
       this.ResumeLayout(false);
 

@@ -153,6 +153,7 @@ namespace ScoreboardConnectWinUI3 {
       panelContent.Controls.Add(clc);
       clc.Dock = DockStyle.Fill;
       panelContent.Show();
+      buttonSettings.Hide();
     }
 
     private void Clc_CourtAssignmentChanged(object sender, (int sbCourtID, string tpCourtName) e) {
@@ -168,6 +169,7 @@ namespace ScoreboardConnectWinUI3 {
       buttonTPCourtListen.Visible = true;
       panelContent.Controls.Clear();
       panelContent.Hide();
+      buttonSettings.Show();
     }
 
     private void buttonImportTP_Click(object sender, EventArgs e) {
@@ -179,16 +181,23 @@ namespace ScoreboardConnectWinUI3 {
       panelContent.Controls.Add(cut);
       cut.Dock = DockStyle.Fill;
       panelContent.Show();
+      buttonSettings.Hide();
     }
 
     private void Cut_OperationCompleted(object sender, EventArgs e) {
       buttonImportTP.Visible = true;
       buttonTPCourtListen.Visible = true;
       panelContent.Hide();
+      buttonSettings.Show();
     }
 
     private async void buttonRetryConnection_Click(object sender, EventArgs e) {
       await Connect();
+    }
+
+    private void FormMain_Shown(object sender, EventArgs e) {
+      ScoreboardConnectUpdate.UpdateForm updateForm = new ScoreboardConnectUpdate.UpdateForm();
+      updateForm.ShowDialog(this);
     }
   }
 }

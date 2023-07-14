@@ -31,6 +31,7 @@ namespace ScoreboardConnectWinUI3 {
       labelUploadStatus.Text = "";
       listClasses.Hide();
       buttonAction.Text = "Load TP-file";
+      buttonCancel.Show();
     }
 
     private void SetStatusLoaded() {
@@ -39,6 +40,7 @@ namespace ScoreboardConnectWinUI3 {
       listClasses.Enabled = true;
       buttonAction.Text = "Upload";
       progressBar.Value = 0;
+      buttonCancel.Show();
     }
 
     private void SetStatusLoading() {
@@ -47,6 +49,7 @@ namespace ScoreboardConnectWinUI3 {
       listClasses.Show();
       listClasses.Enabled = false;
       buttonAction.Text = "Abort";
+      buttonCancel.Hide();
     }
 
     private void SetStatusComplete() {
@@ -54,6 +57,7 @@ namespace ScoreboardConnectWinUI3 {
       listClasses.Show();
       listClasses.Enabled = false;
       buttonAction.Text = "Back";
+      buttonCancel.Hide();
     }
 
     private async Task LoadTPFile() {
@@ -108,63 +112,6 @@ namespace ScoreboardConnectWinUI3 {
       }
     }
 
-    /*
-    private async Task<ScoreboardLiveApi.TournamentClass> UploadTournamentClass(TP.TournamentClass tpClass) {
-      // Save classes so that links can lookup correct ids
-      Dictionary<TP.TournamentClass, int> tpClassIDS = new Dictionary<TP.TournamentClass, int>();
-
-      var serverClass = await m_helper.CreateTournamentClass(m_device, m_sbTournament, tpClass.ScoreboardTournamentClass);
-      tpClassIDS.Add(tpClass, serverClass.ID);
-      m_doCancel.Token.ThrowIfCancellationRequested();
-      ++progressBar.Value;
-
-      if (tpClass.ScoreboardTournamentClass.ClassType == "roundrobin") {
-        foreach (ScoreboardLiveApi.MatchExtended match in tpClass.Matches) {
-          ScoreboardLiveApi.Match m = await m_helper.CreateMatch(m_device, m_sbTournament, serverClass, match);
-          match.MatchID = m.MatchID;
-          if (ExtendedMatchNeedsScoreUpdate(match)) {
-            await m_helper.SetScore(m_device, match);
-          }
-          m_doCancel.Token.ThrowIfCancellationRequested();
-          ++progressBar.Value;
-        }
-      } else if (tpClass.ScoreboardTournamentClass.ClassType == "cup") {
-        var serverMatches = await m_helper.FindMatchesByClass(m_device, serverClass.ID);
-        tpClass.Matches.ForEach(m => m.MatchID = serverMatches.Find(sm => sm.Place == m.Place)?.MatchID ?? 0);
-        foreach (ScoreboardLiveApi.MatchExtended match in tpClass.Matches) {
-          if (match.MatchID > 0) {
-            var serverMatch = await m_helper.UpdateMatch(m_device, match);
-            if (ExtendedMatchNeedsScoreUpdate(match)) {
-              await m_helper.SetScore(m_device, match);
-            }
-            m_doCancel.Token.ThrowIfCancellationRequested();
-          }
-          ++progressBar.Value;
-        }
-      }
-
-      foreach (TP.TournamentClass childClass in tpClass.ChildClasses) {
-        childClass.ScoreboardTournamentClass.ParentClassID = serverClass?.ID ?? 0;
-        var serverChildClass = await UploadTournamentClass(childClass);
-        tpClassIDS.Add(childClass, serverChildClass.ID);
-      }
-
-      foreach (TP.Link tpLink in tpClass.Links) {
-        ScoreboardLiveApi.Link sbLink = new ScoreboardLiveApi.Link() {
-          SourceClassID = tpClassIDS[tpLink.SourceClass],
-          SourcePlace = tpLink.SourcePosition,
-          TargetMatchID = tpClass.Matches.Find(m => m == tpLink.TargetMatch).MatchID,
-          TargetTeam = tpLink.TeamIdentifier
-        };
-        await m_helper.CreateLink(m_device, m_sbTournament, sbLink);
-        m_doCancel.Token.ThrowIfCancellationRequested();
-        ++progressBar.Value;
-      }
-
-      return serverClass;
-    }
-    */
-
     private async void buttonAction_Click(object sender, EventArgs e) {
       if (m_tpFileName == null) {
         await LoadTPFile();
@@ -179,6 +126,10 @@ namespace ScoreboardConnectWinUI3 {
 
     private async void ControlUploadTournament_Load(object sender, EventArgs e) {
       await LoadTPFile();
+    }
+
+    private void buttonCancel_Click(object sender, EventArgs e) {
+      OperationCompleted?.Invoke(this, EventArgs.Empty);
     }
   }
 }

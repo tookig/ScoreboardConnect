@@ -29,6 +29,7 @@ namespace ScoreboardConnectWinUI3 {
       this.listClasses = new ScoreboardConnectWinUI3.TournamentClassView();
       this.progressBar = new System.Windows.Forms.ProgressBar();
       this.labelUploadStatus = new System.Windows.Forms.Label();
+      this.buttonCancel = new System.Windows.Forms.Button();
       this.SuspendLayout();
       // 
       // openTPFile
@@ -39,10 +40,10 @@ namespace ScoreboardConnectWinUI3 {
       // buttonAction
       // 
       this.buttonAction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.buttonAction.Location = new System.Drawing.Point(272, 284);
+      this.buttonAction.Location = new System.Drawing.Point(272, 370);
       this.buttonAction.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.buttonAction.Name = "buttonAction";
-      this.buttonAction.Size = new System.Drawing.Size(160, 59);
+      this.buttonAction.Size = new System.Drawing.Size(160, 48);
       this.buttonAction.TabIndex = 0;
       this.buttonAction.Text = "Load TP-file";
       this.buttonAction.UseVisualStyleBackColor = true;
@@ -61,7 +62,7 @@ namespace ScoreboardConnectWinUI3 {
       this.listClasses.Location = new System.Drawing.Point(0, 4);
       this.listClasses.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.listClasses.Name = "listClasses";
-      this.listClasses.Size = new System.Drawing.Size(431, 260);
+      this.listClasses.Size = new System.Drawing.Size(431, 320);
       this.listClasses.TabIndex = 1;
       this.listClasses.UseCompatibleStateImageBehavior = false;
       this.listClasses.View = System.Windows.Forms.View.Details;
@@ -71,7 +72,7 @@ namespace ScoreboardConnectWinUI3 {
       // 
       this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.progressBar.Location = new System.Drawing.Point(0, 309);
+      this.progressBar.Location = new System.Drawing.Point(0, 384);
       this.progressBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.progressBar.Name = "progressBar";
       this.progressBar.Size = new System.Drawing.Size(265, 33);
@@ -81,23 +82,35 @@ namespace ScoreboardConnectWinUI3 {
       // 
       this.labelUploadStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.labelUploadStatus.Location = new System.Drawing.Point(0, 269);
+      this.labelUploadStatus.Location = new System.Drawing.Point(0, 344);
       this.labelUploadStatus.Name = "labelUploadStatus";
       this.labelUploadStatus.Size = new System.Drawing.Size(265, 32);
       this.labelUploadStatus.TabIndex = 4;
       this.labelUploadStatus.Text = "status";
       this.labelUploadStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
       // 
+      // buttonCancel
+      // 
+      this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+      this.buttonCancel.Location = new System.Drawing.Point(272, 331);
+      this.buttonCancel.Name = "buttonCancel";
+      this.buttonCancel.Size = new System.Drawing.Size(157, 32);
+      this.buttonCancel.TabIndex = 5;
+      this.buttonCancel.Text = "Cancel";
+      this.buttonCancel.UseVisualStyleBackColor = true;
+      this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
+      // 
       // ControlUploadTournament
       // 
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
+      this.Controls.Add(this.buttonCancel);
       this.Controls.Add(this.labelUploadStatus);
       this.Controls.Add(this.progressBar);
       this.Controls.Add(this.listClasses);
       this.Controls.Add(this.buttonAction);
       this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       this.Name = "ControlUploadTournament";
-      this.Size = new System.Drawing.Size(432, 343);
+      this.Size = new System.Drawing.Size(432, 418);
       this.Load += new System.EventHandler(this.ControlUploadTournament_Load);
       this.ResumeLayout(false);
 
@@ -110,5 +123,6 @@ namespace ScoreboardConnectWinUI3 {
     private TournamentClassView listClasses;
     private System.Windows.Forms.ProgressBar progressBar;
     private System.Windows.Forms.Label labelUploadStatus;
+    private System.Windows.Forms.Button buttonCancel;
   }
 }

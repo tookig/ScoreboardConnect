@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ScoreboardConnectUpdate\ScoreboardConnectUpdate.csproj" />
     <ProjectReference Include="..\TpLoader\TpTools.csproj" />
   </ItemGroup>
 
