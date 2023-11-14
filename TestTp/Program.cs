@@ -9,7 +9,14 @@ using System.Linq;
 
 namespace TestTp {
   class Program {
+
     static void Main(string[] args) {
+      for (int i = 0; i < 8; i++) {
+        Console.WriteLine(1 << i);
+      }
+    }
+
+    static void MainX(string[] args) {
       TP.TPListener listener = new TP.TPListener("D:\\Tmp\\lergok.tp", "D:\\Tmp");
       listener.ServiceStarted += (sender, e) => Console.WriteLine("Listener started");
       listener.ServiceError += (sender, e) => Console.WriteLine(e.Item2.Message);
@@ -35,7 +42,7 @@ namespace TestTp {
       }
     }
 
-    static async Task MainX(string[] args) {
+    static async Task MainXX(string[] args) {
       string filename = "D:\\Tmp\\lergok.tp";
       TP.TPFile file = new TP.TPFile(filename);
       TP.Tournament tournament = await TP.Tournament.LoadFromTP(file);

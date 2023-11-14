@@ -64,7 +64,7 @@ namespace TP {
           var classItem = new ExportClassItem(CreateClass(ev, draw), ev, draw);
           classItem.SBClass.Description += string.Format(" {0}", i++);
           classItem.Matches.AddRange(ConvertDrawMatches(draw, classItem.SBClass, rootMatch));
-          classItem.SBClass.Size = CalculateClassSize(classItem.Matches);
+          classItem.SBClass.Size = GetNearestHigherPowerOfTwo(CalculateClassSize(classItem.Matches));
           classItems.Add(classItem);
         }
       } else {
@@ -200,6 +200,14 @@ namespace TP {
                   .Where(id => id.GetValueOrDefault() > 0).Distinct().Count();
       // Return sum
       return entryCount + linkCount;
+    }
+
+    protected static int GetNearestHigherPowerOfTwo(int size) {
+      int power = 0;
+      while (size > (1 << power)) {
+        ++power;
+      }
+      return 1 << power;
     }
 
     protected static string CreateClassType(Draw draw) {
