@@ -14,26 +14,28 @@ namespace ScoreboardConnectWinUI3 {
 
     private object m_tpEventsLock = new object();
     private List<TP.Event> m_tpEvents;
-    private List<TP.TournamentClass> m_tpTournamentClasses;
+    // private List<TP.TournamentClass> m_tpTournamentClasses;
     private string m_tpFileName;
 
     private Dictionary<int, string> m_defaultSetup = new Dictionary<int, string>();
 
     public event EventHandler<(int, string)> CourtAssignmentChanged;
 
-    public TP.TPListener Listener { get; private set; }
+    // public TP.TPListener Listener { get; private set; }
 
     public ControlCourtListen(ScoreboardLiveApi.ApiHelper api, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
       m_helper = api ?? throw new ArgumentNullException("Helper reference cannot be null");
       m_device = device ?? throw new ArgumentNullException("Device reference cannot be null");
       m_tournament = tournament ?? throw new ArgumentNullException("Tournament reference cannot be null");
 
+      /*
       Listener = new TP.TPListener();
       Listener.CourtUpdate += listener_CourtUpdate;
       Listener.EventUpdate += Listener_EventUpdate;
       Listener.ServiceError += listener_ServiceError;
       Listener.ServiceStarted += listener_ServiceStarted;
       Listener.ServiceStopped += listener_ServiceStopped;
+      */
 
       InitializeComponent();
       SetStatusSelectFile();
@@ -50,15 +52,6 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private async Task LoadCourts() {
-      try {
-        PopulateCourts(await m_helper.GetCourts(m_device));
-      } catch {
-        ShowError("Could not get court info from server");
-      }
-    }
-
-    private void PopulateCourts(List<ScoreboardLiveApi.Court> courts) {
-      listCourts.PopulateScoreboardCourts(courts);
     }
 
     private async Task<bool> LoadTP() {
@@ -78,7 +71,7 @@ namespace ScoreboardConnectWinUI3 {
         ShowError("Could not open TP file");
         return false;
       }
-
+      /*
       try {
         m_tpCourts = await tpFile.GetCourts();
         var tpEvents = await tpFile.GetEvents();
@@ -92,13 +85,14 @@ namespace ScoreboardConnectWinUI3 {
       } finally {
         tpFile.Close();
       }
+      */
 
       return true;
     }
 
     private void PopulateTP() {
-      listCourts.PopulateTPCourts(m_tpCourts);
-      listCourts.Enabled = true;
+      // listCourts.PopulateTPCourts(m_tpCourts);
+      // listCourts.Enabled = true;
       UpdateDefaultSetup();
     }
 
@@ -109,6 +103,7 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private async Task UpdateCourt(string tpCourtName, int tpMatchId) {
+      /*
       var sbCourts = listCourts.GetScoreboardCourtsAssignedToTPCourt(tpCourtName);
       if (tpMatchId == 0) {
         sbCourts.ForEach(sbCourt => m_helper.ClearCourt(m_device, sbCourt));
@@ -166,9 +161,11 @@ namespace ScoreboardConnectWinUI3 {
           ShowError(e.Message);
         }
       }
+      */
     }
 
     private async Task CheckIfScoreboardServerNeedsMatchUpdate(ScoreboardLiveApi.Match match, int tpMatchID) {
+      /*
       bool sendUpdate = false;
       lock(m_tpEventsLock) {
         var tpMatches = new List<ScoreboardLiveApi.Match>();
@@ -195,6 +192,7 @@ namespace ScoreboardConnectWinUI3 {
       if (sendUpdate) {
         await m_helper.UpdateMatch(m_device, match);
       }
+      */
     }
 
     private bool PlayerNameOnServerIsOld(ScoreboardLiveApi.Match serverMatch, ScoreboardLiveApi.Match localMatch) {
@@ -206,6 +204,7 @@ namespace ScoreboardConnectWinUI3 {
 
 
     private void UpdateTPEventsWithXMLData(List<TP.Event> xmlEvents) {
+      /*
       List<TP.PlayerMatch> xmlMatches = new List<TP.PlayerMatch>();
       xmlEvents.ForEach(xmlEvent => xmlMatches.AddRange(xmlEvent.ExtractMatches()));
 
@@ -223,6 +222,7 @@ namespace ScoreboardConnectWinUI3 {
 
         m_tpTournamentClasses = TP.Converter.Extract(m_tpEvents);
       }
+      */
     }
 
     private async Task InitCourts() {
@@ -262,11 +262,11 @@ namespace ScoreboardConnectWinUI3 {
           PopulateTP();
           SetStatusNotListening();
         }
-      } else if (!Listener.IsListening) {
+      } /* else if (!Listener.IsListening) {
         Listener.Start(m_tpCourts);
       } else {
         Listener.Stop();
-      }
+      } */
     }
 
     private void listener_ServiceStopped(object sender, EventArgs e) {

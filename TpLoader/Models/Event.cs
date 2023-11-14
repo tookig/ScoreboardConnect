@@ -1,29 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Xml;
 
 namespace TP {
-  public class Event : TpObject {
-    public enum EventTypes { Singles = 1, Doubles = 2}
-    public enum Genders { Unknown = 0, Men = 1, Women = 2, Mixed = 3, Boys = 4, Girls = 5 }
-
-    public int ID { get; set; }
-    public int TournamentInformationID { get; set; }
-    public string Name { get; set; }
-    public EventTypes EventType { get; set; } = EventTypes.Doubles;
-    public Genders Gender { get; set; } = Genders.Unknown;
+  public class Event : TP.Data.EventData {
+    public Data.TournamentInformation TournamentInformation { get; private set; }
     public List<Draw> Draws { get; private set; } = new List<Draw>();
-    public TournamentInformation TournamentInformation;
 
-    public Event(System.Data.IDataReader reader) {
-      ID = GetInt(reader, "id");
-      Name = GetString(reader, "name");
-      Gender = (Genders)GetInt(reader, "gender");
-      EventType = (EventTypes)GetInt(reader, "eventtype");
-      TournamentInformationID = GetInt(reader, "tournamentinformationid");
+    public Event(Data.EventData raw) : base(raw) { }
+
+    public static Event Parse(Data.EventData raw, IEnumerable<Draw> draws, IEnumerable<Data.TournamentInformation> tournamentInformation) {
+      Event tpEvent = new Event(raw);
+      tpEvent.Draws = draws.Where(draw => draw.EventID == tpEvent.ID).ToList();
+      tpEvent.TournamentInformation = tournamentInformation.FirstOrDefault(ti => ti.ID == tpEvent.TournamentInformationID);
+      return tpEvent;
     }
 
+    public static Event Parse(XmlReader reader) {
+      reader.Read();
+      Event newEvent = new Event(new Data.EventData(reader));
+
+      List<Entry> entries = new List<Entry>();
+      reader.ReadToFollowing("ENTRIES");
+      using (var entriesXml = reader.ReadSubtree()) {
+        entriesXml.Read();
+        while (entriesXml.ReadToFollowing("ENTRY")) {
+          entries.Add(Entry.Parse(entriesXml));
+        }
+      }
+
+      List<Draw> draws = new List<Draw>();
+      reader.ReadToFollowing("DRAWS");
+      using (var drawsXml = reader.ReadSubtree()) {
+        while (drawsXml.ReadToFollowing("DRAW")) {
+          using (var subtree = drawsXml.ReadSubtree()) {
+            subtree.Read();
+            draws.Add(Draw.Parse(subtree, entries));
+          }
+        }
+      }
+      newEvent.Draws = draws;
+
+
+      return newEvent;
+    }
+
+    /*
     public Event(XmlReader reader) {
       ID = GetInt(reader, "ID");
       Name = GetString(reader, "NAME");
@@ -52,6 +76,7 @@ namespace TP {
       };
     }
 
+    
     public List<PlayerMatch> ExtractMatches() {
       List<PlayerMatch> matches = new List<PlayerMatch>();
       foreach (Draw draw in Draws) {
@@ -71,11 +96,14 @@ namespace TP {
       }
       return (null, null, null);
      }
+    */
 
     public override string ToString() {
       StringBuilder sb = new StringBuilder();
       sb.AppendFormat("EVENT {0}\t{1}\t{2}\t{3}{4}", ID, Name, Gender, EventType, Environment.NewLine);
-      Draws.ForEach(draw => sb.AppendFormat("\t{0}{1}", draw.ToString(), Environment.NewLine));
+      foreach (Draw draw in Draws) {
+        sb.AppendFormat("\t{0}{1}", draw.ToString(), Environment.NewLine);
+      }
       return sb.ToString();
     }
   }

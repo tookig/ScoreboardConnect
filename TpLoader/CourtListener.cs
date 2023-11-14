@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Collections.Concurrent;
 using System.Data;
 using ScoreboardLiveApi;
-using TP;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Linq;
 
 namespace TP {
   public class CourtListener {
-    private IDbConnection m_tpConnection;
+    private class CourtListenItem {
+      public int SBCourtID { get; set; }
+      public int TPCourtID { get; set; }
+    }
+
     private ApiHelper m_sbApi;
     private Device m_sbDevice;
+    private List<CourtListenItem> m_items = new List<CourtListenItem>();
 
     private CancellationTokenSource m_doCancel;
 
@@ -27,34 +30,30 @@ namespace TP {
       }
     }
 
-    public CourtListener(IDbConnection tpConnection, ApiHelper api, Device sbDevice) {
-      m_tpConnection = tpConnection;
+    public CourtListener(ApiHelper api, Device sbDevice) {
       m_sbDevice = sbDevice;
       m_sbApi = api;
     }
 
-    public Task<List<TP.Court>> GetTpCourts() {
-      return TP.Converter.ExtractCourts(m_tpConnection);
+    public static async Task<IEnumerable<TP.Court>> LoadFromTP(TPFile file) {
+      var locations = await file.LoadLocations();
+      return (await file.LoadCourts()).Select(raw => Court.Parse(raw, locations));
     }
 
-    public Task<List<ScoreboardLiveApi.Court>> GetSbCourts() {
-      return m_sbApi.GetCourts(m_sbDevice);
+    public static async Task<IEnumerable<ScoreboardLiveApi.Court>> LoadFromSB(ApiHelper apiHelper, Device device) {
+      return await apiHelper.GetCourts(device);
     }
 
-    public void Start(List<KeyValuePair<ScoreboardLiveApi.Court, TP.Court>> courtPairs) {
+    public void Start(IEnumerable<(ScoreboardLiveApi.Court, TP.Court)> courtMappings) {
+      // Save mappings
+      lock (m_items) {
+        m_items.Clear();
+        m_items.AddRange(courtMappings.Select(mapping => new CourtListenItem() {
+          SBCourtID = mapping.Item1.CourtID,
+          TPCourtID = mapping.Item2.ID
+        }));
+      }
       m_doCancel = new CancellationTokenSource();
-      Task.Run(async () => {
-        while (true) {
-          if (m_doCancel.IsCancellationRequested) break;
-          var tpCourts = await GetTpCourts();
-          
-          try {
-            await Task.Delay(5000, m_doCancel.Token);
-          } catch (TaskCanceledException) {
-            break;
-          }
-        }
-      });
     }
 
     public void Stop() {
@@ -63,20 +62,23 @@ namespace TP {
       }
     }
 
+    // protected void 
+
     private async Task<(List<TP.Court>, List<ScoreboardLiveApi.Court>)> Load() {
+      return (null, null); 
       // Open the connection
       // m_tpConnection.Open();
       // Load courts
       // var tpCourts = TpLoader.Loader.LoadCourts(m_tpConnection.CreateCommand());
-      var tpCourts = await Task.Run(() => {
-        return Loader.LoadCourts(m_tpConnection.CreateCommand());
-      });
+      // var tpCourts = await Task.Run(() => {
+      //   return Loader.LoadCourts(m_tpConnection.CreateCommand());
+      // });
       // Close connection
       // m_tpConnection.Close();
       // Load sb courts
-      var sbCourts = await m_sbApi.GetCourts(m_sbDevice);
+      // var sbCourts = await m_sbApi.GetCourts(m_sbDevice);
       // Return
-      return (tpCourts, sbCourts);
+      // return (tpCourts, sbCourts);
     }
   }
 }

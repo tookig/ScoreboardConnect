@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TP {
+namespace TP.Helpers {
   class PlaceMap {
     private Dictionary<int, int> placeMap = new Dictionary<int, int>();
 

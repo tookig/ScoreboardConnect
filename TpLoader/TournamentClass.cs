@@ -4,7 +4,7 @@ using System.Text;
 using ScoreboardLiveApi;
 using TP;
 
-namespace TP {
+namespace TP._OLD {
   public class TournamentClass {
     public Draw SourceDraw { get; private set; }
     public ScoreboardLiveApi.TournamentClass ScoreboardTournamentClass { get; private set; }

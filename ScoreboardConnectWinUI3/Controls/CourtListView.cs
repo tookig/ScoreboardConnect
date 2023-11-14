@@ -30,28 +30,26 @@ namespace ScoreboardConnectWinUI3 {
       m_combo.Leave += combo_SelectedValueChanged;
     }
 
+    public void Populate(List<ScoreboardLiveApi.Court> sbCourts, List<TP.Court> tpCourts) {
+      Items.Clear();
+      foreach (ScoreboardLiveApi.Court sbCourt in sbCourts) {
+        var lvi = Items.Add(new ListViewItem(sbCourt.Name) {
+          Tag = sbCourt
+        });
+        lvi.SubItems.Add("<not set>");
+      }
+
+      m_combo.Items.Clear();
+      m_combo.Items.AddRange(tpCourts.ToArray());
+      m_combo.DropDownStyle = ComboBoxStyle.DropDownList;
+    }
+
     private void combo_SelectedValueChanged(object sender, EventArgs e) {
       if (m_currentItem == null) return;
       m_currentItem.SubItems[1].Text = m_combo.Text;
       m_currentItem.SubItems[1].Tag = m_combo.SelectedItem;
       m_combo.Visible = false;
       CourtAssignmentChanged?.Invoke(this, ((((ScoreboardLiveApi.Court)m_currentItem.Tag).CourtID), (m_combo.SelectedItem as TP.Court)?.Name));
-    }
-
-    public void PopulateScoreboardCourts(List<ScoreboardLiveApi.Court> courts) {
-      Items.Clear();
-      foreach (ScoreboardLiveApi.Court court in courts) {
-        var lvi = Items.Add(new ListViewItem(court.Name) {
-          Tag = court
-        });
-        lvi.SubItems.Add("<not set>");
-      }
-    }
-
-    public void PopulateTPCourts(List<TP.Court> courts) {
-      m_combo.Items.Clear();
-      m_combo.Items.AddRange(courts.ToArray());
-      m_combo.DropDownStyle = ComboBoxStyle.DropDownList;
     }
 
     public void AssignTPCourtToScoreboardCourt(int scoreboardCourtID, string tpCourtName) {
@@ -76,6 +74,14 @@ namespace ScoreboardConnectWinUI3 {
         }
       }
       return scoreboardCourtsFound;
+    }
+
+    public Dictionary<ScoreboardLiveApi.Court, TP.Court> GetSnapshot() {
+      var snapshot = new Dictionary<ScoreboardLiveApi.Court, TP.Court>();
+      foreach (ListViewItem item in Items) {
+        snapshot.Add((ScoreboardLiveApi.Court)item.Tag, item.SubItems[1].Tag as TP.Court);
+      }
+      return snapshot;
     }
 
     protected void InitColumns() {

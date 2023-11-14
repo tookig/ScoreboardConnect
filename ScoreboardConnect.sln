@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestTp", "TestTp\TestTp.csp
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ScoreboardConnectSetup", "ScoreboardConnectSetup\ScoreboardConnectSetup.vdproj", "{132222A0-AD74-49F2-A49E-185F1A134C1D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScoreboardConnectUpdate", "ScoreboardConnectUpdate\ScoreboardConnectUpdate.csproj", "{D470C124-000D-4456-9D5A-85E6759E219E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{219C64F0-B33E-4451-A5D3-4147165B6349}.Release|Any CPU.Build.0 = Release|Any CPU
 		{132222A0-AD74-49F2-A49E-185F1A134C1D}.Debug|Any CPU.ActiveCfg = Debug
 		{132222A0-AD74-49F2-A49E-185F1A134C1D}.Release|Any CPU.ActiveCfg = Release
+		{D470C124-000D-4456-9D5A-85E6759E219E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D470C124-000D-4456-9D5A-85E6759E219E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D470C124-000D-4456-9D5A-85E6759E219E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D470C124-000D-4456-9D5A-85E6759E219E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
