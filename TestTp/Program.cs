@@ -11,9 +11,9 @@ namespace TestTp {
   class Program {
 
     static void Main(string[] args) {
-      for (int i = 0; i < 8; i++) {
-        Console.WriteLine(1 << i);
-      }
+      TPNetwork.SocketClient client = new TPNetwork.SocketClient();
+
+      Console.WriteLine(client.GetTournamentInfo().OuterXml);
     }
 
     static void MainX(string[] args) {

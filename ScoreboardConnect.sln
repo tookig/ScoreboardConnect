@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestTp", "TestTp\TestTp.csp
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ScoreboardConnectSetup", "ScoreboardConnectSetup\ScoreboardConnectSetup.vdproj", "{132222A0-AD74-49F2-A49E-185F1A134C1D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScoreboardConnectUpdate", "ScoreboardConnectUpdate\ScoreboardConnectUpdate.csproj", "{D470C124-000D-4456-9D5A-85E6759E219E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScoreboardConnectUpdate", "ScoreboardConnectUpdate\ScoreboardConnectUpdate.csproj", "{D470C124-000D-4456-9D5A-85E6759E219E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TPNetwork", "TPNetwork\TPNetwork.csproj", "{7A296E44-9946-411B-9AE4-213E22A068CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +39,10 @@ Global
 		{D470C124-000D-4456-9D5A-85E6759E219E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D470C124-000D-4456-9D5A-85E6759E219E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D470C124-000D-4456-9D5A-85E6759E219E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A296E44-9946-411B-9AE4-213E22A068CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A296E44-9946-411B-9AE4-213E22A068CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A296E44-9946-411B-9AE4-213E22A068CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A296E44-9946-411B-9AE4-213E22A068CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
