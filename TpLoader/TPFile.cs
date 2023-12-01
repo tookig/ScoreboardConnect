@@ -54,7 +54,7 @@ namespace TP {
     }
 
     public async Task<List<Data.TournamentInformation>> LoadTournamentInformation() {
-      return await LoadStuff("SELECT * FROM TournamentInformation", reader => new Data.TournamentInformation(reader));
+      return await LoadStuff("SELECT * FROM Settings WHERE name='Tournament'", reader => new Data.TournamentInformation(reader));
     }
 
     public async Task<List<Data.LinkData>> LoadLinks() {

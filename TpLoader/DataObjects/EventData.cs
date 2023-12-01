@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using TP.VisualXML;
 
 namespace TP.Data {
   public class EventData : TpDataObject {
@@ -31,6 +32,12 @@ namespace TP.Data {
     public EventData(XmlReader reader) {
       ID = GetInt(reader, "ID");
       Name = GetString(reader, "NAME");
+    }
+    public EventData(VisualXML.GroupNode eventNode) {
+      ID = ((ItemNode<int>)eventNode["ID"]).Value;
+      Name = ((ItemNode<string>)eventNode["Name"]).Value;
+      Gender = (Genders)((ItemNode<int>)eventNode["GenderID"]).Value;
+      EventType = (EventTypes)((ItemNode<int>)eventNode["GameTypeID"]).Value;
     }
   }
 }

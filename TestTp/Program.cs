@@ -6,14 +6,22 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Xml;
+using TP.Data;
 
 namespace TestTp {
   class Program {
 
     static void Main(string[] args) {
       TPNetwork.SocketClient client = new TPNetwork.SocketClient();
+     
+      var visualXml = new TP.VisualXML.TPNetwork(client.GetTournamentInfo());
+      
+      Console.Write(visualXml.GetGroup("Action"));
+      Console.Write(visualXml.GetGroup("Result/Tournament/Events"));
 
-      Console.WriteLine(client.GetTournamentInfo().OuterXml);
+      Console.WriteLine((new TournamentSettings(visualXml)).TournamentName);
+
     }
 
     static void MainX(string[] args) {

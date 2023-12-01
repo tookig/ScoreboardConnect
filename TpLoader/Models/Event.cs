@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Xml;
+using TP.Data;
 
 namespace TP {
   public class Event : TP.Data.EventData {
@@ -45,6 +46,11 @@ namespace TP {
 
 
       return newEvent;
+    }
+
+    public static Event Parse(VisualXML.TPNetwork tp) {
+      TournamentSettings settings = new TournamentSettings(tp);
+      Event tpEvent = new Event(new EventData(tp));
     }
 
     /*

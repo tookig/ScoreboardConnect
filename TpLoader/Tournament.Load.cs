@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Xml;
+using TP.Data;
 
 namespace TP {
   public partial class Tournament {
@@ -46,6 +47,50 @@ namespace TP {
         Events = events
       };
 
+      return tournament;
+    }
+
+    public static Tournament LoadFromVisualXML(VisualXML.TPNetwork visualXml) {
+      List<ClubData> clubs = new List<ClubData>();
+      foreach (var club in visualXml.GetGroup("Result/Tournament/Clubs").Groups) {
+        clubs.Add(new ClubData(club));
+      }
+
+      List<Player> players = new List<Player>();
+      foreach (var player in visualXml.GetGroup("Result/Tournament/Players").Groups) {
+        players.Add(Player.Parse(new PlayerData(player), clubs));
+      }
+
+      List<Entry> entries = new List<Entry>();
+      foreach (var entry in visualXml.GetGroup("Result/Tournament/Entries").Groups) {
+        entries.Add(Entry.Parse(new EntryData(entry), players));
+      }
+
+      List<PlayerMatchData> matches = new List<PlayerMatchData>();
+      foreach (var match in visualXml.GetGroup("Result/Tournament/Matches").Groups) {
+        matches.Add(new PlayerMatchData(match));
+      }
+
+      List<DrawData> rawDraws = new List<DrawData>();
+      foreach (var draw in visualXml.GetGroup("Result/Tournament/Draws").Groups) {
+        rawDraws.Add(new DrawData(draw));
+      }
+
+      List<Link> links = new List<Link>();
+      foreach (var link in visualXml.GetGroup("Result/Tournament/Links").Groups) {
+        links.Add(Link.Parse(new LinkData(link), rawDraws));
+      }
+
+      List<Draw> draws = new List<Draw>();
+      foreach (var draw in rawDraws) {
+        draws.Add(Draw.Parse(draw, matches, entries, links));
+      }
+
+      List<Event> events = new List<Event>(); 
+      foreach (var ev in visualXml.GetGroup("Result/Tournament/Events").Groups) {
+        events.Add(Event.Parse(new EventData(ev), draws, visualXml.GetGroup("Result/Tournament")));
+      }
+      
       return tournament;
     }
   }

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Xml;
 using ScoreboardLiveApi;
+using TP.VisualXML;
 
 namespace TP.Data {
   public class PlayerMatchData : TpDataObject {
@@ -115,6 +117,30 @@ namespace TP.Data {
         } else {
           GetType().GetProperty(string.Format("Team1Set{0}", i)).SetValue(this, 0);
           GetType().GetProperty(string.Format("Team2Set{0}", i)).SetValue(this, 0);
+        }
+      }
+    }
+
+    public PlayerMatchData(GroupNode match) {
+      ID = ((ItemNode<int>)match["ID"]).Value;
+      Planning = ((ItemNode<int>)match["PlanningID"]).Value;
+      EntryID = ((ItemNode<int>)match["EntryID"]).Value;
+      MatchNr = ((ItemNode<int>)match["MatchNr"]).Value;
+      PlanDate = ((ItemNode<DateTime>)match["PlannedTime"]).Value;
+      DrawID = ((ItemNode<int>)match["DrawID"]).Value;
+      Winner = (Winners)((ItemNode<int>)match["WinnerID"]).Value;
+      Van1 = ((ItemNode<int>)match["From1"]).Value;
+      Van2 = ((ItemNode<int>)match["From2"]).Value;
+      WN = ((ItemNode<int>)match["WinnerTo"]).Value;
+      Shuttles = ((ItemNode<int>)match["Shuttles"]).Value;
+      // TODO : Walkover and Retired
+      var sets = match.GetGroup("Sets");
+      if (sets != null) {
+        for (int setIndex = 1; setIndex <= sets.Groups.Count; setIndex++) {
+          var scoreTeam1 = ((ItemNode<int>)sets.Groups[setIndex - 1]["T1"]).Value;
+          var scoreTeam2 = ((ItemNode<int>)sets.Groups[setIndex - 1]["T2"]).Value;
+          GetType().GetProperty(string.Format("Team1Set{0}", setIndex)).SetValue(this, scoreTeam1);
+          GetType().GetProperty(string.Format("Team2Set{0}", setIndex)).SetValue(this, scoreTeam2);
         }
       }
     }

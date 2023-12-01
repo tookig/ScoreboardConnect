@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml;
 using ScoreboardLiveApi;
 using System.Linq;
+using TP.VisualXML;
 
 namespace TP.Data {
   public class DrawData : TpDataObject {
@@ -35,6 +36,14 @@ namespace TP.Data {
       DrawType = (DrawTypes)GetInt(reader, "DRAWTYPE");
       EventID = GetInt(reader, "EVENT");
       DrawEndSize = GetInt(reader, "DRAWENDSIZE");
+    }
+
+    public DrawData(GroupNode drawNode) {
+      ID = ((ItemNode<int>)drawNode["ID"]).Value;
+      Name = ((ItemNode<string>)drawNode["Name"]).Value;
+      DrawType = (DrawTypes)((ItemNode<int>)drawNode["DrawTypeID"]).Value;
+      EventID = ((ItemNode<int>)drawNode["EventID"]).Value;
+      DrawEndSize = ((ItemNode<int>)drawNode["DrawEndSize"]).Value;
     }
   }
 }

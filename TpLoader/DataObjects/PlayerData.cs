@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TP.VisualXML;
 
 namespace TP.Data {
   public class PlayerData : TpDataObject {
@@ -9,6 +10,7 @@ namespace TP.Data {
     public string FirstName { get; set; }
     public int ClubID { get; set; }
     public int CountryID { get; set; }
+    public string CountryString { get; set; }
     public PlayerData() { }
     public PlayerData(PlayerData cpy) {
       ID = cpy.ID;
@@ -24,6 +26,14 @@ namespace TP.Data {
       FirstName = GetString(reader, "firstname");
       ClubID = GetInt(reader, "club");
       CountryID = GetInt(reader, "country");
+    }
+
+    public PlayerData(GroupNode playerNode) {
+      ID = ((ItemNode<int>)playerNode["ID"]).Value;
+      LastName = ((ItemNode<string>)playerNode["Lastname"]).Value;
+      FirstName = ((ItemNode<string>)playerNode["Firstname"]).Value;
+      ClubID = ((ItemNode<int>)playerNode["ClubID"]).Value;
+      CountryString = ((ItemNode<string>)playerNode["Country"]).Value;
     }
   }
 }

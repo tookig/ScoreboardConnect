@@ -10,6 +10,7 @@ namespace TP.Data {
     public string TournamentName { get; set; }
 
     public TournamentInformation() { }
+    
     public TournamentInformation(System.Data.IDataReader reader) {
       ID = GetInt(reader, "id");
       TournamentID = GetString(reader, "tournamentid");

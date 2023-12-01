@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using TP.VisualXML;
 
 namespace TP.Data {
   public class EntryData : TpDataObject {
@@ -22,6 +23,14 @@ namespace TP.Data {
 
     public EntryData(XmlReader reader) {
       ID = GetInt(reader, "ID");
+    }
+
+    public EntryData(GroupNode entryNode) {
+      ID = ((ItemNode<int>)entryNode["ID"]).Value;
+      Player1ID = ((ItemNode<int>)entryNode["Player1ID"]).Value;
+      if (entryNode.HasItem("Player2ID")) {
+        Player2ID = ((ItemNode<int>)entryNode["Player2ID"]).Value;
+      }
     }
   }
 }
