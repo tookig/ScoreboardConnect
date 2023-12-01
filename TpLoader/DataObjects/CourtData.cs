@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using TP.VisualXML;
 
 
 namespace TP.Data {
@@ -28,6 +29,15 @@ namespace TP.Data {
     public CourtData(XmlReader reader) {
       Name = GetString(reader, "CT");
       TpMatchID = GetInt(reader, "ID");
+    }
+
+    public CourtData(GroupNode courtNode) {
+      ID = ((ItemNode<int>)courtNode["ID"]).Value;
+      Name = ((ItemNode<string>)courtNode["Name"]).Value;
+      LocationID = ((ItemNode<int>)courtNode["LocationID"]).Value;
+      if (courtNode.HasItem("MatchID")) {
+        TpMatchID = ((ItemNode<int>)courtNode["MatchID"]).Value;
+      }
     }
   }
 }

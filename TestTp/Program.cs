@@ -17,11 +17,8 @@ namespace TestTp {
      
       var visualXml = new TP.VisualXML.TPNetwork(client.GetTournamentInfo());
       
-      Console.Write(visualXml.GetGroup("Action"));
-      Console.Write(visualXml.GetGroup("Result/Tournament/Events"));
-
-      Console.WriteLine((new TournamentSettings(visualXml)).TournamentName);
-
+      var tournament = TP.Tournament.LoadFromVisualXML(visualXml);
+      PrintTournament(tournament);
     }
 
     static void MainX(string[] args) {

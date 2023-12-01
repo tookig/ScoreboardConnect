@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace TP {
   public partial class Tournament {
-    public List<Data.TournamentInformation> TournamentInformation { get; private set; } = new List<Data.TournamentInformation>();
+    public Data.TournamentSettings TournamentSettings { get; private set; }
     public List<Data.LocationData> Locations { get; private set; } = new List<Data.LocationData>();
     public List<Court> Courts { get; private set; } = new List<Court>();
     public List<Entry> Entries { get; private set; } = new List<Entry>();
@@ -41,10 +41,7 @@ namespace TP {
     public override string ToString() {
       StringBuilder sb = new StringBuilder();
       sb.AppendLine("-- TOURNAMENT --");
-      sb.AppendLine("Tournament information:");
-      foreach (var ti  in TournamentInformation) {
-        sb.AppendLine(ti.ToString());
-      }
+      sb.AppendLine(TournamentSettings.TournamentName);
       sb.AppendLine("Courts:");
       foreach (var court in Courts) {
         sb.AppendLine(court.ToString());

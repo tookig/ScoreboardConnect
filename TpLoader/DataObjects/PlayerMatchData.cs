@@ -124,14 +124,26 @@ namespace TP.Data {
     public PlayerMatchData(GroupNode match) {
       ID = ((ItemNode<int>)match["ID"]).Value;
       Planning = ((ItemNode<int>)match["PlanningID"]).Value;
-      EntryID = ((ItemNode<int>)match["EntryID"]).Value;
+      if (match.HasItem("EntryID")) {
+        EntryID = ((ItemNode<int>)match["EntryID"]).Value;
+      }
       MatchNr = ((ItemNode<int>)match["MatchNr"]).Value;
-      PlanDate = ((ItemNode<DateTime>)match["PlannedTime"]).Value;
+      if (match.HasItem("PlannedTime")) {
+        PlanDate = ((ItemNode<DateTime>)match["PlannedTime"]).Value;
+      }
       DrawID = ((ItemNode<int>)match["DrawID"]).Value;
-      Winner = (Winners)((ItemNode<int>)match["WinnerID"]).Value;
-      Van1 = ((ItemNode<int>)match["From1"]).Value;
-      Van2 = ((ItemNode<int>)match["From2"]).Value;
-      WN = ((ItemNode<int>)match["WinnerTo"]).Value;
+      if (match.HasItem("WinnerID")) {
+        Winner = (Winners)((ItemNode<int>)match["WinnerID"]).Value;
+      }
+      if (match.HasItem("From1")) {
+        Van1 = ((ItemNode<int>)match["From1"]).Value;
+      }
+      if (match.HasItem("From2")) {
+        Van2 = ((ItemNode<int>)match["From2"]).Value;
+      }
+      if (match.HasItem("WinnerTo")) {
+        WN = ((ItemNode<int>)match["WinnerTo"]).Value;
+      }
       Shuttles = ((ItemNode<int>)match["Shuttles"]).Value;
       // TODO : Walkover and Retired
       var sets = match.GetGroup("Sets");

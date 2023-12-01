@@ -7,15 +7,15 @@ using TP.Data;
 
 namespace TP {
   public class Event : TP.Data.EventData {
-    public Data.TournamentInformation TournamentInformation { get; private set; }
+    public TournamentSettings TournamentSettings { get; private set; }
     public List<Draw> Draws { get; private set; } = new List<Draw>();
 
     public Event(Data.EventData raw) : base(raw) { }
 
-    public static Event Parse(Data.EventData raw, IEnumerable<Draw> draws, IEnumerable<Data.TournamentInformation> tournamentInformation) {
+    public static Event Parse(Data.EventData raw, IEnumerable<Draw> draws, TournamentSettings tournamentSettings) {
       Event tpEvent = new Event(raw);
       tpEvent.Draws = draws.Where(draw => draw.EventID == tpEvent.ID).ToList();
-      tpEvent.TournamentInformation = tournamentInformation.FirstOrDefault(ti => ti.ID == tpEvent.TournamentInformationID);
+      tpEvent.TournamentSettings = tournamentSettings;
       return tpEvent;
     }
 
@@ -48,61 +48,6 @@ namespace TP {
       return newEvent;
     }
 
-    public static Event Parse(VisualXML.TPNetwork tp) {
-      TournamentSettings settings = new TournamentSettings(tp);
-      Event tpEvent = new Event(new EventData(tp));
-    }
-
-    /*
-    public Event(XmlReader reader) {
-      ID = GetInt(reader, "ID");
-      Name = GetString(reader, "NAME");
-      List<Entry> entries = new List<Entry>();
-      if (reader.ReadToDescendant("ENTRIES")) {
-        using (var subtree = reader.ReadSubtree()) {
-          while (subtree.ReadToFollowing("ENTRY")) {
-            entries.Add(new Entry(subtree));
-          }
-        }
-      }
-      while (reader.ReadToFollowing("DRAW")) {
-        using (var subtree = reader.ReadSubtree()) {
-          Draws.Add(new Draw(subtree, entries));
-        }
-      }
-    }
-
-    public string CreateMatchCategoryString() {
-      return Gender switch {
-        Genders.Men => EventType == EventTypes.Singles ? "ms" : "md",
-        Genders.Boys => EventType == EventTypes.Singles ? "ms" : "md",
-        Genders.Women => EventType == EventTypes.Singles ? "ws" : "wd",
-        Genders.Girls => EventType == EventTypes.Singles ? "ws" : "wd",
-        _ => "xd",
-      };
-    }
-
-    
-    public List<PlayerMatch> ExtractMatches() {
-      List<PlayerMatch> matches = new List<PlayerMatch>();
-      foreach (Draw draw in Draws) {
-        matches.AddRange(draw.Matches);
-      }
-      return matches;
-    }
-
-    public (PlayerMatch, Entry, Entry) FindMatchAndEntries(Predicate<PlayerMatch> finder) {
-      foreach (Draw draw in Draws) {
-        var found = draw.Matches.Find(finder);
-        if (found != null) {
-          var entry1 = draw.Matches.Find(match => match.Planning == found.Van1);
-          var entry2 = draw.Matches.Find(match => match.Planning == found.Van2);
-          return (found, entry1?.Entry, entry2?.Entry);
-        }
-      }
-      return (null, null, null);
-     }
-    */
 
     public override string ToString() {
       StringBuilder sb = new StringBuilder();

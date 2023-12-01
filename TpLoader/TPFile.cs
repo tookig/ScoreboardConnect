@@ -4,6 +4,8 @@ using System.Text;
 using System.Data;
 using System.Data.Odbc;
 using System.Threading.Tasks;
+using TP.Data;
+using System.Linq;
 
 namespace TP {
   public class TPFile {
@@ -53,8 +55,8 @@ namespace TP {
       });
     }
 
-    public async Task<List<Data.TournamentInformation>> LoadTournamentInformation() {
-      return await LoadStuff("SELECT * FROM Settings WHERE name='Tournament'", reader => new Data.TournamentInformation(reader));
+    public async Task<TournamentSettings> LoadTournamentSettings() {
+      return (await LoadStuff("SELECT * FROM Settings WHERE name='Tournament'", reader => new Data.TournamentSettings(reader)))[0];
     }
 
     public async Task<List<Data.LinkData>> LoadLinks() {
