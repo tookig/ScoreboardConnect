@@ -38,7 +38,7 @@ namespace TP {
 
     public static Tournament LoadFromXML(XmlReader reader) {
       List<Event> events = new List<Event>();
-      
+
       while (reader.ReadToFollowing("EVENT")) {
         events.Add(Event.Parse(reader.ReadSubtree()));
       }
@@ -48,6 +48,10 @@ namespace TP {
       };
 
       return tournament;
+    }
+
+    public static async Task<Tournament> LoadFromVisualXMLAsync(VisualXML.TPNetwork visualXml) { 
+      return await Task.Run(() => LoadFromVisualXML(visualXml));
     }
 
     public static Tournament LoadFromVisualXML(VisualXML.TPNetwork visualXml) {

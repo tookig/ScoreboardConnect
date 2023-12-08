@@ -24,7 +24,9 @@ namespace ScoreboardConnectWinUI3 {
     public void Save(string filename) {
       FileStream stream = new FileStream(filename, FileMode.Create);
       using (stream) {
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
         System.Runtime.Serialization.Formatters.Binary.BinaryFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
         formatter.Serialize(stream, this);
       }
     }
@@ -35,7 +37,9 @@ namespace ScoreboardConnectWinUI3 {
       }
       FileStream stream = new FileStream(filename, FileMode.Open);
       using (stream) {
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
         System.Runtime.Serialization.Formatters.Binary.BinaryFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
         return (Settings)formatter.Deserialize(stream);
       }
     }

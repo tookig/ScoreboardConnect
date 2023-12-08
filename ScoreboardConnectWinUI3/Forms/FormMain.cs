@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -113,8 +114,19 @@ namespace ScoreboardConnectWinUI3 {
       MessageBox.Show(text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 
+    private async void LoadSettings() {
+      try {
+        m_settings = Settings.Load(settingsFile);
+      } catch (Exception e) {
+        if (File.Exists(settingsFile)) {
+          File.Delete(settingsFile);
+        }
+        m_settings = new Settings("https://www.scoreboardlive.se");
+      }
+    }
+
     private async void FormMain_Load(object sender, EventArgs e) {
-      m_settings = Settings.Load(settingsFile);
+      LoadSettings();
       LoadKeyStore();
       await Connect();
     }

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.IO.MemoryMappedFiles;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 using ICSharpCode.SharpZipLib.GZip;
 
@@ -19,20 +21,20 @@ namespace TPNetwork {
       Port = port;
     }
 
-    public XmlDocument GetTournamentInfo() {
-      PreSend();
-      var xml = SendRequest(new Messages.SendTournamentInfo(Password));
+    public async Task<XmlDocument> GetTournamentInfo() {
+      await PreSend();
+      var xml = await SendRequest(new Messages.SendTournamentInfo(Password));
       PostSend(xml);
       return xml;
     }
 
-    private void PreSend() {
+    private async Task PreSend() {
       // Check if this has already been done
       if (!string.IsNullOrEmpty(Password)) {
         return;
       }
       // Send the request
-      var xml = SendRequest(new Messages.Login());
+      var xml = await SendRequest(new Messages.Login());
       // Find the ITEM element with attribute ID="Password" and get its value
       Password = xml.SelectSingleNode("//ITEM[@ID='Password']").InnerText;
     }
@@ -75,25 +77,28 @@ namespace TPNetwork {
       return xml;
     }
 
-    private XmlDocument SendRequest(XmlDocument xml) {
-      IPHostEntry host = Dns.GetHostEntry("localhost");
-      IPAddress ipAddress = host.AddressList[0];
+    private Task<XmlDocument> SendRequest(XmlDocument xml) {
+      return Task.Run(() => {
 
-      var compressedStream = CompressXml(xml);     
-  
-      using (TcpClient client = new TcpClient(ipAddress.ToString(), Port)) {
-        var stream = client.GetStream();
+        IPHostEntry host = Dns.GetHostEntry("localhost");
+        IPAddress ipAddress = host.AddressList[0];
 
-        byte[] size = BitConverter.GetBytes((Int32)compressedStream.Length);
-        if (BitConverter.IsLittleEndian) {
-          Array.Reverse(size);
+        var compressedStream = CompressXml(xml);
+
+        using (TcpClient client = new TcpClient(ipAddress.ToString(), Port)) {
+          var stream = client.GetStream();
+
+          byte[] size = BitConverter.GetBytes((Int32)compressedStream.Length);
+          if (BitConverter.IsLittleEndian) {
+            Array.Reverse(size);
+          }
+          stream.Write(size);
+          stream.Write(compressedStream.ToArray());
+
+          stream.Read(size, 0, 4);
+          return DecompressXml(stream);
         }
-        stream.Write(size);
-        stream.Write(compressedStream.ToArray());
-
-        stream.Read(size, 0, 4);
-        return DecompressXml(stream);
-      }
+      });
     }
   }
 }

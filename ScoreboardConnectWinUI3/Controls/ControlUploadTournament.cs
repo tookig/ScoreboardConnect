@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Linq;
 using System.Threading;
+using TP.VisualXML;
 
 namespace ScoreboardConnectWinUI3 {
   public partial class ControlUploadTournament : UserControl {
@@ -30,7 +31,7 @@ namespace ScoreboardConnectWinUI3 {
     private void SetStatusNotLoaded() {
       labelUploadStatus.Text = "";
       listClasses.Hide();
-      buttonAction.Text = "Load TP-file";
+      buttonAction.Hide();
       buttonCancel.Show();
     }
 
@@ -38,6 +39,7 @@ namespace ScoreboardConnectWinUI3 {
       labelUploadStatus.Text = "Select items to upload";
       listClasses.Show();
       listClasses.Enabled = true;
+      buttonAction.Show();
       buttonAction.Text = "Upload";
       progressBar.Value = 0;
       buttonCancel.Show();
@@ -82,6 +84,26 @@ namespace ScoreboardConnectWinUI3 {
       }
     }
 
+    private async Task LoadTPNetwork() {
+      SetStatusNotLoaded();
+      try {
+        TPNetwork.SocketClient client = new TPNetwork.SocketClient();
+        var visualXml = new TP.VisualXML.TPNetwork(await client.GetTournamentInfo());
+        m_tpTournament = TP.Tournament.LoadFromVisualXML(visualXml);
+        m_tpTournament.BeginUpload += M_tpTournament_BeginUpload;
+        m_tpTournament.ProgressUpload += tpTournament_ProgressUpload;
+        m_tpTournament.EndUpload += M_tpTournament_EndUpload;
+        listClasses.Populate(m_tpTournament.Events);
+        SetStatusLoaded();
+      } catch (Exception e) {
+        if (MessageBox.Show(string.Format("Could not connect to TP network:{1}{0}", e.Message, Environment.NewLine), "Error", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Cancel) {
+          OperationCompleted?.Invoke(this, EventArgs.Empty);
+        } else {
+          await LoadTPNetwork();
+        }
+      }
+    }
+
     private void tpTournament_ProgressUpload(object sender, TP.Tournament.TournamentUploadEventArgs e) {
       progressBar.Invoke(new Action(() => progressBar.Value = (int)e.Progress));
       labelUploadStatus.Invoke(new Action(() => labelUploadStatus.Text = e.Message));
@@ -113,9 +135,7 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private async void buttonAction_Click(object sender, EventArgs e) {
-      if (m_tpFileName == null) {
-        await LoadTPFile();
-      } else if (buttonAction.Text == "Abort") {
+      if (buttonAction.Text == "Abort") {
         m_tpTournament.Abort();
       } else if (buttonAction.Text == "Back") {
         OperationCompleted?.Invoke(this, EventArgs.Empty);
@@ -125,7 +145,8 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private async void ControlUploadTournament_Load(object sender, EventArgs e) {
-      await LoadTPFile();
+      // await LoadTPFile();
+      await LoadTPNetwork();
     }
 
     private void buttonCancel_Click(object sender, EventArgs e) {

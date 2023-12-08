@@ -144,6 +144,9 @@ namespace TP.Data {
       if (match.HasItem("WinnerTo")) {
         WN = ((ItemNode<int>)match["WinnerTo"]).Value;
       }
+      if (match.HasItem("LinkID")) {
+        LinkID = ((ItemNode<int>)match["LinkID"]).Value;
+      } 
       Shuttles = ((ItemNode<int>)match["Shuttles"]).Value;
       // TODO : Walkover and Retired
       var sets = match.GetGroup("Sets");

@@ -24,96 +24,90 @@ namespace ScoreboardConnectWinUI3 {
     /// the contents of this method with the code editor.
     /// </summary>
     private void InitializeComponent() {
-      this.openTPFile = new System.Windows.Forms.OpenFileDialog();
-      this.buttonAction = new System.Windows.Forms.Button();
-      this.listClasses = new ScoreboardConnectWinUI3.TournamentClassView();
-      this.progressBar = new System.Windows.Forms.ProgressBar();
-      this.labelUploadStatus = new System.Windows.Forms.Label();
-      this.buttonCancel = new System.Windows.Forms.Button();
-      this.SuspendLayout();
+      openTPFile = new System.Windows.Forms.OpenFileDialog();
+      buttonAction = new System.Windows.Forms.Button();
+      listClasses = new TournamentClassView();
+      progressBar = new System.Windows.Forms.ProgressBar();
+      labelUploadStatus = new System.Windows.Forms.Label();
+      buttonCancel = new System.Windows.Forms.Button();
+      SuspendLayout();
       // 
       // openTPFile
       // 
-      this.openTPFile.DefaultExt = "tp";
-      this.openTPFile.Filter = "TP-files (*.tp)|*.tp|All files (*.*)|*.*";
+      openTPFile.DefaultExt = "tp";
+      openTPFile.Filter = "TP-files (*.tp)|*.tp|All files (*.*)|*.*";
       // 
       // buttonAction
       // 
-      this.buttonAction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.buttonAction.Location = new System.Drawing.Point(272, 370);
-      this.buttonAction.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-      this.buttonAction.Name = "buttonAction";
-      this.buttonAction.Size = new System.Drawing.Size(160, 48);
-      this.buttonAction.TabIndex = 0;
-      this.buttonAction.Text = "Load TP-file";
-      this.buttonAction.UseVisualStyleBackColor = true;
-      this.buttonAction.Click += new System.EventHandler(this.buttonAction_Click);
+      buttonAction.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+      buttonAction.Location = new System.Drawing.Point(272, 370);
+      buttonAction.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+      buttonAction.Name = "buttonAction";
+      buttonAction.Size = new System.Drawing.Size(160, 48);
+      buttonAction.TabIndex = 0;
+      buttonAction.Text = "Load TP-file";
+      buttonAction.UseVisualStyleBackColor = true;
+      buttonAction.Click += buttonAction_Click;
       // 
       // listClasses
       // 
-      this.listClasses.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.listClasses.CheckBoxes = true;
-      this.listClasses.FullRowSelect = true;
-      this.listClasses.GridLines = true;
-      this.listClasses.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-      this.listClasses.HideSelection = false;
-      this.listClasses.Location = new System.Drawing.Point(0, 4);
-      this.listClasses.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-      this.listClasses.Name = "listClasses";
-      this.listClasses.Size = new System.Drawing.Size(431, 320);
-      this.listClasses.TabIndex = 1;
-      this.listClasses.UseCompatibleStateImageBehavior = false;
-      this.listClasses.View = System.Windows.Forms.View.Details;
-      this.listClasses.Visible = false;
+      listClasses.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      listClasses.CheckBoxes = true;
+      listClasses.FullRowSelect = true;
+      listClasses.GridLines = true;
+      listClasses.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+      listClasses.Location = new System.Drawing.Point(0, 4);
+      listClasses.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+      listClasses.Name = "listClasses";
+      listClasses.Size = new System.Drawing.Size(431, 320);
+      listClasses.TabIndex = 1;
+      listClasses.UseCompatibleStateImageBehavior = false;
+      listClasses.View = System.Windows.Forms.View.Details;
+      listClasses.Visible = false;
       // 
       // progressBar
       // 
-      this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.progressBar.Location = new System.Drawing.Point(0, 384);
-      this.progressBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-      this.progressBar.Name = "progressBar";
-      this.progressBar.Size = new System.Drawing.Size(265, 33);
-      this.progressBar.TabIndex = 3;
+      progressBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      progressBar.Location = new System.Drawing.Point(0, 384);
+      progressBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+      progressBar.Name = "progressBar";
+      progressBar.Size = new System.Drawing.Size(265, 33);
+      progressBar.TabIndex = 3;
       // 
       // labelUploadStatus
       // 
-      this.labelUploadStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.labelUploadStatus.Location = new System.Drawing.Point(0, 344);
-      this.labelUploadStatus.Name = "labelUploadStatus";
-      this.labelUploadStatus.Size = new System.Drawing.Size(265, 32);
-      this.labelUploadStatus.TabIndex = 4;
-      this.labelUploadStatus.Text = "status";
-      this.labelUploadStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+      labelUploadStatus.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      labelUploadStatus.Location = new System.Drawing.Point(0, 344);
+      labelUploadStatus.Name = "labelUploadStatus";
+      labelUploadStatus.Size = new System.Drawing.Size(265, 32);
+      labelUploadStatus.TabIndex = 4;
+      labelUploadStatus.Text = "status";
+      labelUploadStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
       // 
       // buttonCancel
       // 
-      this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.buttonCancel.Location = new System.Drawing.Point(272, 331);
-      this.buttonCancel.Name = "buttonCancel";
-      this.buttonCancel.Size = new System.Drawing.Size(157, 32);
-      this.buttonCancel.TabIndex = 5;
-      this.buttonCancel.Text = "Cancel";
-      this.buttonCancel.UseVisualStyleBackColor = true;
-      this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
+      buttonCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+      buttonCancel.Location = new System.Drawing.Point(272, 331);
+      buttonCancel.Name = "buttonCancel";
+      buttonCancel.Size = new System.Drawing.Size(157, 32);
+      buttonCancel.TabIndex = 5;
+      buttonCancel.Text = "Cancel";
+      buttonCancel.UseVisualStyleBackColor = true;
+      buttonCancel.Click += buttonCancel_Click;
       // 
       // ControlUploadTournament
       // 
-      this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-      this.Controls.Add(this.buttonCancel);
-      this.Controls.Add(this.labelUploadStatus);
-      this.Controls.Add(this.progressBar);
-      this.Controls.Add(this.listClasses);
-      this.Controls.Add(this.buttonAction);
-      this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-      this.Name = "ControlUploadTournament";
-      this.Size = new System.Drawing.Size(432, 418);
-      this.Load += new System.EventHandler(this.ControlUploadTournament_Load);
-      this.ResumeLayout(false);
-
+      AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
+      Controls.Add(buttonCancel);
+      Controls.Add(labelUploadStatus);
+      Controls.Add(progressBar);
+      Controls.Add(listClasses);
+      Controls.Add(buttonAction);
+      Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+      Name = "ControlUploadTournament";
+      Size = new System.Drawing.Size(432, 418);
+      Load += ControlUploadTournament_Load;
+      ResumeLayout(false);
     }
 
     #endregion
