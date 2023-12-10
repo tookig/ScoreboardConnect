@@ -48,7 +48,7 @@ namespace ScoreboardConnectUpdate {
         HttpResponseMessage response = await m_client.SendAsync(request, m_cancellationToken.Token);
 
         JsonSerializerOptions options = new JsonSerializerOptions {
-          IgnoreNullValues = true
+          DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
         return await JsonSerializer.DeserializeAsync<Version>(await response.Content.ReadAsStreamAsync(), options) as Version;
       } catch (TaskCanceledException error) {

@@ -20,6 +20,7 @@ namespace ScoreboardConnectWinUI3 {
       FullRowSelect = true;
       HeaderStyle = ColumnHeaderStyle.None;
       CheckBoxes = true;
+      View = View.Details;
     }
 
     public List<TP.Event> GetSelectedTournamentEvents() {
@@ -45,7 +46,7 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     protected void AdjustColumnWidths() {
-      int columnWidth = Width - SystemInformation.VerticalScrollBarWidth;
+      int columnWidth = Width - SystemInformation.VerticalScrollBarWidth - 2;
       foreach (ColumnHeader header in Columns) {
         header.Width = columnWidth;
       }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿using ScoreboardConnectWinUI3.Controls;
+using ScoreboardConnectWinUI3.Forms;
+using ScoreboardLiveApi;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,146 +11,64 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TP;
 
 namespace ScoreboardConnectWinUI3 {
   public partial class FormMain : Form {
-    private static readonly string keyStoreFile = string.Format("{0}\\scoreboardConnectAppKeys.bin", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-    private static readonly string settingsFile = string.Format("{0}\\scoreboardConnectSettings.bin", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-
-    private Settings m_settings;
-    private ScoreboardLiveApi.ApiHelper m_api;
-    private ScoreboardLiveApi.Device m_device;
-    private ScoreboardLiveApi.LocalDomainKeyStore m_keyStore;
-    private ScoreboardLiveApi.Tournament m_tournament;
+    private ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs m_SBConnected;
+    private TPNetworkControl.TPNetworkConnectedEventArgs m_TPNetworkConnected;
 
     public FormMain() {
       InitializeComponent();
-      SetStatusDisconnected();
+      UpdateButtons();
     }
 
-    private void SetStatusDisconnected() {
-      labelConnectionStatus.Text = "Not connected";
-      labelConnectionStatus.ForeColor = Color.Red;
-      labelSelectedUnit.Text = "";
-      pictureLoading.Visible = false;
-      buttonImportTP.Visible = false;
-      buttonTPCourtListen.Visible = false;
-      panelContent.Hide();
+    private void UpdateButtons() {
+      buttonImportTP.Enabled = (m_SBConnected != null) && (m_TPNetworkConnected != null);
     }
 
-    private void SetStatusLoading() {
-      labelConnectionStatus.Text = "Loading...";
-      labelConnectionStatus.ForeColor = Color.Blue;
-      labelSelectedUnit.Text = "";
-      pictureLoading.Visible = true;
-      buttonImportTP.Visible = false;
-      buttonTPCourtListen.Visible = false;
-      panelContent.Hide();
-      buttonRetryConnection.Visible = false;
+
+    private void FormMain_Load(object sender, EventArgs e) {
+      scoreboardLiveControl1.Connected += ScoreboardLiveControl1_Connected;
+      scoreboardLiveControl1.Disconnected += ScoreboardLiveControl1_Disconnected;
+      tpNetworkControl1.Connected += TpNetworkControl1_Connected;
+      tpNetworkControl1.Disconnected += TpNetworkControl1_Disconnected;
     }
 
-    private async Task SetStatusConnected(ScoreboardLiveApi.Device device) {
-      ScoreboardLiveApi.Unit unit = (await m_api.GetUnits()).Find(u => u.UnitID == m_device.UnitID);
-      if (unit == null) {
-        return;
-      }
-      labelSelectedUnit.Text = string.Format("as {0}.", unit.Name);
-      
-      if (m_settings.SelectedTournaments.TryGetValue(unit.UnitID, out int selectedTournamentID)) {
-        m_tournament = await m_api.GetTournament(selectedTournamentID, device);
-        if (m_tournament == null) {
-          return;
-        }
-        labelTournament.Text = m_tournament.Name;
-      }
+    private void TpNetworkControl1_Disconnected(object sender, System.Runtime.CompilerServices.AsyncVoidMethodBuilder e) {
+      m_TPNetworkConnected = null;
+      UpdateButtons();
 
-      labelConnectionStatus.Text = "Connected";
-      labelConnectionStatus.ForeColor = Color.Green;
-      pictureLoading.Visible = false;
-      buttonImportTP.Visible = true;
-      buttonTPCourtListen.Visible = true;
-      panelContent.Hide();
-      buttonRetryConnection.Visible = false;
     }
 
-    private async Task Connect() {
-      SetStatusLoading();
-      m_api = new ScoreboardLiveApi.ApiHelper(m_settings.URL);
-      if ((m_settings.UnitID < 1) || !m_settings.SelectedTournaments.ContainsKey(m_settings.UnitID)) {
-        SetStatusDisconnected();
-        return;
-      }
-      m_device = m_keyStore.Get(m_settings.UnitID);
-      if (m_device == null) {
-        SetStatusDisconnected();
-        return;
-      }
+    private void TpNetworkControl1_Connected(object sender, TPNetworkControl.TPNetworkConnectedEventArgs args) {
+      m_TPNetworkConnected = args;
+      UpdateButtons();
 
-      try {
-        if (await m_api.CheckCredentials(m_device)) {
-          await SetStatusConnected(m_device);
-        } else {
-          SetStatusDisconnected();
-          MessageBoxError(string.Format("Device activation code has expired. Enter a new activation code."));
-        }
-      } catch (Exception e) {
-        SetStatusDisconnected();
-        MessageBoxError(string.Format("Could not verify activation code, make sure settings{1}are correct.{1}{1}{0}", e.Message, Environment.NewLine));
-        buttonRetryConnection.Visible = true;
-      }
     }
 
-    private void LoadKeyStore() {
-      try {
-        m_keyStore = ScoreboardLiveApi.LocalDomainKeyStore.Load(keyStoreFile);
-      } catch (Exception e) {
-        if (MessageBox.Show(this, string.Format("Could not load key store file: {1}{0}{0}Would you like to create a new key store?", e.Message, Environment.NewLine), "Could not load key store", MessageBoxButtons.YesNo) == DialogResult.Yes) {
-          m_keyStore = new ScoreboardLiveApi.LocalDomainKeyStore(m_settings.URL);
-        } else {
-          Close();
-        }
-      }
-      m_keyStore.DefaultDomain = m_settings.URL;
+    private void ScoreboardLiveControl1_Disconnected(object sender, System.Runtime.CompilerServices.AsyncVoidMethodBuilder e) {
+      m_SBConnected = null;
+      UpdateButtons();
+
     }
 
-    private void MessageBoxError(string text) {
-      MessageBox.Show(text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-    }
+    private void ScoreboardLiveControl1_Connected(object sender, ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs args) {
+      m_SBConnected = args;
+      UpdateButtons();
 
-    private async void LoadSettings() {
-      try {
-        m_settings = Settings.Load(settingsFile);
-      } catch (Exception e) {
-        if (File.Exists(settingsFile)) {
-          File.Delete(settingsFile);
-        }
-        m_settings = new Settings("https://www.scoreboardlive.se");
-      }
-    }
-
-    private async void FormMain_Load(object sender, EventArgs e) {
-      LoadSettings();
-      LoadKeyStore();
-      await Connect();
     }
 
     private void buttonExit_Click(object sender, EventArgs e) {
       Close();
     }
 
-    private async void buttonSettings_Click(object sender, EventArgs e) {
-      FormSettings settings = new FormSettings(m_settings, m_keyStore);
-      if (settings.ShowDialog() == DialogResult.OK) {
-        m_settings.URL = settings.URL;
-        m_settings.UnitID = settings.Unit.UnitID;
-        m_settings.SelectedTournaments[m_settings.UnitID] = settings.Tournament.TournamentID;
-        m_settings.Save(settingsFile);
-        m_keyStore.DefaultDomain = m_settings.URL;
-        m_keyStore.Save(keyStoreFile);
-        await Connect();
-      }
+    private void buttonImportTP_Click(object sender, EventArgs e) {
+      FormUpload formUpload = new FormUpload(m_SBConnected.Api, m_SBConnected.Device, m_SBConnected.Tournament, m_TPNetworkConnected.Tournament);
+      formUpload.ShowDialog(this);
     }
 
+    /*
     private void buttonTPCourtListen_Click(object sender, EventArgs e) {
       buttonImportTP.Visible = false;
       buttonTPCourtListen.Visible = false;
@@ -185,15 +106,7 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void buttonImportTP_Click(object sender, EventArgs e) {
-      buttonImportTP.Visible = false;
-      buttonTPCourtListen.Visible = false;
-      panelContent.Controls.Clear();
-      ControlUploadTournament cut = new ControlUploadTournament(m_api, m_device, m_tournament);
-      cut.OperationCompleted += Cut_OperationCompleted;
-      panelContent.Controls.Add(cut);
-      cut.Dock = DockStyle.Fill;
-      panelContent.Show();
-      buttonSettings.Hide();
+
     }
 
     private void Cut_OperationCompleted(object sender, EventArgs e) {
@@ -206,6 +119,7 @@ namespace ScoreboardConnectWinUI3 {
     private async void buttonRetryConnection_Click(object sender, EventArgs e) {
       await Connect();
     }
+        */
 
     private void FormMain_Shown(object sender, EventArgs e) {
       ScoreboardConnectUpdate.UpdateForm updateForm = new ScoreboardConnectUpdate.UpdateForm();

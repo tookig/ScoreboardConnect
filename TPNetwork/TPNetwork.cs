@@ -29,14 +29,10 @@ namespace TPNetwork {
     }
 
     private async Task PreSend() {
-      // Check if this has already been done
-      if (!string.IsNullOrEmpty(Password)) {
-        return;
-      }
       // Send the request
       var xml = await SendRequest(new Messages.Login());
       // Find the ITEM element with attribute ID="Password" and get its value
-      Password = xml.SelectSingleNode("//ITEM[@ID='Password']").InnerText;
+      Password = xml.SelectSingleNode("//ITEM[@ID='Password']")?.InnerText;
     }
 
     private void PostSend(XmlDocument xml) {

@@ -15,7 +15,7 @@ namespace TestTp {
     static void Main(string[] args) {
       TPNetwork.SocketClient client = new TPNetwork.SocketClient();
      
-      var visualXml = new TP.VisualXML.TPNetwork(client.GetTournamentInfo());
+      var visualXml = new TP.VisualXML.TPNetwork(client.GetTournamentInfo().Result);
       
       var tournament = TP.Tournament.LoadFromVisualXML(visualXml);
       PrintTournament(tournament);

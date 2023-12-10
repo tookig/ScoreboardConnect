@@ -20,7 +20,9 @@ namespace TPNetwork.Messages {
 
       var _action = CreateGroup("Action");
       _action.AppendChild(CreateItem("ID", "String", actionID));
-      _action.AppendChild(CreateItem("Password", "String", password));
+      if (!string.IsNullOrEmpty(password)) {
+        _action.AppendChild(CreateItem("Password", "String", password));
+      }
       root.AppendChild(_action);
 
       var client = CreateGroup("Client");
