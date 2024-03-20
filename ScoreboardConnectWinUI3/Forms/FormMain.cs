@@ -43,6 +43,7 @@ namespace ScoreboardConnectWinUI3 {
 
     private void TpNetworkControl1_Connected(object sender, TPNetworkControl.TPNetworkConnectedEventArgs args) {
       m_TPNetworkConnected = args;
+      tournamenttvControl.SetInitialState(args.Tournament);
       UpdateButtons();
 
     }

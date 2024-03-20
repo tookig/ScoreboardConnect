@@ -111,6 +111,7 @@ namespace TP {
         TournamentSettings = tournamentSettings,
         Events = events,
         Entries = entries,
+        Courts = courts,
       };
       
       return tournament;

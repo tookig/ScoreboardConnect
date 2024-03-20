@@ -64,8 +64,10 @@ namespace ScoreboardConnectWinUI3.Controls {
 
     private async void TPNetworkControl_Load(object sender, EventArgs e) {
       SetStatusNotConnected();
-      await CheckConnection();
-      connectionCheckTimer.Start();
+      if (!DesignMode) {
+        await CheckConnection();
+        connectionCheckTimer.Start();
+      }
     }
 
     private async void connectionCheckTimer_Tick(object sender, EventArgs e) {

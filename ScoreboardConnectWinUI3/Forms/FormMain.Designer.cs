@@ -35,13 +35,14 @@ namespace ScoreboardConnectWinUI3
       panelContent = new System.Windows.Forms.Panel();
       scoreboardLiveControl1 = new Controls.ScoreboardLiveControl();
       tpNetworkControl1 = new Controls.TPNetworkControl();
+      tournamenttvControl = new Controls.TournamentTVControl();
       panelContent.SuspendLayout();
       SuspendLayout();
       // 
       // buttonExit
       // 
       buttonExit.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-      buttonExit.Location = new System.Drawing.Point(720, 589);
+      buttonExit.Location = new System.Drawing.Point(552, 753);
       buttonExit.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
       buttonExit.Name = "buttonExit";
       buttonExit.Size = new System.Drawing.Size(97, 38);
@@ -55,7 +56,7 @@ namespace ScoreboardConnectWinUI3
       buttonTPCourtListen.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
       buttonTPCourtListen.Image = Resource1.calendar;
       buttonTPCourtListen.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-      buttonTPCourtListen.Location = new System.Drawing.Point(565, 3);
+      buttonTPCourtListen.Location = new System.Drawing.Point(397, 3);
       buttonTPCourtListen.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
       buttonTPCourtListen.Name = "buttonTPCourtListen";
       buttonTPCourtListen.Padding = new System.Windows.Forms.Padding(18, 0, 0, 0);
@@ -84,10 +85,10 @@ namespace ScoreboardConnectWinUI3
       panelContent.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       panelContent.Controls.Add(buttonImportTP);
       panelContent.Controls.Add(buttonTPCourtListen);
-      panelContent.Location = new System.Drawing.Point(13, 453);
+      panelContent.Location = new System.Drawing.Point(13, 617);
       panelContent.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
       panelContent.Name = "panelContent";
-      panelContent.Size = new System.Drawing.Size(804, 129);
+      panelContent.Size = new System.Drawing.Size(636, 129);
       panelContent.TabIndex = 8;
       // 
       // scoreboardLiveControl1
@@ -95,7 +96,7 @@ namespace ScoreboardConnectWinUI3
       scoreboardLiveControl1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       scoreboardLiveControl1.Location = new System.Drawing.Point(11, 12);
       scoreboardLiveControl1.Name = "scoreboardLiveControl1";
-      scoreboardLiveControl1.Size = new System.Drawing.Size(804, 195);
+      scoreboardLiveControl1.Size = new System.Drawing.Size(636, 195);
       scoreboardLiveControl1.TabIndex = 9;
       // 
       // tpNetworkControl1
@@ -103,14 +104,23 @@ namespace ScoreboardConnectWinUI3
       tpNetworkControl1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       tpNetworkControl1.Location = new System.Drawing.Point(13, 213);
       tpNetworkControl1.Name = "tpNetworkControl1";
-      tpNetworkControl1.Size = new System.Drawing.Size(802, 209);
+      tpNetworkControl1.Size = new System.Drawing.Size(634, 209);
       tpNetworkControl1.TabIndex = 10;
+      // 
+      // tournamenttvControl
+      // 
+      tournamenttvControl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      tournamenttvControl.Location = new System.Drawing.Point(18, 428);
+      tournamenttvControl.Name = "tournamenttvControl";
+      tournamenttvControl.Size = new System.Drawing.Size(629, 160);
+      tournamenttvControl.TabIndex = 11;
       // 
       // FormMain
       // 
       AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
       AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-      ClientSize = new System.Drawing.Size(828, 639);
+      ClientSize = new System.Drawing.Size(660, 803);
+      Controls.Add(tournamenttvControl);
       Controls.Add(tpNetworkControl1);
       Controls.Add(scoreboardLiveControl1);
       Controls.Add(buttonExit);
@@ -132,6 +142,7 @@ namespace ScoreboardConnectWinUI3
     private System.Windows.Forms.Panel panelContent;
     private Controls.ScoreboardLiveControl scoreboardLiveControl1;
     private Controls.TPNetworkControl tpNetworkControl1;
+    private Controls.TournamentTVControl tournamenttvControl;
   }
 }
 

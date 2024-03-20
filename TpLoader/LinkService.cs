@@ -20,7 +20,7 @@ namespace TP {
                        ScoreboardLiveApi.Tournament tournament, 
                        SBUploader.ICourtMapper mapper) {
       m_sbUploader = new SBUploader(helper, device, tournament, mapper);
-      m_tpListener = new TPListener(sourceTPFile);
+      m_tpListener = new TPListener();
       InitEvents();
     }
 
@@ -47,6 +47,7 @@ namespace TP {
 
     private void tpListener_CourtUpdate(object sender, TPListener.TPCourtUpdateEventArgs e) {
       Task.Run(async () => {
+        /*
         ScoreboardLiveApi.Match newSbMatch = null;
         ScoreboardLiveApi.Court selectedCourt = null;
         try {
@@ -63,6 +64,7 @@ namespace TP {
         } else {
           OnServiceWarning(string.Format("No ScoreboardLive court could be mapped for TP court named {1};{0}Court could not be updated.", Environment.NewLine,  e.CourtName));
         }
+        */
       });
     }
 
