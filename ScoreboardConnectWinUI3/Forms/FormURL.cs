@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ScoreboardLiveApi;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -29,7 +30,7 @@ namespace ScoreboardConnectWinUI3 {
 
     private void buttonOK_Click(object sender, EventArgs e) {
       // Try and get units from server
-      ScoreboardLiveApi.ApiHelper api = new ScoreboardLiveApi.ApiHelper(URL);
+      ApiHelper api = new ApiHelper(URL, acceptAnyCertificates: true); // TODO: Remove acceptAnyCertificates in production
       textURL.Enabled = false;
       pictureLoading.Visible = true;
       api.GetUnits().ContinueWith(t => {

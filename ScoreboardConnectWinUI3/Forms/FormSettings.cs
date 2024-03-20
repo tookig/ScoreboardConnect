@@ -52,7 +52,7 @@ namespace ScoreboardConnectWinUI3 {
       textURL.Text = defaults.URL;
       m_keyStore = keyStore;
       m_keyStore.DefaultDomain = defaults.URL;
-      m_api = new ApiHelper(defaults.URL);
+      m_api = new ApiHelper(defaults.URL, acceptAnyCertificates: true); // TODO: Remove acceptAnyCertificates in production
       SetDeviceStatusNotConnected();
     }
 
@@ -156,7 +156,7 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void buttonSetURL_Click(object sender, EventArgs e) {
-      FormURL url = new FormURL(textURL.Text);
+      FormURL url = new FormURL(textURL.Text, m_api);
       if (url.ShowDialog() == DialogResult.OK) {
         textURL.Text = url.URL;
         m_api.BaseUrl = url.URL;

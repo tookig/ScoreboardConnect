@@ -85,7 +85,7 @@ namespace ScoreboardConnectWinUI3.Controls {
 
     private async Task Connect() {
       SetStatusLoading();
-      m_api = new ApiHelper(m_settings.URL);
+      m_api = new ApiHelper(m_settings.URL, acceptAnyCertificates: true); // TODO: Remove acceptAnyCertificates in production
       if ((m_settings.UnitID < 1) || !m_settings.SelectedTournaments.ContainsKey(m_settings.UnitID)) {
         SetStatusDisconnected();
         return;
@@ -138,9 +138,11 @@ namespace ScoreboardConnectWinUI3.Controls {
     }
 
     private async void ScoreboardLiveControl_Load(object sender, EventArgs e) {
-      LoadSettings();
-      LoadKeyStore();
-      await Connect();
+      if (!DesignMode) {
+        LoadSettings();
+        LoadKeyStore();
+        await Connect();
+      }
     }
 
     private async void buttonSettings_Click(object sender, EventArgs e) {
