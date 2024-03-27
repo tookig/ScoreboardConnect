@@ -6,10 +6,33 @@ using System.Data;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ScoreboardConnectWinUI3 {
   // https://docs.microsoft.com/en-us/troubleshoot/developer/visualstudio/csharp/language-compilers/use-combobox-edit-listview
-  public class CourtListView : ListView {
+  public class CourtListView : ListView, ICourtCorrelator {
+    private class TPCourtComparer : IEqualityComparer<TP.Court> {
+      public bool Equals(TP.Court x, TP.Court y) {
+        return (x != null) && (y!= null) && (x.ID == y.ID);
+      }
+
+      public int GetHashCode(TP.Court obj) {
+        return obj.ID.GetHashCode();
+      }
+    }
+
+    private class SBCourtComparer : IEqualityComparer<ScoreboardLiveApi.Court> {
+      public bool Equals(ScoreboardLiveApi.Court x, ScoreboardLiveApi.Court y) {
+        return (x != null) && (y != null) && (x.CourtID == y.CourtID);
+      }
+
+      public int GetHashCode([DisallowNull] ScoreboardLiveApi.Court obj) {
+        return obj.CourtID.GetHashCode();
+      }
+    }
+
+    private string m_NOT_SET = "<not set>";
+
     /// <summary>
     /// Required designer variable.
     /// </summary>
@@ -17,8 +40,15 @@ namespace ScoreboardConnectWinUI3 {
 
     public event EventHandler<(int, string)> CourtAssignmentChanged;
 
+    private List<TP.Court> m_tpCourts = new List<TP.Court>();
+    private List<ScoreboardLiveApi.Court> m_sbCourts = new List<ScoreboardLiveApi.Court>();
+
     private ComboBox m_combo = new ComboBox();
     private ListViewItem m_currentItem;
+
+    private TPCourtComparer m_TPCourtComparer = new TPCourtComparer();
+    private SBCourtComparer m_SBCourtComparer = new SBCourtComparer();
+
 
     public CourtListView() {
       InitializeComponent();
@@ -28,27 +58,62 @@ namespace ScoreboardConnectWinUI3 {
 
       m_combo.SelectedValueChanged += combo_SelectedValueChanged;
       m_combo.Leave += combo_SelectedValueChanged;
-    }
-
-    public void Populate(List<ScoreboardLiveApi.Court> sbCourts, List<TP.Court> tpCourts) {
-      Items.Clear();
-      foreach (ScoreboardLiveApi.Court sbCourt in sbCourts) {
-        var lvi = Items.Add(new ListViewItem(sbCourt.Name) {
-          Tag = sbCourt
-        });
-        lvi.SubItems.Add("<not set>");
-      }
-
-      m_combo.Items.Clear();
-      m_combo.Items.AddRange(tpCourts.ToArray());
+      m_combo.KeyUp += (sender, e) => {
+        if (e.KeyCode == Keys.Escape) {
+          m_combo.Visible = false;
+        }
+      };
       m_combo.DropDownStyle = ComboBoxStyle.DropDownList;
     }
 
+    public void SetTPCourts(List<TP.Court> tpCourts) {
+      Invoke((MethodInvoker)delegate {
+          if (m_tpCourts != null) {
+          foreach (TP.Court checkCourt in m_tpCourts) {
+            if (!tpCourts.Contains(checkCourt, m_TPCourtComparer)) {
+              foreach (ListViewItem item in Items) {
+                if (m_TPCourtComparer.Equals(item.SubItems[1].Tag as TP.Court, checkCourt)) {
+                  item.SubItems[1].Text = m_NOT_SET;
+                  item.SubItems[1].Tag = null;
+                }
+              }
+            }
+          }
+        }
+        m_tpCourts = tpCourts;
+        m_combo.Items.Clear();
+        m_combo.Items.AddRange(tpCourts.ToArray());
+       });
+    }
+
+    public void SetSBCourts(List<ScoreboardLiveApi.Court> sbCourts) {
+      Invoke((MethodInvoker)delegate {
+        foreach (ScoreboardLiveApi.Court checkCourt in m_sbCourts) {
+          if (!sbCourts.Contains(checkCourt, m_SBCourtComparer)) {
+            foreach (ListViewItem item in Items) {
+              if (m_SBCourtComparer.Equals(item.Tag as ScoreboardLiveApi.Court, checkCourt)) {
+                Items.Remove(item);
+              }
+            }
+          }
+        }
+        foreach (ScoreboardLiveApi.Court sbCourt in sbCourts) {
+          if (!m_sbCourts.Contains(sbCourt, m_SBCourtComparer)) {
+            var lvi = Items.Add(new ListViewItem(sbCourt.Name) {
+              Tag = sbCourt
+            });
+            lvi.SubItems.Add(m_NOT_SET);
+          }
+        }
+        m_sbCourts = sbCourts;
+      });
+    }
+
     private void combo_SelectedValueChanged(object sender, EventArgs e) {
-      if (m_currentItem == null) return;
-      m_currentItem.SubItems[1].Text = m_combo.Text;
-      m_currentItem.SubItems[1].Tag = m_combo.SelectedItem;
       m_combo.Visible = false;
+      if (m_currentItem == null) return;
+      m_currentItem.SubItems[1].Text = m_combo.SelectedItem != null ? m_combo.Text : m_NOT_SET;
+      m_currentItem.SubItems[1].Tag = m_combo.SelectedItem;
       CourtAssignmentChanged?.Invoke(this, ((((ScoreboardLiveApi.Court)m_currentItem.Tag).CourtID), (m_combo.SelectedItem as TP.Court)?.Name));
     }
 
@@ -130,6 +195,7 @@ namespace ScoreboardConnectWinUI3 {
       m_combo.Visible = true;
       m_combo.BringToFront();
       m_combo.Focus();
+      m_combo.DroppedDown = true;
     }
 
     #region Component Designer generated code

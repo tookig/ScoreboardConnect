@@ -18,8 +18,13 @@ namespace ScoreboardConnectWinUI3 {
     private ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs m_SBConnected;
     private TPNetworkControl.TPNetworkConnectedEventArgs m_TPNetworkConnected;
 
+    private RequestCoordinator m_requestCoordinator;
+
     public FormMain() {
       InitializeComponent();
+
+      m_requestCoordinator = new RequestCoordinator(tpNetworkControl1.SocketClient, tournamenttvControl.Listener, courtListView);
+
       UpdateButtons();
     }
 
@@ -56,12 +61,8 @@ namespace ScoreboardConnectWinUI3 {
 
     private void ScoreboardLiveControl1_Connected(object sender, ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs args) {
       m_SBConnected = args;
+      m_requestCoordinator.ApiInfo = args;
       UpdateButtons();
-
-    }
-
-    private void buttonExit_Click(object sender, EventArgs e) {
-      Close();
     }
 
     private void buttonImportTP_Click(object sender, EventArgs e) {
@@ -125,6 +126,10 @@ namespace ScoreboardConnectWinUI3 {
     private void FormMain_Shown(object sender, EventArgs e) {
       ScoreboardConnectUpdate.UpdateForm updateForm = new ScoreboardConnectUpdate.UpdateForm();
       updateForm.ShowDialog(this);
+    }
+
+    private void exitToolStripMenuItem_Click(object sender, EventArgs e) {
+      Close();
     }
   }
 }

@@ -99,7 +99,7 @@ namespace ScoreboardConnectWinUI3 {
         ShowError("Could not load courts from the ScoreboardLive server.", e);
         return false;
       }
-      courtList.Populate(m_sbCourts, m_tpCourts);
+      // courtList.Populate(m_sbCourts, m_tpCourts);
       return true;
     }
 

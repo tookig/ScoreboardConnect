@@ -42,7 +42,7 @@
       groupBox1.ForeColor = System.Drawing.Color.IndianRed;
       groupBox1.Location = new System.Drawing.Point(0, 0);
       groupBox1.Name = "groupBox1";
-      groupBox1.Size = new System.Drawing.Size(557, 159);
+      groupBox1.Size = new System.Drawing.Size(557, 109);
       groupBox1.TabIndex = 0;
       groupBox1.TabStop = false;
       groupBox1.Text = "Tournament Planner Network";
@@ -52,7 +52,7 @@
       labelTournament.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       labelTournament.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
       labelTournament.ForeColor = System.Drawing.Color.RoyalBlue;
-      labelTournament.Location = new System.Drawing.Point(4, 63);
+      labelTournament.Location = new System.Drawing.Point(4, 25);
       labelTournament.Name = "labelTournament";
       labelTournament.Size = new System.Drawing.Size(548, 32);
       labelTournament.TabIndex = 3;
@@ -61,24 +61,26 @@
       // 
       // labelInstructions
       // 
+      labelInstructions.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       labelInstructions.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
       labelInstructions.ForeColor = System.Drawing.Color.Black;
-      labelInstructions.Location = new System.Drawing.Point(6, 61);
+      labelInstructions.Location = new System.Drawing.Point(6, 23);
       labelInstructions.Margin = new System.Windows.Forms.Padding(10, 0, 3, 0);
       labelInstructions.Name = "labelInstructions";
       labelInstructions.Padding = new System.Windows.Forms.Padding(20);
-      labelInstructions.Size = new System.Drawing.Size(545, 103);
+      labelInstructions.Size = new System.Drawing.Size(545, 91);
       labelInstructions.TabIndex = 2;
       labelInstructions.Text = "- Open the tournament in Tournament Planner\r\n- Select the menu Extra > Tournament Planner Network\r\n- Click the \"Enable\"-button";
       // 
       // labelStatus
       // 
-      labelStatus.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      labelStatus.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+      labelStatus.AutoSize = true;
       labelStatus.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
       labelStatus.ForeColor = System.Drawing.Color.Red;
-      labelStatus.Location = new System.Drawing.Point(3, 29);
+      labelStatus.Location = new System.Drawing.Point(415, 0);
       labelStatus.Name = "labelStatus";
-      labelStatus.Size = new System.Drawing.Size(548, 32);
+      labelStatus.Size = new System.Drawing.Size(136, 25);
       labelStatus.TabIndex = 1;
       labelStatus.Text = "Not connected";
       labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -94,9 +96,10 @@
       AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       Controls.Add(groupBox1);
       Name = "TPNetworkControl";
-      Size = new System.Drawing.Size(557, 159);
+      Size = new System.Drawing.Size(557, 109);
       Load += TPNetworkControl_Load;
       groupBox1.ResumeLayout(false);
+      groupBox1.PerformLayout();
       ResumeLayout(false);
     }
 

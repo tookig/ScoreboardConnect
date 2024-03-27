@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TP;
+using TPNetwork;
 
 namespace ScoreboardConnectWinUI3.Controls {
   public partial class TPNetworkControl : UserControl {
@@ -18,6 +19,8 @@ namespace ScoreboardConnectWinUI3.Controls {
 
     public event EventHandler<TPNetworkConnectedEventArgs> Connected;
     public event EventHandler<AsyncVoidMethodBuilder> Disconnected;
+
+    public SocketClient SocketClient => m_socketClient;
 
     public class TPNetworkConnectedEventArgs : EventArgs {
       public Tournament Tournament { get; set; }

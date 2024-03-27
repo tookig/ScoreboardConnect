@@ -21,18 +21,6 @@ namespace TestTp {
       PrintTournament(tournament);
     }
 
-    static void MainX(string[] args) {
-      TP.TPListener listener = new TP.TPListener("D:\\Tmp\\lergok.tp", "D:\\Tmp");
-      listener.ServiceStarted += (sender, e) => Console.WriteLine("Listener started");
-      listener.ServiceError += (sender, e) => Console.WriteLine(e.Item2.Message);
-      listener.ServiceStopped += (sender, e) => Console.WriteLine("Listener stopped");
-      listener.CourtUpdate += (sender, e) => Console.WriteLine("Court '{0}' updated with match {1}", e.CourtName, e.Match);
-      // listener.TournamentUpdate += (sender, e) => PrintTournament(e);
-      listener.Start();
-      Console.WriteLine("Press any key to stop");
-      Console.ReadKey();
-      listener.Stop();
-    }
 
     static void PrintTournament(TP.Tournament tournament) {
       foreach (TP.Event ev in tournament.Events) {

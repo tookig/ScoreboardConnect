@@ -16,7 +16,9 @@ namespace ScoreboardConnectWinUI3.Controls {
     private TP.TPListener m_listener = new TP.TPListener();
     private DateTime? m_lastUpdate = null;
     private DateTime? m_lastConnectionTry = null;
-    private String m_lastError = null;
+    private string m_lastError = null;
+
+    public TPListener Listener => m_listener;
 
     public TournamentTVControl() {
       InitializeComponent();
