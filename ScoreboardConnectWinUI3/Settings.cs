@@ -6,7 +6,7 @@ using System.IO;
 
 namespace ScoreboardConnectWinUI3 {
   [Serializable]
-  class Settings : ISerializable {
+  public class Settings : ISerializable {
     public int UnitID { get; set; }
     public string URL { get; set; }
     public Dictionary<int, int> SelectedTournaments { get; private set; }

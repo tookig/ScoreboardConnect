@@ -14,13 +14,11 @@ using System.Windows.Forms;
 
 namespace ScoreboardConnectWinUI3.Controls {
   public partial class ScoreboardLiveControl : UserControl {
-    private static readonly string keyStoreFile = string.Format("{0}\\scoreboardConnectAppKeys.bin", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-    private static readonly string settingsFile = string.Format("{0}\\scoreboardConnectSettings.bin", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-
+   
     private Settings m_settings;
     private ApiHelper m_api;
     private Device m_device;
-    private LocalDomainKeyStore m_keyStore;
+    private IKeyStore m_keyStore;
     private Tournament m_tournament;
 
     public event EventHandler<ScoreboardLiveConnectedEventArgs> Connected;
@@ -41,6 +39,12 @@ namespace ScoreboardConnectWinUI3.Controls {
       InitializeComponent();
       SetStatusDisconnected();
     }
+
+    public void SetSettings(Settings settings, IKeyStore keyStore) {
+      m_settings = settings ?? throw new ArgumentNullException("settings", "Settings reference cannot be null");
+      m_keyStore = keyStore ?? throw new ArgumentNullException("keyStore", "Key store reference cannot be null");
+      _ = Connect();
+     }
 
     private void SetStatusDisconnected() {
       labelStatus.Text = "Not connected";
@@ -72,8 +76,6 @@ namespace ScoreboardConnectWinUI3.Controls {
         return;
       }
 
-
-
       labelUnit.Text = string.Format(unit.Name);
       labelTournament.Text = m_tournament.Name;
       labelStatus.Text = "Connected";
@@ -84,6 +86,10 @@ namespace ScoreboardConnectWinUI3.Controls {
     }
 
     private async Task Connect() {
+      if ((m_settings == null) || (m_keyStore == null)) {
+        throw new InvalidOperationException("Settings and key store must be set before connecting");
+      }
+
       SetStatusLoading();
       m_api = new ApiHelper(m_settings.URL, acceptAnyCertificates: true); // TODO: Remove acceptAnyCertificates in production
       if ((m_settings.UnitID < 1) || !m_settings.SelectedTournaments.ContainsKey(m_settings.UnitID)) {
@@ -109,53 +115,11 @@ namespace ScoreboardConnectWinUI3.Controls {
       }
     }
 
-    private void LoadSettings() {
-      try {
-        m_settings = Settings.Load(settingsFile);
-      } catch {
-        if (File.Exists(settingsFile)) {
-          File.Delete(settingsFile);
-        }
-        m_settings = new Settings("https://www.scoreboardlive.se");
-      }
-    }
-
-    private void LoadKeyStore() {
-      try {
-        m_keyStore = ScoreboardLiveApi.LocalDomainKeyStore.Load(keyStoreFile);
-      } catch (Exception e) {
-        if (MessageBox.Show(this, string.Format("Could not load key store file: {1}{0}{0}Would you like to create a new key store?", e.Message, Environment.NewLine), "Could not load key store", MessageBoxButtons.YesNo) == DialogResult.Yes) {
-          m_keyStore = new ScoreboardLiveApi.LocalDomainKeyStore(m_settings.URL);
-        } else {
-          Application.Exit();
-        }
-      }
-      m_keyStore.DefaultDomain = m_settings.URL;
-    }
-
     private void MessageBoxError(string text) {
       MessageBox.Show(text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 
-    private async void ScoreboardLiveControl_Load(object sender, EventArgs e) {
-      if (!DesignMode) {
-        LoadSettings();
-        LoadKeyStore();
-        await Connect();
-      }
-    }
-
-    private async void buttonSettings_Click(object sender, EventArgs e) {
-      FormSettings settings = new FormSettings(m_settings, m_keyStore);
-      if (settings.ShowDialog() == DialogResult.OK) {
-        m_settings.URL = settings.URL;
-        m_settings.UnitID = settings.Unit.UnitID;
-        m_settings.SelectedTournaments[m_settings.UnitID] = settings.Tournament.TournamentID;
-        m_settings.Save(settingsFile);
-        m_keyStore.DefaultDomain = m_settings.URL;
-        m_keyStore.Save(keyStoreFile);
-        await Connect();
-      }
+    private void ScoreboardLiveControl_Load(object sender, EventArgs e) {
     }
   }
 }

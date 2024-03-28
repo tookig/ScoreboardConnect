@@ -36,10 +36,12 @@ namespace ScoreboardConnectWinUI3
       tpNetworkControl1 = new Controls.TPNetworkControl();
       tournamenttvControl = new Controls.TournamentTVControl();
       groupCourts = new System.Windows.Forms.GroupBox();
+      courtListView = new CourtListView();
       menuMain = new System.Windows.Forms.MenuStrip();
       fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-      courtListView = new CourtListView();
+      settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+      toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
       panelContent.SuspendLayout();
       groupCourts.SuspendLayout();
       menuMain.SuspendLayout();
@@ -122,30 +124,6 @@ namespace ScoreboardConnectWinUI3
       groupCourts.TabStop = false;
       groupCourts.Text = "Courts";
       // 
-      // menuMain
-      // 
-      menuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem });
-      menuMain.Location = new System.Drawing.Point(0, 0);
-      menuMain.Name = "menuMain";
-      menuMain.Size = new System.Drawing.Size(562, 24);
-      menuMain.TabIndex = 13;
-      menuMain.Text = "menuStrip1";
-      // 
-      // fileToolStripMenuItem
-      // 
-      fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { exitToolStripMenuItem });
-      fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-      fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
-      fileToolStripMenuItem.Text = "&File";
-      // 
-      // exitToolStripMenuItem
-      // 
-      exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-      exitToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.X;
-      exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-      exitToolStripMenuItem.Text = "E&xit";
-      exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
-      // 
       // courtListView
       // 
       courtListView.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -158,6 +136,42 @@ namespace ScoreboardConnectWinUI3
       courtListView.TabIndex = 0;
       courtListView.UseCompatibleStateImageBehavior = false;
       courtListView.View = System.Windows.Forms.View.Details;
+      // 
+      // menuMain
+      // 
+      menuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem });
+      menuMain.Location = new System.Drawing.Point(0, 0);
+      menuMain.Name = "menuMain";
+      menuMain.Size = new System.Drawing.Size(562, 24);
+      menuMain.TabIndex = 13;
+      menuMain.Text = "menuStrip1";
+      // 
+      // fileToolStripMenuItem
+      // 
+      fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { settingsToolStripMenuItem, toolStripSeparator1, exitToolStripMenuItem });
+      fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+      fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+      fileToolStripMenuItem.Text = "&File";
+      // 
+      // exitToolStripMenuItem
+      // 
+      exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+      exitToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.X;
+      exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+      exitToolStripMenuItem.Text = "E&xit";
+      exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
+      // 
+      // settingsToolStripMenuItem
+      // 
+      settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+      settingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+      settingsToolStripMenuItem.Text = "&Settings";
+      settingsToolStripMenuItem.Click += settingsToolStripMenuItem_Click;
+      // 
+      // toolStripSeparator1
+      // 
+      toolStripSeparator1.Name = "toolStripSeparator1";
+      toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
       // 
       // FormMain
       // 
@@ -198,6 +212,8 @@ namespace ScoreboardConnectWinUI3
     private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
     private CourtListView courtListView;
+    private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
+    private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
   }
 }
 

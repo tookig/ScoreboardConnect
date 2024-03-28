@@ -13,11 +13,11 @@ namespace ScoreboardConnectWinUI3 {
   public class CourtListView : ListView, ICourtCorrelator {
     private class TPCourtComparer : IEqualityComparer<TP.Court> {
       public bool Equals(TP.Court x, TP.Court y) {
-        return (x != null) && (y!= null) && (x.ID == y.ID);
+        return (x != null) && (y!= null) && (x.Name == y.Name);
       }
 
       public int GetHashCode(TP.Court obj) {
-        return obj.ID.GetHashCode();
+        return obj.Name.GetHashCode();
       }
     }
 
