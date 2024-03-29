@@ -71,7 +71,7 @@ namespace ScoreboardConnectWinUI3 {
       if (!DesignMode) {
         LoadSettings();
         LoadKeyStore();
-        scoreboardLiveControl1.SetSettings(m_settings, m_keyStore);
+        SettingsChanged();
       }
       scoreboardLiveControl1.Connected += ScoreboardLiveControl1_Connected;
       scoreboardLiveControl1.Disconnected += ScoreboardLiveControl1_Disconnected;
@@ -115,6 +115,13 @@ namespace ScoreboardConnectWinUI3 {
     private void buttonImportTP_Click(object sender, EventArgs e) {
       FormUpload formUpload = new FormUpload(m_SBConnected.Api, m_SBConnected.Device, m_SBConnected.Tournament, m_TPNetworkConnected.Tournament);
       formUpload.ShowDialog(this);
+    }
+
+    private void SettingsChanged() {
+      if (m_settings.CourtSetup.TryGetValue(m_settings.UnitID, out Dictionary<int, string> courtSetup)) {
+        courtListView.SetDefaultSetup(courtSetup);
+      }
+      scoreboardLiveControl1.SetSettings(m_settings, m_keyStore);
     }
 
     /*
@@ -188,7 +195,7 @@ namespace ScoreboardConnectWinUI3 {
         m_settings.Save(settingsFile);
         m_keyStore.DefaultDomain = m_settings.URL;
         m_keyStore.Save(keyStoreFile);
-        scoreboardLiveControl1.SetSettings(m_settings, m_keyStore);
+        SettingsChanged();
       }
     }
   }

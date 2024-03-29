@@ -40,8 +40,9 @@ namespace ScoreboardConnectWinUI3 {
 
     public event EventHandler<(int, string)> CourtAssignmentChanged;
 
-    private List<TP.Court> m_tpCourts = new List<TP.Court>();
-    private List<ScoreboardLiveApi.Court> m_sbCourts = new List<ScoreboardLiveApi.Court>();
+    private List<TP.Court> m_tpCourts = new();
+    private List<ScoreboardLiveApi.Court> m_sbCourts = new();
+    private Dictionary<int, string> m_defaultSetup = new();
 
     private ComboBox m_combo = new ComboBox();
     private ListViewItem m_currentItem;
@@ -66,47 +67,102 @@ namespace ScoreboardConnectWinUI3 {
       m_combo.DropDownStyle = ComboBoxStyle.DropDownList;
     }
 
+    public void SetDefaultSetup(Dictionary<int, string> defaultSetup) {
+      if (defaultSetup == null) throw new ArgumentNullException("defaultSetup", "Default setup dictionary reference cannot be null");
+      m_defaultSetup.Clear();
+      defaultSetup.ToList().ForEach(kvp => m_defaultSetup.Add(kvp.Key, kvp.Value));
+    }
+
     public void SetTPCourts(List<TP.Court> tpCourts) {
+      if (tpCourts == null) throw new ArgumentNullException("tpCourts", "TP courts list reference cannot be null");
+      if (tpCourts.Exists(tpCourt => tpCourt == null)) throw new ArgumentNullException("tpCourts", "TP courts list cannot contain a null value");
+
       Invoke((MethodInvoker)delegate {
-          if (m_tpCourts != null) {
-          foreach (TP.Court checkCourt in m_tpCourts) {
-            if (!tpCourts.Contains(checkCourt, m_TPCourtComparer)) {
-              foreach (ListViewItem item in Items) {
-                if (m_TPCourtComparer.Equals(item.SubItems[1].Tag as TP.Court, checkCourt)) {
-                  item.SubItems[1].Text = m_NOT_SET;
-                  item.SubItems[1].Tag = null;
-                }
-              }
-            }
-          }
-        }
-        m_tpCourts = tpCourts;
-        m_combo.Items.Clear();
-        m_combo.Items.AddRange(tpCourts.ToArray());
+        m_tpCourts.ForEach(RemoveTPCourt);
+        m_tpCourts.Clear();
+        tpCourts.ForEach(AddTPCourt);
        });
     }
 
+    public void AddTPCourt(TP.Court tpCourt) {
+      if (tpCourt == null) throw new ArgumentNullException("tpCourt", "TP court reference cannot be null");
+      if (m_tpCourts.Contains(tpCourt, m_TPCourtComparer)) return;
+            
+      m_tpCourts.Add(tpCourt);
+      m_combo.Items.Add(tpCourt);
+
+      CheckAllDefaultValues();
+    }
+
+    public void RemoveTPCourt(TP.Court tpCourt) {
+      if (tpCourt == null) throw new ArgumentNullException("tpCourt", "TP court reference cannot be null");
+      if (!m_tpCourts.Contains(tpCourt, m_TPCourtComparer)) return;
+
+      m_tpCourts.Remove(tpCourt);
+      m_combo.Items.Remove(tpCourt);
+
+      foreach (ListViewItem item in Items) {
+        if (m_TPCourtComparer.Equals(item.SubItems[1].Tag as TP.Court, tpCourt)) {
+          item.SubItems[1].Text = m_NOT_SET;
+          item.SubItems[1].Tag = null;
+        }
+      }
+    }
+
     public void SetSBCourts(List<ScoreboardLiveApi.Court> sbCourts) {
+      if (sbCourts == null) throw new ArgumentNullException("sbCourts", "Court list reference cannot be null");
+      if (sbCourts.Exists(sbCourt => sbCourt == null)) throw new ArgumentNullException("sbCourts", "Courts list cannot contain a null value");
+
       Invoke((MethodInvoker)delegate {
-        foreach (ScoreboardLiveApi.Court checkCourt in m_sbCourts) {
-          if (!sbCourts.Contains(checkCourt, m_SBCourtComparer)) {
-            foreach (ListViewItem item in Items) {
-              if (m_SBCourtComparer.Equals(item.Tag as ScoreboardLiveApi.Court, checkCourt)) {
-                Items.Remove(item);
-              }
-            }
-          }
-        }
-        foreach (ScoreboardLiveApi.Court sbCourt in sbCourts) {
-          if (!m_sbCourts.Contains(sbCourt, m_SBCourtComparer)) {
-            var lvi = Items.Add(new ListViewItem(sbCourt.Name) {
-              Tag = sbCourt
-            });
-            lvi.SubItems.Add(m_NOT_SET);
-          }
-        }
-        m_sbCourts = sbCourts;
+        m_sbCourts.ForEach(RemoveSBCourt);
+        m_sbCourts.Clear();
+        sbCourts.ForEach(AddSBCourt);
       });
+    }
+
+    public void AddSBCourt(ScoreboardLiveApi.Court sbCourt) {
+      if (sbCourt == null) throw new ArgumentNullException("sbCourt", "Court reference cannot be null");
+      if (m_sbCourts.Contains(sbCourt, m_SBCourtComparer)) return;
+
+      m_sbCourts.Add(sbCourt);
+      var lvi = Items.Add(new ListViewItem(sbCourt.Name) {
+        Tag = sbCourt
+      });
+      lvi.SubItems.Add(m_NOT_SET);
+
+      CheckDefaultValue(sbCourt.CourtID);
+    }
+
+    public void RemoveSBCourt(ScoreboardLiveApi.Court sbCourt) {
+      if (sbCourt == null) throw new ArgumentNullException("sbCourt", "Court reference cannot be null");
+      if (!m_sbCourts.Contains(sbCourt, m_SBCourtComparer)) return;
+
+      foreach (ListViewItem item in Items) {
+        if (m_SBCourtComparer.Equals(item.Tag as ScoreboardLiveApi.Court, sbCourt)) {
+          Items.Remove(item);
+          break;
+        }
+      }
+    }
+
+    private void CheckAllDefaultValues() {
+      m_sbCourts.Select(sbCourt => sbCourt.CourtID).ToList().ForEach(CheckDefaultValue);
+    }
+
+    private void CheckDefaultValue(int sbCourtID) {
+      // Make sure this item has a default value that is in the tp court list
+      if (!m_defaultSetup.TryGetValue(sbCourtID, out string defaultTPCourtName)) return;
+      var selectedCourt = m_tpCourts.FirstOrDefault(tpCourt => tpCourt.Name == defaultTPCourtName);
+      if (selectedCourt == null) return;
+
+      // Find item in list and set the default value, unless a value is already set
+      foreach (ListViewItem item in Items) {
+        if (((ScoreboardLiveApi.Court)item.Tag).CourtID != sbCourtID) continue;
+        if (item.SubItems[1].Tag != null) break;
+        item.SubItems[1].Tag = selectedCourt;
+        item.SubItems[1].Text = selectedCourt.ToString();
+        break;
+      }
     }
 
     private void combo_SelectedValueChanged(object sender, EventArgs e) {
