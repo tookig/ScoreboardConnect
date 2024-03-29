@@ -50,6 +50,13 @@ namespace ScoreboardConnectWinUI3 {
     private TPCourtComparer m_TPCourtComparer = new TPCourtComparer();
     private SBCourtComparer m_SBCourtComparer = new SBCourtComparer();
 
+    private static string FormatCourtName(ScoreboardLiveApi.Court sbCourt) {
+      return sbCourt.Venue != null ? string.Format("{0} ({1})", sbCourt.Name, sbCourt.Venue.Name) : sbCourt.Name;
+    }
+
+    private static string FormatCourtName(TP.Court tpCourt) {
+      return tpCourt.ToString();
+    }
 
     public CourtListView() {
       InitializeComponent();
@@ -125,7 +132,7 @@ namespace ScoreboardConnectWinUI3 {
       if (m_sbCourts.Contains(sbCourt, m_SBCourtComparer)) return;
 
       m_sbCourts.Add(sbCourt);
-      var lvi = Items.Add(new ListViewItem(sbCourt.Name) {
+      var lvi = Items.Add(new ListViewItem(FormatCourtName(sbCourt)) {
         Tag = sbCourt
       });
       lvi.SubItems.Add(m_NOT_SET);
@@ -160,7 +167,7 @@ namespace ScoreboardConnectWinUI3 {
         if (((ScoreboardLiveApi.Court)item.Tag).CourtID != sbCourtID) continue;
         if (item.SubItems[1].Tag != null) break;
         item.SubItems[1].Tag = selectedCourt;
-        item.SubItems[1].Text = selectedCourt.ToString();
+        item.SubItems[1].Text = FormatCourtName(selectedCourt);
         break;
       }
     }
@@ -173,6 +180,7 @@ namespace ScoreboardConnectWinUI3 {
       CourtAssignmentChanged?.Invoke(this, ((((ScoreboardLiveApi.Court)m_currentItem.Tag).CourtID), (m_combo.SelectedItem as TP.Court)?.Name));
     }
 
+    /*
     public void AssignTPCourtToScoreboardCourt(int scoreboardCourtID, string tpCourtName) {
       foreach (ListViewItem item in Items) {
         if (((ScoreboardLiveApi.Court)item.Tag).CourtID == scoreboardCourtID) {
@@ -186,6 +194,7 @@ namespace ScoreboardConnectWinUI3 {
         }
       }
     }
+    */
 
     public List<ScoreboardLiveApi.Court> GetScoreboardCourtsAssignedToTPCourt(string tpCourtName) {
       List<ScoreboardLiveApi.Court> scoreboardCourtsFound = new List<ScoreboardLiveApi.Court>();

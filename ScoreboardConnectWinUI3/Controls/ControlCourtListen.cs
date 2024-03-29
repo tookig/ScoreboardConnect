@@ -98,7 +98,7 @@ namespace ScoreboardConnectWinUI3 {
 
     private void UpdateDefaultSetup() {
       foreach (KeyValuePair<int, string> kvp in m_defaultSetup) {
-        listCourts.AssignTPCourtToScoreboardCourt(kvp.Key, kvp.Value);
+        // listCourts.AssignTPCourtToScoreboardCourt(kvp.Key, kvp.Value);
       }
     }
 
