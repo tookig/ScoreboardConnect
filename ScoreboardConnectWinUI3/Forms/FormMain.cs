@@ -64,7 +64,7 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void UpdateButtons() {
-      buttonImportTP.Enabled = (m_SBConnected != null) && (m_TPNetworkConnected != null);
+      uploadTournamentToolStripMenuItem.Enabled = m_SBConnected != null;
     }
 
     private void FormMain_Load(object sender, EventArgs e) {
@@ -112,11 +112,6 @@ namespace ScoreboardConnectWinUI3 {
       UpdateButtons();
     }
 
-    private void buttonImportTP_Click(object sender, EventArgs e) {
-      FormUpload formUpload = new FormUpload(m_SBConnected.Api, m_SBConnected.Device, m_SBConnected.Tournament, m_TPNetworkConnected.Tournament);
-      formUpload.ShowDialog(this);
-    }
-
     private void SettingsChanged() {
       if (m_settings.CourtSetup.TryGetValue(m_settings.UnitID, out Dictionary<int, string> courtSetup)) {
         courtListView.SetDefaultSetup(courtSetup);
@@ -143,6 +138,23 @@ namespace ScoreboardConnectWinUI3 {
         m_keyStore.DefaultDomain = m_settings.URL;
         m_keyStore.Save(keyStoreFile);
         SettingsChanged();
+      }
+    }
+
+    private async void uploadTournamentToolStripMenuItem_Click(object sender, EventArgs e) {
+      TP.Tournament tournament = m_TPNetworkConnected?.Tournament ?? await LoadTournamentFromFile();
+      FormUpload formUpload = new FormUpload(m_SBConnected.Api, m_SBConnected.Device, m_SBConnected.Tournament, tournament);
+      formUpload.ShowDialog(this);
+    }
+
+    private async Task<TP.Tournament> LoadTournamentFromFile() {
+      if (openTPFileDialog.ShowDialog() != DialogResult.OK) return null;
+      try {
+        TPFile tPFile = new TPFile(openTPFileDialog.FileName);
+        return await TP.Tournament.LoadFromTP(tPFile);
+      } catch (Exception e) {
+        MessageBox.Show(this, string.Format("Could not open file: {1}{0}{0}{2}", e.Message, Environment.NewLine, openTPFileDialog.FileName), "Could not open file", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        return null;
       }
     }
   }

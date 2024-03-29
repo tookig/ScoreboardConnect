@@ -9,6 +9,7 @@
     <StartupObject>ScoreboardConnectWinUI3.Program</StartupObject>
     <ApplicationIcon></ApplicationIcon>
     <Win32Resource />
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>
