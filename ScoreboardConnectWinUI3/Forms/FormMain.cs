@@ -32,6 +32,8 @@ namespace ScoreboardConnectWinUI3 {
 
       m_requestCoordinator = new RequestCoordinator(tpNetworkControl1.SocketClient, tournamenttvControl.Listener, courtListView);
 
+      statusListView.Listen(m_requestCoordinator);
+
       UpdateButtons();
     }
 

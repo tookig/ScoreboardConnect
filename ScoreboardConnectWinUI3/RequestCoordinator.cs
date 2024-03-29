@@ -11,10 +11,23 @@ using TPNetwork;
 
 namespace ScoreboardConnectWinUI3 {
   internal class RequestCoordinator {
+    public enum StatusMessageLevel {
+      Info,
+      Warning,
+      Error
+    }
+
+    public class StatusMessageEventArgs : EventArgs {
+      public string Message { get; set; }
+      public StatusMessageLevel Level { get; set; }
+    }
+
     private Controls.ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs m_apiInfo;
     private SocketClient m_tpNetwork;
     private TPListener m_tpListener;
     private ICourtCorrelator m_courtCorrelator;
+
+    public event EventHandler<StatusMessageEventArgs> Status;
 
     public Controls.ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs ApiInfo {
       get {
@@ -86,6 +99,25 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void courtUpdate(object sender, TPListener.TPCourtUpdateEventArgs e) {
+      if (m_courtCorrelator == null) {
+        return;
+      }
+      if (m_apiInfo == null) {
+        SendStatusMessage("Court update received, but no Scoreboard API connection", StatusMessageLevel.Warning);
+        return;
+      }
+
+      m_courtCorrelator.Correlate(e.CourtName);
+      
+      if (e.Match == null) {
+        SendStatusMessage($"Court {e.CourtName} is now free", StatusMessageLevel.Info);
+      } else {
+        SendStatusMessage($"Court {e.CourtName} is now occupied by {e.Match}", StatusMessageLevel.Info);
+      }
+    }
+
+    private void SendStatusMessage(string message, StatusMessageLevel level) {
+      Status?.Invoke(this, new StatusMessageEventArgs() { Message = message, Level = level });
     }
 
     private async Task ReloadSBCourts() {

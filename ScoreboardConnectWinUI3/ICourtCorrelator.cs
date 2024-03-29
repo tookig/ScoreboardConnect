@@ -9,5 +9,6 @@ namespace ScoreboardConnectWinUI3 {
     void SetTPCourts(List<TP.Court> tpCourts);
     void SetSBCourts(List<ScoreboardLiveApi.Court> sbCourts);
     Dictionary<ScoreboardLiveApi.Court, TP.Court> GetSnapshot();
+    List<ScoreboardLiveApi.Court> Correlate(string tpCourtName);
   }
 }

@@ -285,5 +285,17 @@ namespace ScoreboardConnectWinUI3 {
       // Pass message to default handler.
       base.WndProc(ref msg);
     }
+
+    public List<ScoreboardLiveApi.Court> Correlate(string tpCourtName) {
+      List<ScoreboardLiveApi.Court> foundCourts = new();
+      Invoke((MethodInvoker)delegate {
+        foreach (ListViewItem item in Items) {
+          if (item.SubItems[1].Text == tpCourtName) {
+            foundCourts.Add((ScoreboardLiveApi.Court)item.Tag);
+          }
+        }
+      });
+      return foundCourts;
+    }
   }
 }

@@ -25,6 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Controls\StatusListView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Update="Controls\TournamentClassView.cs">
       <SubType>Component</SubType>
     </Compile>

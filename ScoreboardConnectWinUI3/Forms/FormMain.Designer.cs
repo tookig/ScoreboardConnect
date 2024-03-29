@@ -41,42 +41,39 @@ namespace ScoreboardConnectWinUI3
       toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
       exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       openTPFileDialog = new System.Windows.Forms.OpenFileDialog();
+      statusListView = new StatusListView();
       groupCourts.SuspendLayout();
       menuMain.SuspendLayout();
       SuspendLayout();
       // 
       // scoreboardLiveControl1
       // 
-      scoreboardLiveControl1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       scoreboardLiveControl1.Location = new System.Drawing.Point(11, 38);
       scoreboardLiveControl1.Name = "scoreboardLiveControl1";
-      scoreboardLiveControl1.Size = new System.Drawing.Size(538, 131);
+      scoreboardLiveControl1.Size = new System.Drawing.Size(496, 131);
       scoreboardLiveControl1.TabIndex = 9;
       // 
       // tpNetworkControl1
       // 
-      tpNetworkControl1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       tpNetworkControl1.Location = new System.Drawing.Point(10, 175);
       tpNetworkControl1.Name = "tpNetworkControl1";
-      tpNetworkControl1.Size = new System.Drawing.Size(536, 123);
+      tpNetworkControl1.Size = new System.Drawing.Size(497, 123);
       tpNetworkControl1.TabIndex = 10;
       // 
       // tournamenttvControl
       // 
-      tournamenttvControl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       tournamenttvControl.Location = new System.Drawing.Point(15, 304);
       tournamenttvControl.Name = "tournamenttvControl";
-      tournamenttvControl.Size = new System.Drawing.Size(531, 160);
+      tournamenttvControl.Size = new System.Drawing.Size(492, 160);
       tournamenttvControl.TabIndex = 11;
       // 
       // groupCourts
       // 
-      groupCourts.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       groupCourts.Controls.Add(courtListView);
       groupCourts.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
       groupCourts.Location = new System.Drawing.Point(10, 470);
       groupCourts.Name = "groupCourts";
-      groupCourts.Size = new System.Drawing.Size(536, 244);
+      groupCourts.Size = new System.Drawing.Size(497, 244);
       groupCourts.TabIndex = 12;
       groupCourts.TabStop = false;
       groupCourts.Text = "Courts";
@@ -89,7 +86,7 @@ namespace ScoreboardConnectWinUI3
       courtListView.FullRowSelect = true;
       courtListView.Location = new System.Drawing.Point(3, 29);
       courtListView.Name = "courtListView";
-      courtListView.Size = new System.Drawing.Size(530, 212);
+      courtListView.Size = new System.Drawing.Size(491, 212);
       courtListView.TabIndex = 0;
       courtListView.UseCompatibleStateImageBehavior = false;
       courtListView.View = System.Windows.Forms.View.Details;
@@ -99,7 +96,7 @@ namespace ScoreboardConnectWinUI3
       menuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem });
       menuMain.Location = new System.Drawing.Point(0, 0);
       menuMain.Name = "menuMain";
-      menuMain.Size = new System.Drawing.Size(562, 24);
+      menuMain.Size = new System.Drawing.Size(1010, 24);
       menuMain.TabIndex = 13;
       menuMain.Text = "menuStrip1";
       // 
@@ -142,12 +139,24 @@ namespace ScoreboardConnectWinUI3
       openTPFileDialog.Filter = "TP-files (*.tp)|*.tp|All files (*.*)|*.*";
       openTPFileDialog.Title = "Open TP file";
       // 
+      // statusListView
+      // 
+      statusListView.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      statusListView.FullRowSelect = true;
+      statusListView.Location = new System.Drawing.Point(527, 38);
+      statusListView.Name = "statusListView";
+      statusListView.Size = new System.Drawing.Size(471, 260);
+      statusListView.TabIndex = 14;
+      statusListView.UseCompatibleStateImageBehavior = false;
+      statusListView.View = System.Windows.Forms.View.Details;
+      // 
       // FormMain
       // 
       AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
       AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
       AutoScroll = true;
-      ClientSize = new System.Drawing.Size(562, 726);
+      ClientSize = new System.Drawing.Size(1010, 742);
+      Controls.Add(statusListView);
       Controls.Add(groupCourts);
       Controls.Add(tournamenttvControl);
       Controls.Add(tpNetworkControl1);
@@ -180,6 +189,7 @@ namespace ScoreboardConnectWinUI3
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
     private System.Windows.Forms.ToolStripMenuItem uploadTournamentToolStripMenuItem;
     private System.Windows.Forms.OpenFileDialog openTPFileDialog;
+    private StatusListView statusListView;
   }
 }
 
