@@ -24,10 +24,10 @@ namespace TP {
     }
 
     public static Player Parse(Data.PlayerData raw, IEnumerable<Data.ClubData> clubs) {
-      Data.ClubData club = clubs.First(club => club.ID == raw.ClubID);
-      if (club == null) {
+      Data.ClubData club = clubs.FirstOrDefault(club => club.ID == raw.ClubID);
+      /* if (club == null) {
         throw new Exception("Player club not specified or found");
-      }
+      } */
       return new Player(raw, club);
     }
 
