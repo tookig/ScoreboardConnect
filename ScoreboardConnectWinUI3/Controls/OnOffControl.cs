@@ -26,6 +26,7 @@ namespace ScoreboardConnectWinUI3.Controls {
       this.Size = new Size(70, 40); // Adjust size as needed
       this.BackColor = isChecked ? onColor : offColor;
       this.Click += OnOffControl_Click;
+      Cursor = Cursors.Hand;
     }
 
     public bool Checked {
