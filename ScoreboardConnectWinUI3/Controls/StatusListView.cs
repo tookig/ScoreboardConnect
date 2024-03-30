@@ -28,7 +28,7 @@ namespace ScoreboardConnectWinUI3 {
 
     private void OnStatus(object sender, RequestCoordinator.StatusMessageEventArgs message) {
       ListViewItem item = new ListViewItem();
-      item.Text = message.Level.ToString();
+      item.Text = DateTime.Now.ToString("HH:mm");
       item.SubItems.Add(message.Message);
       item.BackColor = message.Level switch {
         RequestCoordinator.StatusMessageLevel.Error => Color.Red,
@@ -48,25 +48,18 @@ namespace ScoreboardConnectWinUI3 {
     protected void InitColumns() {
       Columns.Clear();
       Columns.Add(new ColumnHeader() {
-        Text = "Type",
-        Width = 10
+        Text = "Time"
       });
       Columns.Add(new ColumnHeader() {
-        Text = "Message",
-        Width = 90
+        Text = "Message"
       });
       AdjustColumnWidths();
     }
 
     protected void AdjustColumnWidths() {
       int useableWidth = Width - SystemInformation.VerticalScrollBarWidth - 1;
-      int relationWidth = 0;
-      foreach (ColumnHeader header in Columns) {
-        relationWidth += header.Width;
-      }
-      foreach (ColumnHeader header in Columns) {
-        header.Width = useableWidth * header.Width / relationWidth;
-      }
+      Columns[0].Width = 60;
+      Columns[1].Width = useableWidth - Columns[0].Width;
     }
 
     /// <summary>

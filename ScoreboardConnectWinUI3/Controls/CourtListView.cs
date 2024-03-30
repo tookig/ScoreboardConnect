@@ -99,6 +99,12 @@ namespace ScoreboardConnectWinUI3 {
       m_combo.Items.Add(tpCourt);
 
       CheckAllDefaultValues();
+
+      foreach (ListViewItem item in Items) {
+        if (item.SubItems[1].Tag == tpCourt) {
+          OnCourtAssignmentChanged(((ScoreboardLiveApi.Court)item.Tag).CourtID, tpCourt.Name);
+        }
+      }
     }
 
     public void RemoveTPCourt(TP.Court tpCourt) {
@@ -138,6 +144,10 @@ namespace ScoreboardConnectWinUI3 {
       lvi.SubItems.Add(m_NOT_SET);
 
       CheckDefaultValue(sbCourt.CourtID);
+
+      if (lvi.SubItems[1].Tag != null) {
+        OnCourtAssignmentChanged(sbCourt.CourtID, (lvi.SubItems[1].Tag as TP.Court)?.Name);
+      }
     }
 
     public void RemoveSBCourt(ScoreboardLiveApi.Court sbCourt) {
@@ -177,7 +187,11 @@ namespace ScoreboardConnectWinUI3 {
       if (m_currentItem == null) return;
       m_currentItem.SubItems[1].Text = m_combo.SelectedItem != null ? m_combo.Text : m_NOT_SET;
       m_currentItem.SubItems[1].Tag = m_combo.SelectedItem;
-      CourtAssignmentChanged?.Invoke(this, ((((ScoreboardLiveApi.Court)m_currentItem.Tag).CourtID), (m_combo.SelectedItem as TP.Court)?.Name));
+      OnCourtAssignmentChanged((((ScoreboardLiveApi.Court)m_currentItem.Tag).CourtID), (m_combo.SelectedItem as TP.Court)?.Name);
+    }
+
+    private void OnCourtAssignmentChanged(int sbCourtID, string tpCourtName) {
+      CourtAssignmentChanged?.Invoke(this, (sbCourtID, tpCourtName));
     }
 
     /*

@@ -35,7 +35,7 @@ namespace ScoreboardConnectWinUI3 {
         return m_apiInfo;
       }
       set {
-        InitApi(value);
+        _ = InitApi(value);
       }
     }
 
@@ -44,7 +44,7 @@ namespace ScoreboardConnectWinUI3 {
         return m_tpNetwork;
       }
       set {
-        InitSocket(value);
+        _ = InitSocket(value);
       }
     }
 
@@ -58,48 +58,81 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     public RequestCoordinator(SocketClient tpNetwork, TPListener tpListener, ICourtCorrelator courtCorrelator = null) {
-      InitSocket(tpNetwork);
+      _ = InitSocket(tpNetwork);
       InitListener(tpListener);
       if (courtCorrelator != null) {
-        InitCourtCorrelator(courtCorrelator);
+        _ = InitCourtCorrelator(courtCorrelator);
       }
     }
 
-    protected void InitSocket(SocketClient socketClient) {
+    protected async Task InitSocket(SocketClient socketClient) {
       SocketClient validatedClient = socketClient ?? throw new ArgumentNullException("SocketClient reference cannot be null");
       if (m_tpNetwork != null) {
       }
       m_tpNetwork = validatedClient;
-      _ = ReloadTPCourts();
+      await ReloadTPCourts();
+      CheckIfAllReady();
     }
 
-    protected void InitApi(Controls.ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs apiInfo) {
+    protected async Task InitApi(Controls.ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs apiInfo) {
       Controls.ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs validatedApi = apiInfo ?? throw new ArgumentNullException("ApiHelper reference cannot be null");
       if (m_apiInfo != null) {
       }
       m_apiInfo = validatedApi;
-      _ = ReloadSBCourts();
+      await ReloadSBCourts();
+      CheckIfAllReady();
     }
 
     protected void InitListener(TPListener tpListener) {
       TPListener validatedListener = tpListener ?? throw new ArgumentNullException("TPListener reference cannot be null");
       if (m_tpListener != null) {
         m_tpListener.CourtUpdate -= courtUpdate;
+        m_tpListener.ServiceStarted -= tpListenerServiceStarted;
       }
       m_tpListener = validatedListener;
       m_tpListener.CourtUpdate += courtUpdate;
+      m_tpListener.ServiceStarted += tpListenerServiceStarted;
     }
 
-    protected void InitCourtCorrelator(ICourtCorrelator courtCorrelator) {
+    protected async Task InitCourtCorrelator(ICourtCorrelator courtCorrelator) {
       ICourtCorrelator validatedCorrelator = courtCorrelator ?? throw new ArgumentNullException("ICourtCorrelator reference cannot be null");
       if (m_courtCorrelator != null) {
       }
       m_courtCorrelator = validatedCorrelator;
-      _ = ReloadSBCourts();
-      _ = ReloadTPCourts();
+      await ReloadSBCourts();
+      await ReloadTPCourts();
+      CheckIfAllReady();
+    }
+
+    private void tpListenerServiceStarted(object sender, EventArgs e) {
+      CheckIfAllReady();
+    }
+
+    private void CheckIfAllReady() {
+      if (m_apiInfo != null && m_tpNetwork != null && m_tpListener != null && m_courtCorrelator != null) {
+        _ = UploadStartState();
+      }
     }
 
     #region Court Update Handling
+    private async Task UploadStartState() {
+      var courtSetup = m_courtCorrelator.GetSnapshot();
+
+      var tpTournament = await GetTPTournament();
+      if (tpTournament == null) {
+        return;
+      }
+
+      foreach (var kvp in courtSetup) {
+        if (kvp.Value?.TpMatchID > 0) {
+          var tpMatch = tpTournament.FindMatchByID(kvp.Value.TpMatchID);
+          await  MatchOnCourts(new List<ScoreboardLiveApi.Court>() { kvp.Key }, tpMatch, tpTournament);
+        } else {
+          await ClearCourts(new List<ScoreboardLiveApi.Court>() { kvp.Key });
+        }
+      }
+    }
+
     private async void courtUpdate(object sender, TPListener.TPCourtUpdateEventArgs e) {
       if (m_courtCorrelator == null) {
         return;
@@ -135,8 +168,8 @@ namespace ScoreboardConnectWinUI3 {
       }
     }
 
-    private async Task MatchOnCourts(List<ScoreboardLiveApi.Court> sbCourts, TP.Match tpMatch) {
-      var tpTournament = await GetTPTournament();
+    private async Task MatchOnCourts(List<ScoreboardLiveApi.Court> sbCourts, TP.Match tpMatch, TP.Tournament presetTournament = null) {
+      var tpTournament = presetTournament ?? await GetTPTournament();
       if (tpTournament == null) {
         return;
       }
