@@ -290,7 +290,8 @@ namespace ScoreboardConnectWinUI3 {
       List<ScoreboardLiveApi.Court> foundCourts = new();
       Invoke((MethodInvoker)delegate {
         foreach (ListViewItem item in Items) {
-          if (item.SubItems[1].Text == tpCourtName) {
+          if (item.SubItems[1].Tag == null) continue;
+          if ((item.SubItems[1].Tag is TP.Court court) && (court.Name == tpCourtName)) {
             foundCourts.Add((ScoreboardLiveApi.Court)item.Tag);
           }
         }
