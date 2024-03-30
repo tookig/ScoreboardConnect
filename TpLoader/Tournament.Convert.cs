@@ -275,11 +275,16 @@ namespace TP {
     }
 
     public static string CreateMatchTag(ScoreboardLiveApi.Tournament sbTournament, Match match, Event e, Draw draw) {
+      // Create source string
       string source = string.Format("{0} ?? {1}.{2} ?? {3}.{4} ?? {5}", match.ID, e.ID, e.Name, draw.ID, draw.Name, sbTournament.TournamentID);
+      // Create hash
       string hash;
       using (SHA256 sha = SHA256.Create()) {
         hash = ScoreboardLiveApi.ApiHelper.ByteArrayToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(source)));
       }
+      // Replace the first 6 characters with the match id, padded by 0
+      hash = hash.Remove(0, 6);
+      hash = hash.Insert(0, match.ID.ToString().PadLeft(6, '0'));
       return hash;
     }
   }
