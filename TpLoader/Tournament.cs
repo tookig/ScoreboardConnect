@@ -38,6 +38,10 @@ namespace TP {
       return null;
     }
 
+    public Court FindCourtByID(int id) {
+      return Courts.Where(c => c.ID == id).FirstOrDefault();
+    }
+
     public override string ToString() {
       StringBuilder sb = new StringBuilder();
       sb.AppendLine("-- TOURNAMENT --");

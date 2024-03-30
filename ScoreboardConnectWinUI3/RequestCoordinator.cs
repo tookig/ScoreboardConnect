@@ -27,8 +27,22 @@ namespace ScoreboardConnectWinUI3 {
     private SocketClient m_tpNetwork;
     private TPListener m_tpListener;
     private ICourtCorrelator m_courtCorrelator;
+    private bool m_enableCourtSync = false;
 
     public event EventHandler<StatusMessageEventArgs> Status;
+
+    public bool EnableCourtSync {
+      get {
+        return m_enableCourtSync;
+      }
+      set {
+        if (value == m_enableCourtSync) {
+          return;
+        }
+        m_enableCourtSync = value;
+        CheckIfAllReady();
+      }
+    }
 
     public Controls.ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs ApiInfo {
       get {
@@ -109,7 +123,7 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void CheckIfAllReady() {
-      if (m_apiInfo != null && m_tpNetwork != null && m_tpListener != null && m_courtCorrelator != null) {
+      if (m_enableCourtSync && m_apiInfo != null && m_tpNetwork != null && m_tpListener != null && m_courtCorrelator != null) {
         _ = UploadStartState();
       }
     }
@@ -124,9 +138,16 @@ namespace ScoreboardConnectWinUI3 {
       }
 
       foreach (var kvp in courtSetup) {
-        if (kvp.Value?.TpMatchID > 0) {
-          var tpMatch = tpTournament.FindMatchByID(kvp.Value.TpMatchID);
-          await  MatchOnCourts(new List<ScoreboardLiveApi.Court>() { kvp.Key }, tpMatch, tpTournament);
+        TP.Match tpMatch = null;
+        if (kvp.Value != null) {
+          TP.Court tpCourt = tpTournament.FindCourtByID(kvp.Value.ID);
+          if (tpCourt?.TpMatchID > 0) {
+            tpMatch = tpTournament.FindMatchByID(tpCourt.TpMatchID);
+          }
+        }
+
+        if (tpMatch != null) {
+          await MatchOnCourts(new List<ScoreboardLiveApi.Court>() { kvp.Key }, tpMatch, tpTournament);
         } else {
           await ClearCourts(new List<ScoreboardLiveApi.Court>() { kvp.Key });
         }
@@ -134,6 +155,10 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private async void courtUpdate(object sender, TPListener.TPCourtUpdateEventArgs e) {
+      if (!m_enableCourtSync) {
+        return;
+      }
+
       if (m_courtCorrelator == null) {
         return;
       }

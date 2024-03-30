@@ -42,8 +42,13 @@ namespace ScoreboardConnectWinUI3
       exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       openTPFileDialog = new System.Windows.Forms.OpenFileDialog();
       statusListView = new StatusListView();
+      panelCourtChanges = new System.Windows.Forms.Panel();
+      labelCourtListen = new System.Windows.Forms.Label();
+      onOffCourtChanges = new Controls.OnOffControl();
+      label1 = new System.Windows.Forms.Label();
       groupCourts.SuspendLayout();
       menuMain.SuspendLayout();
+      panelCourtChanges.SuspendLayout();
       SuspendLayout();
       // 
       // scoreboardLiveControl1
@@ -96,7 +101,7 @@ namespace ScoreboardConnectWinUI3
       menuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem });
       menuMain.Location = new System.Drawing.Point(0, 0);
       menuMain.Name = "menuMain";
-      menuMain.Size = new System.Drawing.Size(1010, 24);
+      menuMain.Size = new System.Drawing.Size(1041, 24);
       menuMain.TabIndex = 13;
       menuMain.Text = "menuStrip1";
       // 
@@ -142,20 +147,68 @@ namespace ScoreboardConnectWinUI3
       // statusListView
       // 
       statusListView.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      statusListView.BorderStyle = System.Windows.Forms.BorderStyle.None;
       statusListView.FullRowSelect = true;
-      statusListView.Location = new System.Drawing.Point(527, 38);
+      statusListView.Location = new System.Drawing.Point(520, 451);
       statusListView.Name = "statusListView";
-      statusListView.Size = new System.Drawing.Size(471, 260);
+      statusListView.Size = new System.Drawing.Size(502, 260);
       statusListView.TabIndex = 14;
       statusListView.UseCompatibleStateImageBehavior = false;
       statusListView.View = System.Windows.Forms.View.Details;
+      // 
+      // panelCourtChanges
+      // 
+      panelCourtChanges.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      panelCourtChanges.Controls.Add(labelCourtListen);
+      panelCourtChanges.Controls.Add(onOffCourtChanges);
+      panelCourtChanges.Location = new System.Drawing.Point(520, 38);
+      panelCourtChanges.Name = "panelCourtChanges";
+      panelCourtChanges.Size = new System.Drawing.Size(509, 51);
+      panelCourtChanges.TabIndex = 15;
+      // 
+      // labelCourtListen
+      // 
+      labelCourtListen.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      labelCourtListen.Font = new System.Drawing.Font("Segoe UI Semibold", 14F, System.Drawing.FontStyle.Bold);
+      labelCourtListen.Location = new System.Drawing.Point(7, 3);
+      labelCourtListen.Name = "labelCourtListen";
+      labelCourtListen.Size = new System.Drawing.Size(375, 45);
+      labelCourtListen.TabIndex = 1;
+      labelCourtListen.Text = "Synchronize courts";
+      labelCourtListen.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+      // 
+      // onOffCourtChanges
+      // 
+      onOffCourtChanges.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+      onOffCourtChanges.BackColor = System.Drawing.Color.FromArgb(255, 100, 100);
+      onOffCourtChanges.Checked = false;
+      onOffCourtChanges.Location = new System.Drawing.Point(415, 3);
+      onOffCourtChanges.Name = "onOffCourtChanges";
+      onOffCourtChanges.Size = new System.Drawing.Size(91, 45);
+      onOffCourtChanges.TabIndex = 0;
+      onOffCourtChanges.Text = "onOffControl1";
+      onOffCourtChanges.CheckedChanged += onOffCourtChanges_CheckedChanged;
+      // 
+      // label1
+      // 
+      label1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      label1.Font = new System.Drawing.Font("Segoe UI Semibold", 14F, System.Drawing.FontStyle.Bold);
+      label1.ForeColor = System.Drawing.Color.Gray;
+      label1.Location = new System.Drawing.Point(520, 423);
+      label1.Name = "label1";
+      label1.Size = new System.Drawing.Size(502, 25);
+      label1.TabIndex = 16;
+      label1.Text = "Event log";
+      label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
       // 
       // FormMain
       // 
       AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
       AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
       AutoScroll = true;
-      ClientSize = new System.Drawing.Size(1010, 742);
+      ClientSize = new System.Drawing.Size(1041, 739);
+      Controls.Add(label1);
+      Controls.Add(panelCourtChanges);
       Controls.Add(statusListView);
       Controls.Add(groupCourts);
       Controls.Add(tournamenttvControl);
@@ -172,6 +225,7 @@ namespace ScoreboardConnectWinUI3
       groupCourts.ResumeLayout(false);
       menuMain.ResumeLayout(false);
       menuMain.PerformLayout();
+      panelCourtChanges.ResumeLayout(false);
       ResumeLayout(false);
       PerformLayout();
     }
@@ -190,6 +244,10 @@ namespace ScoreboardConnectWinUI3
     private System.Windows.Forms.ToolStripMenuItem uploadTournamentToolStripMenuItem;
     private System.Windows.Forms.OpenFileDialog openTPFileDialog;
     private StatusListView statusListView;
+    private System.Windows.Forms.Panel panelCourtChanges;
+    private Controls.OnOffControl onOffCourtChanges;
+    private System.Windows.Forms.Label labelCourtListen;
+    private System.Windows.Forms.Label label1;
   }
 }
 
