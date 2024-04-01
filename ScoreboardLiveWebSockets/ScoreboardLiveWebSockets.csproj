@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="ScoreboardApiLib">
+      <HintPath>..\..\ScoreboardLiveApiExample\ScoreboardApiLib\bin\Debug\netcoreapp3.1\ScoreboardApiLib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

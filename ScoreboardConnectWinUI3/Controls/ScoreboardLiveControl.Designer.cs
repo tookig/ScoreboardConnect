@@ -26,9 +26,9 @@
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ScoreboardLiveControl));
       groupBox1 = new System.Windows.Forms.GroupBox();
       labelStatus = new System.Windows.Forms.Label();
+      pictureLoading = new System.Windows.Forms.PictureBox();
       labelTournament = new System.Windows.Forms.Label();
       labelUnit = new System.Windows.Forms.Label();
-      pictureLoading = new System.Windows.Forms.PictureBox();
       groupBox1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)pictureLoading).BeginInit();
       SuspendLayout();
@@ -44,7 +44,7 @@
       groupBox1.ForeColor = System.Drawing.Color.SteelBlue;
       groupBox1.Location = new System.Drawing.Point(0, 0);
       groupBox1.Name = "groupBox1";
-      groupBox1.Size = new System.Drawing.Size(558, 105);
+      groupBox1.Size = new System.Drawing.Size(563, 140);
       groupBox1.TabIndex = 0;
       groupBox1.TabStop = false;
       groupBox1.Text = "Scoreboard Live";
@@ -52,15 +52,26 @@
       // labelStatus
       // 
       labelStatus.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-      labelStatus.AutoSize = true;
       labelStatus.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
       labelStatus.ForeColor = System.Drawing.Color.Red;
-      labelStatus.Location = new System.Drawing.Point(416, 0);
+      labelStatus.Location = new System.Drawing.Point(349, 0);
       labelStatus.Name = "labelStatus";
-      labelStatus.Size = new System.Drawing.Size(136, 25);
+      labelStatus.Size = new System.Drawing.Size(208, 25);
       labelStatus.TabIndex = 0;
       labelStatus.Text = "Not connected";
       labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+      // 
+      // pictureLoading
+      // 
+      pictureLoading.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      pictureLoading.Image = (System.Drawing.Image)resources.GetObject("pictureLoading.Image");
+      pictureLoading.Location = new System.Drawing.Point(9, 36);
+      pictureLoading.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+      pictureLoading.Name = "pictureLoading";
+      pictureLoading.Size = new System.Drawing.Size(548, 55);
+      pictureLoading.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+      pictureLoading.TabIndex = 3;
+      pictureLoading.TabStop = false;
       // 
       // labelTournament
       // 
@@ -69,7 +80,7 @@
       labelTournament.ForeColor = System.Drawing.Color.SeaGreen;
       labelTournament.Location = new System.Drawing.Point(6, 59);
       labelTournament.Name = "labelTournament";
-      labelTournament.Size = new System.Drawing.Size(546, 32);
+      labelTournament.Size = new System.Drawing.Size(551, 32);
       labelTournament.TabIndex = 2;
       labelTournament.Text = "Not connected";
       labelTournament.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -81,22 +92,10 @@
       labelUnit.ForeColor = System.Drawing.Color.Black;
       labelUnit.Location = new System.Drawing.Point(6, 27);
       labelUnit.Name = "labelUnit";
-      labelUnit.Size = new System.Drawing.Size(546, 32);
+      labelUnit.Size = new System.Drawing.Size(551, 32);
       labelUnit.TabIndex = 1;
       labelUnit.Text = "Not connected";
       labelUnit.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-      // 
-      // pictureLoading
-      // 
-      pictureLoading.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-      pictureLoading.Image = (System.Drawing.Image)resources.GetObject("pictureLoading.Image");
-      pictureLoading.Location = new System.Drawing.Point(9, 36);
-      pictureLoading.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-      pictureLoading.Name = "pictureLoading";
-      pictureLoading.Size = new System.Drawing.Size(543, 55);
-      pictureLoading.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-      pictureLoading.TabIndex = 3;
-      pictureLoading.TabStop = false;
       // 
       // ScoreboardLiveControl
       // 
@@ -104,10 +103,9 @@
       AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       Controls.Add(groupBox1);
       Name = "ScoreboardLiveControl";
-      Size = new System.Drawing.Size(558, 105);
+      Size = new System.Drawing.Size(563, 140);
       Load += ScoreboardLiveControl_Load;
       groupBox1.ResumeLayout(false);
-      groupBox1.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)pictureLoading).EndInit();
       ResumeLayout(false);
     }
