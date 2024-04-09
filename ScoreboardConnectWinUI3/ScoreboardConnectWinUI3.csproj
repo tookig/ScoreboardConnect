@@ -23,6 +23,9 @@
     <Reference Include="ScoreboardApiLib">
       <HintPath>D:\Programmering\Source\CSharp\ScoreboardLiveApiExample\ScoreboardApiLib\bin\Debug\netcoreapp3.1\ScoreboardApiLib.dll</HintPath>
     </Reference>
+    <Reference Include="ScoreboardLiveSocketLib">
+      <HintPath>..\..\ScoreboardLiveSocketServer\ScoreboardLiveSocketLib\bin\Debug\net8.0\ScoreboardLiveSocketLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

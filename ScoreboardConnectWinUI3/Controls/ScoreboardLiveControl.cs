@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static ScoreboardLiveWebSockets.ScoreboardWebSocketClient;
 
 namespace ScoreboardConnectWinUI3.Controls {
   public partial class ScoreboardLiveControl : UserControl {
@@ -28,6 +29,9 @@ namespace ScoreboardConnectWinUI3.Controls {
     private Unit m_unit;
     private ScoreboardWebSocketClient m_webSocket = new();
 
+    private object m_lock = new();
+    private bool m_apiChecked = false;
+
     public event EventHandler<ScoreboardLiveConnectedEventArgs> Connected;
     public event EventHandler<AsyncVoidMethodBuilder> Disconnected;
 
@@ -35,10 +39,12 @@ namespace ScoreboardConnectWinUI3.Controls {
       public Tournament Tournament { get; set; }
       public Device Device { get; set; }
       public ApiHelper Api { get; set; }
-      public ScoreboardLiveConnectedEventArgs(Tournament tournament, Device device, ApiHelper api) {
+      public ScoreboardWebSocketClient WebSocket { get; set; }
+      public ScoreboardLiveConnectedEventArgs(Tournament tournament, Device device, ApiHelper api, ScoreboardWebSocketClient webSocket) {
         Tournament = tournament;
         Device = device;
         Api = api;
+        WebSocket = webSocket;
       }
     }
 
@@ -77,6 +83,8 @@ namespace ScoreboardConnectWinUI3.Controls {
       labelStatus.Text = PARTIALLY_CONNECTED;
       labelStatus.ForeColor = Color.Orange;
       pictureLoading.Visible = false;
+
+      Connected?.Invoke(this, new ScoreboardLiveConnectedEventArgs(m_tournament, m_device, m_api, m_webSocket));
     }
 
     private void SetStatusConnected() {
@@ -86,17 +94,20 @@ namespace ScoreboardConnectWinUI3.Controls {
       labelStatus.ForeColor = Color.Green;
       pictureLoading.Visible = false;
 
-      Connected?.Invoke(this, new ScoreboardLiveConnectedEventArgs(m_tournament, m_device, m_api));
+      Connected?.Invoke(this, new ScoreboardLiveConnectedEventArgs(m_tournament, m_device, m_api, m_webSocket));
     }
 
     private void InitSocket() {
-      m_webSocket.ConnectionOpened += Socket_ConnectionOpened;
-      m_webSocket.ConnectionClosed += Socket_ConnectionClosed;
+      m_webSocket.StateChanged += Socket_StateChanged;
       m_webSocket.MessageReceived += Socket_MessageReceived;
     }
 
 
     private async Task Connect() {
+      lock (m_lock) {
+        m_apiChecked = false;
+      }
+
       if ((m_settings == null) || (m_keyStore == null)) {
         throw new InvalidOperationException("Settings and key store must be set before connecting");
       }
@@ -139,6 +150,10 @@ namespace ScoreboardConnectWinUI3.Controls {
         return;
       }
 
+      lock (m_lock) {
+        m_apiChecked = true;
+      }
+
       await ConnectSocket();
     }
 
@@ -151,7 +166,7 @@ namespace ScoreboardConnectWinUI3.Controls {
         return;
       }
       // Try to connect to socket
-      await m_webSocket.ConnectAsync(new Uri(socketURL));
+      m_webSocket.Start(socketURL); 
     }
 
     private void MessageBoxError(string text) {
@@ -164,15 +179,20 @@ namespace ScoreboardConnectWinUI3.Controls {
     private void Socket_MessageReceived(object sender, ScoreboardWebSocketClient.MessageEventArgs e) {
     }
 
-    private void Socket_ConnectionClosed(object sender, EventArgs e) {
-      Invoke((MethodInvoker)delegate {
-        SetStatusPartiallyConnected();
-      });
-    }
+    private void Socket_StateChanged(object sender, StateEventArgs e) {
+      bool apiConnected = false;
+      lock (m_lock) {
+        apiConnected = m_apiChecked;
+      }
 
-    private void Socket_ConnectionOpened(object sender, EventArgs e) {
       Invoke((MethodInvoker)delegate {
-        SetStatusConnected();
+        if (e.State == ClientState.Connected) {
+          SetStatusConnected();
+        } else if (apiConnected) {
+          SetStatusPartiallyConnected();
+        } else {
+          SetStatusDisconnected();
+        }
       });
     }
   }

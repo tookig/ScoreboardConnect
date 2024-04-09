@@ -1,4 +1,5 @@
 ﻿using ScoreboardLiveApi;
+using ScoreboardLiveWebSockets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,11 +91,39 @@ namespace ScoreboardConnectWinUI3 {
 
     protected async Task InitApi(Controls.ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs apiInfo) {
       Controls.ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs validatedApi = apiInfo ?? throw new ArgumentNullException("ApiHelper reference cannot be null");
+
+      bool doReload = true;
+
       if (m_apiInfo != null) {
+        m_apiInfo.WebSocket.MessageReceived -= ScoreboardSocketMessage;
+        m_apiInfo.WebSocket.Info -= ScoreboardSocketInfo;
+        m_apiInfo.WebSocket.ErrorOccurred -= ScoreboardSocketError;
+
+        if (m_apiInfo.Api == validatedApi.Api && m_apiInfo.Device?.UnitID == validatedApi.Device?.UnitID && validatedApi.Tournament?.TournamentID == m_apiInfo.Tournament?.TournamentID) {
+          doReload = false;
+        }
       }
       m_apiInfo = validatedApi;
-      await ReloadSBCourts();
+
+      if (doReload) {
+        await ReloadSBCourts();
+      }
+      m_apiInfo.WebSocket.MessageReceived += ScoreboardSocketMessage;
+      m_apiInfo.WebSocket.Info += ScoreboardSocketInfo;
+      m_apiInfo.WebSocket.ErrorOccurred += ScoreboardSocketError;
       CheckIfAllReady();
+    }
+
+    private void ScoreboardSocketError(object sender, ScoreboardWebSocketClient.ErrorEventArgs e) {
+      SendStatusMessage(e.Error.Message, StatusMessageLevel.Error);
+    }
+
+    private void ScoreboardSocketInfo(object sender, ScoreboardWebSocketClient.InfoEventArgs e) {
+      SendStatusMessage(e.Info, StatusMessageLevel.Info);
+    }
+
+    private void ScoreboardSocketMessage(object sender, ScoreboardWebSocketClient.MessageEventArgs e) {
+      SendStatusMessage(e.Message.ToString(), StatusMessageLevel.Info);
     }
 
     protected void InitListener(TPListener tpListener) {

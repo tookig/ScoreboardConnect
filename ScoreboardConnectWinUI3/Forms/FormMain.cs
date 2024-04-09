@@ -145,6 +145,7 @@ namespace ScoreboardConnectWinUI3 {
 
     private async void uploadTournamentToolStripMenuItem_Click(object sender, EventArgs e) {
       TP.Tournament tournament = m_TPNetworkConnected?.Tournament ?? await LoadTournamentFromFile();
+      if (tournament == null) return;
       FormUpload formUpload = new FormUpload(m_SBConnected.Api, m_SBConnected.Device, m_SBConnected.Tournament, tournament);
       formUpload.ShowDialog(this);
     }
