@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 using TP.Data;
 
 namespace TP {
-  public abstract class File {
+  public abstract class FileBase {
     public OdbcConnection Connection { get; private set; }
     protected object connectionLock = new object();
 
-    public File(string filename) {
+    public FileBase(string filename) {
       string password = "d4R2GY76w2qzZ";
       OdbcConnectionStringBuilder connectionStringBuilder = new OdbcConnectionStringBuilder();
       connectionStringBuilder.Driver = "Microsoft Access Driver (*.mdb, *.accdb)";

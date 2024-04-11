@@ -8,7 +8,7 @@ using TP.Data;
 using System.Linq;
 
 namespace TP {
-  public class TPFile(string filename) : File(filename) {
+  public class TPFile(string filename) : FileBase(filename) {
     public async Task<TournamentSettings> LoadTournamentSettings() {
       return (await LoadStuff("SELECT * FROM Settings WHERE name='Tournament'", reader => new Data.TournamentSettings(reader)))[0];
     }
