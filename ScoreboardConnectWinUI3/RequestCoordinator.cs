@@ -1,4 +1,5 @@
 ﻿using ScoreboardLiveApi;
+using ScoreboardLiveSocket.Messages;
 using ScoreboardLiveWebSockets;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ using TPNetwork;
 namespace ScoreboardConnectWinUI3 {
   internal class RequestCoordinator {
     public enum StatusMessageLevel {
+      Verbose,
       Info,
       Warning,
       Error
@@ -124,6 +126,9 @@ namespace ScoreboardConnectWinUI3 {
 
     private void ScoreboardSocketMessage(object sender, ScoreboardWebSocketClient.MessageEventArgs e) {
       SendStatusMessage(e.Message.ToString(), StatusMessageLevel.Info);
+      if (e.Message is MatchUpdate matchUpdate) {
+        _ = MatchUpdate(matchUpdate);
+      }
     }
 
     protected void InitListener(TPListener tpListener) {
@@ -334,6 +339,50 @@ namespace ScoreboardConnectWinUI3 {
         return false;
       }
       return true;
+    }
+    #endregion
+
+    #region  Match update handling
+    private static readonly string[] finishedMatchStatus = ["team1won", "team2won"];
+
+    private async Task MatchUpdate(MatchUpdate matchUpdate) {
+      // Send info message
+      SendStatusMessage($"Match update received for {matchUpdate.Match?.ToString()}", StatusMessageLevel.Verbose);
+      // Check if match is complete
+      if (matchUpdate.Match == null || !finishedMatchStatus.Contains(matchUpdate.Match.Status)) {
+        SendStatusMessage("Match not finished; no update done", StatusMessageLevel.Verbose);
+        return;
+      }
+      // Look up the match in the TP tournament
+      TP.Tournament tpTournament = await GetTPTournament();
+      if (tpTournament == null) {
+        SendStatusMessage("Cannot update match: Failed to load tournament from TP", StatusMessageLevel.Error);
+        return;
+      }
+      // Extract the TP match id from the SB match tag
+      int tpMatchID;
+      try { 
+        tpMatchID = TP.Tournament.ExtractMatchIDFromTag(matchUpdate.Match.Tag);
+      } catch (Exception e) {
+        // Set to verbose since this match can be from another tournament
+        SendStatusMessage($"Cannot update match: Failed to extract match ID from tag {matchUpdate.Match.Tag}: {e.Message}", StatusMessageLevel.Verbose);
+        return;
+      }
+      // Find the match in the TP tournament
+      TP.Match tpMatch = tpTournament.FindMatchByID(tpMatchID);
+      if (tpMatch == null) {
+        // Set to verbose since this match can be from another tournament
+        SendStatusMessage($"Cannot update match: Match {tpMatchID} not found in tournament", StatusMessageLevel.Verbose);
+        return;
+      }
+      // Check if the tp match is already finished
+      if ((tpMatch.Winner != TP.Data.PlayerMatchData.Winners.None) ||
+          (tpMatch.Winner == TP.Data.PlayerMatchData.Winners.Entry1 && matchUpdate.Match.Status == "team2won") ||
+          (tpMatch.Winner == TP.Data.PlayerMatchData.Winners.Entry2 && matchUpdate.Match.Status == "team1won")) {
+        SendStatusMessage($"Match {tpMatchID} is already has correct winner", StatusMessageLevel.Verbose);
+        return;
+      }
+      // Update the TP match
     }
     #endregion
 

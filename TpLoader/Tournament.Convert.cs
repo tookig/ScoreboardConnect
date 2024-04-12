@@ -287,5 +287,9 @@ namespace TP {
       hash = hash.Insert(0, match.ID.ToString().PadLeft(6, '0'));
       return hash;
     }
+
+    public static int ExtractMatchIDFromTag(string tag) {
+      return int.Parse(tag.Substring(0, 6));
+    }
   }
 }

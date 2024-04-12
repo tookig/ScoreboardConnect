@@ -70,7 +70,7 @@ namespace ScoreboardLiveWebSockets {
     }
 
     public ScoreboardWebSocketClient() {
-      m_pingtimer = new Timer(_ => PingServer(), null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+      m_pingtimer = new Timer(_ => PingServer(), null, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(60));
     }
 
     public void Start(string url) {
@@ -233,9 +233,6 @@ namespace ScoreboardLiveWebSockets {
 
     private void PingServer() {
       if (IsConnected) {
-        Send(new Ping());
-        Send(new Ping());
-        Send(new Ping());
         Send(new Ping());
       }
     }
