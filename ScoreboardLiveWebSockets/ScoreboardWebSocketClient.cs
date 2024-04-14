@@ -8,98 +8,246 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
 using ScoreboardLiveSocket.Messages;
+using System.Data;
 
 namespace ScoreboardLiveWebSockets {
-  public class ScoreboardWebSocketClient {
-    public enum ClientState {
-      NotInitialized,
-      Connecting,
-      Connected,
-      WaitingForReconnect
-    }
-
-    private object m_lock = new object();
-    private CancellationTokenSource? m_cancellationTokenSource;
-    private CancellationToken m_cancellationToken;
-    private ClientState m_state = ClientState.NotInitialized;
-    private ClientWebSocket? m_clientWebSocket;
-    private string m_url = string.Empty;
-    private bool m_started = false;
-    private Queue<DateTime> m_connectionAttempts = new();
-    private Timer m_pingtimer;
-    private Queue<Message> m_sendQueue = new();
-    private Mutex m_sendLock = new();
-
-    public class StateEventArgs : EventArgs {
-      public ClientState State { get; private set; }
-      public StateEventArgs(ClientState state) {
-        State = state;
-      }
-    }
-
-    public class MessageEventArgs : EventArgs {
-      public Message Message { get; private set; }
-      public MessageEventArgs(Message message) {
-        Message = message;
-      }
-    }
-
-    public class ErrorEventArgs : EventArgs {
-      public Exception Error { get; private set; }
-      public ErrorEventArgs(Exception error) {
-        Error = error;
-      }
-    }
-
-    public class InfoEventArgs : EventArgs {
-      public string Info { get; private set; }
-      public InfoEventArgs(string info) {
-        Info = info;
-      }
-    }
+  public class ScoreboardWebSocketClient : IDisposable {
+    private static readonly int RECONNECT_CHECK_INTERVAL = 5;
+    private static readonly int RECONNECT_TRY_INTERVAL = 30;
+    private static readonly ClientState[] RECONNECT_STATES = [ClientState.Stopped, ClientState.WaitingForReconnect];
 
     public event EventHandler<MessageEventArgs>? MessageReceived;
     public event EventHandler<ErrorEventArgs>? ErrorOccurred;
     public event EventHandler<StateEventArgs>? StateChanged;
-    public event EventHandler<InfoEventArgs>? Info;
 
-    public bool IsConnected {
-      get {
-        return m_clientWebSocket?.State == WebSocketState.Open && !m_cancellationToken.IsCancellationRequested;
+    private object m_lock = new object();
+    private ClientState m_state = ClientState.NotInitialized;
+    private Timer m_reconnectTimer;
+
+    #region Thread safe fields
+    private SemaphoreSlim m_sendLock = new SemaphoreSlim(0);
+    private CancellationTokenSource m_cancelThread = new CancellationTokenSource();
+    private Queue<ThreadMessage> m_threadQueue = new Queue<ThreadMessage>();
+    #endregion
+
+    private abstract class ThreadMessage {
+    }
+
+    private class ThreadInitialize : ThreadMessage {
+      public string Url { get; init; }
+      public ThreadInitialize(string url) {
+        Url = url;
       }
     }
 
+    private class ThreadStart : ThreadMessage {
+    }
+
+    private class ThreadStop : ThreadMessage {
+      public bool AutoReconnect { get; init; }
+      public ThreadStop(bool autoReconnect = false) {
+        AutoReconnect = autoReconnect;
+      }
+    }
+
+    private class ThreadCheckReconnect : ThreadMessage {
+    }
+
+    private class ThreadSend : ThreadMessage {
+      public Message Message { get; init; }
+      public ThreadSend(Message message) {
+        Message = message;
+      }
+    }
+
+    private class ThreadReceive : ThreadMessage {
+      public Message Message { get; init; }
+      public ThreadReceive(Message message) {
+        Message = message;
+      }
+    }
+
+    /**
+     * Worker thread.
+     */
     public ScoreboardWebSocketClient() {
-      m_pingtimer = new Timer(_ => PingServer(), null, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(60));
+      // m_pingtimer = new Timer(_ => PingServer(), null, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(60));
+      m_reconnectTimer = new Timer(_ => CheckReconnect(), null, TimeSpan.FromSeconds(RECONNECT_CHECK_INTERVAL), TimeSpan.FromSeconds(RECONNECT_CHECK_INTERVAL));
+      new Task(ThreadLoop).Start();
     }
 
-    public void Start(string url) {
-      OnInfo("Starting WebSocket client.");
-      lock (m_lock) {
-        m_started = true;
-      }
-      Initialize(url);
+    public void Dispose() {
+      if (m_cancelThread.IsCancellationRequested) return;
+      m_cancelThread.Cancel();
+      m_reconnectTimer.Dispose();
     }
 
-    public void Stop() {
-      OnInfo("Stopping WebSocket client.");
-      lock (m_lock) {
-        m_started = false;
-      }
-      Disconnect();
+    public void Initialize(string url) {
+      AddThreadMessage(new ThreadInitialize(url));
+    }
+
+    public void Start() {
+      AddThreadMessage(new ThreadStart());
+    }
+
+    public void Stop(bool autoReconnect = false) {
+      AddThreadMessage(new ThreadStop(autoReconnect));
     }
 
     public void Send(Message message) {
-      OnInfo($"Queueing message: {message}");
-      if (!IsConnected || m_clientWebSocket == null) {
-        throw new InvalidOperationException("Client is not connected.");
-      }
-      lock (m_sendQueue) {
-        m_sendQueue.Enqueue(message);
-      }
-      CheckSendQueue();
+      AddThreadMessage(new ThreadSend(message));
     }
 
+    private void Receive(Message message) {
+      AddThreadMessage(new ThreadReceive(message));
+    }
+
+    private void CheckReconnect() {
+      AddThreadMessage(new ThreadCheckReconnect());
+    }
+
+    private void AddThreadMessage(ThreadMessage message) {
+      lock (m_threadQueue) {
+        m_threadQueue.Enqueue(message);
+      }
+      m_sendLock.Release();
+    }
+
+    private async void ThreadLoop() {
+      string url = string.Empty;
+      ClientWebSocket? clientWebSocket = null;
+      CancellationToken cancellationToken = m_cancelThread.Token;
+      bool autoReconnect = true;
+      DateTime lastReconnectAttempt = DateTime.MinValue;
+
+      while (!cancellationToken.IsCancellationRequested) {
+        ThreadMessage? message = null;
+        lock (m_threadQueue) {
+          if (m_threadQueue.Count > 0) {
+            message = m_threadQueue.Dequeue();
+          }
+        }
+
+        if (message == null) {
+          m_sendLock.Wait(cancellationToken);
+          continue;
+        }
+
+        switch (message) {
+          case ThreadInitialize init:
+            url = init.Url;
+            ChangeState(ClientState.Stopped);
+            break;
+          case ThreadStart _:
+            autoReconnect = true;
+            ChangeState(ClientState.Connecting);
+            clientWebSocket = await ThreadDoStart(url, clientWebSocket, cancellationToken);
+            if (clientWebSocket != null) {
+              _ = Task.Run(() => ThreadReceiveLoop(clientWebSocket, cancellationToken));
+              ChangeState(ClientState.Connected);
+            } else {
+              ChangeState(ClientState.Stopped);
+            }
+            break;
+          case ThreadStop threadStop:
+            autoReconnect = threadStop.AutoReconnect;
+            ChangeState(ClientState.Stopping);
+            clientWebSocket = (await ThreadDoStop(clientWebSocket, cancellationToken)) ? null : clientWebSocket;
+            ChangeState(ClientState.Stopped);
+            break;
+          case ThreadSend send:
+            await ThreadDoSend(clientWebSocket!, send.Message, cancellationToken);
+            break;
+          case ThreadReceive receive:
+            _ = Task.Run(() => OnMessageReceived(receive.Message));
+            break;
+          case ThreadCheckReconnect _:
+            lock (m_lock) {
+              if (!autoReconnect || !RECONNECT_STATES.Contains(m_state) || DateTime.Now - lastReconnectAttempt < TimeSpan.FromSeconds(RECONNECT_TRY_INTERVAL)) {
+                break;
+              }
+            }
+            lastReconnectAttempt = DateTime.Now;
+            Start();
+            break;
+        }
+      } 
+    }
+
+    private async Task<ClientWebSocket?> ThreadDoStart(string url, ClientWebSocket? clientWebSocket, CancellationToken cancellationToken) {
+      if (clientWebSocket != null) {
+        OnErrorOccurred(new InvalidOperationException("Cannot start socket: already started."));
+        return null;
+      }
+      clientWebSocket = new ClientWebSocket();
+      clientWebSocket.Options.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+      try {
+        await clientWebSocket.ConnectAsync(new Uri(url), cancellationToken);
+      } catch (Exception e) {
+        OnErrorOccurred(e);
+        return null;
+      }
+      return clientWebSocket;
+    }
+
+    private async Task<bool> ThreadDoStop(ClientWebSocket? clientWebSocket, CancellationToken cancellationToken) {
+      if (clientWebSocket == null) {
+        OnErrorOccurred(new InvalidOperationException("Cannot stop socket: not started."));
+        return false;
+      }
+      try {
+        await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client requested close.", cancellationToken);
+        clientWebSocket.Dispose();
+      } catch (Exception e) {
+         OnErrorOccurred(e);
+      }
+      return true;
+    }
+
+    private async Task ThreadDoSend(ClientWebSocket clientWebSocket, Message message, CancellationToken cancellationToken) {
+      if (clientWebSocket == null) {
+        OnErrorOccurred(new InvalidOperationException("Cannot send message: not started."));
+        return;
+      }
+      var buffer = Encoding.UTF8.GetBytes(message.ToJson());
+      try {
+        await clientWebSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cancellationToken);
+      } catch (Exception e) {
+        OnErrorOccurred(e);
+      }
+    }
+
+    private async Task ThreadReceiveLoop(ClientWebSocket clientWebSocket, CancellationToken cancellationToken) {
+      var buffer = new byte[1024];
+      var message = new StringBuilder();
+      try {
+        while (!cancellationToken.IsCancellationRequested) {
+          var result = await clientWebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+          if (result.MessageType == WebSocketMessageType.Text) {
+            var receivedMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
+            message.Append(receivedMessage);
+            if (result.EndOfMessage) {
+              Receive(Message.Deserialize(message.ToString()));
+              message.Clear();
+            }
+          } else if (result.MessageType == WebSocketMessageType.Close) {
+            break;
+          }
+        }
+      } catch (Exception e) {
+        OnErrorOccurred(e);
+      }
+      Stop(true);
+    }
+
+    private void ChangeState(ClientState state) {
+      lock (m_lock) {
+        m_state = state;
+      }
+      OnStateChange(state);
+    }
+
+    /*
     private void CheckSendQueue() {
       new Task(async () => {
         m_sendLock.WaitOne();
@@ -236,41 +384,18 @@ namespace ScoreboardLiveWebSockets {
         Send(new Ping());
       }
     }
+    */
 
-    private void OnMessageReceived(string message) {
-      Message parsedMessage;
-      try {
-        parsedMessage = Message.Deserialize(message);
-      } catch (Exception e) {
-        OnErrorOccurred(e);
-        return;
-      }
-
-      MessageReceived?.Invoke(this, new MessageEventArgs(parsedMessage));
+    private void OnMessageReceived(Message message) {
+      MessageReceived?.Invoke(this, new MessageEventArgs(message));
     }
 
     private void OnErrorOccurred(Exception error) {
       ErrorOccurred?.Invoke(this, new ErrorEventArgs(error));
-      _ = CheckForReconnect();
     } 
 
-    private void OnConnecting() {
-      m_state = ClientState.Connecting;
-      StateChanged?.Invoke(this, new StateEventArgs(m_state));
-    }
-
-    private void OnConnectionClosed() {
-      m_state = ClientState.WaitingForReconnect;
-      StateChanged?.Invoke(this, new StateEventArgs(m_state));
-    }
-
-    private void OnConnectionOpened() {
-      m_state = ClientState.Connected;
-      StateChanged?.Invoke(this, new StateEventArgs(m_state));
-    }
-
-    private void OnInfo(string message) {
-      Info?.Invoke(this, new InfoEventArgs(message));
+    private void OnStateChange(ClientState state) {
+      StateChanged?.Invoke(this, new StateEventArgs(state));
     }
   }
 }

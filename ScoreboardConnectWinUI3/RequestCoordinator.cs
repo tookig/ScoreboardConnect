@@ -98,7 +98,7 @@ namespace ScoreboardConnectWinUI3 {
 
       if (m_apiInfo != null) {
         m_apiInfo.WebSocket.MessageReceived -= ScoreboardSocketMessage;
-        m_apiInfo.WebSocket.Info -= ScoreboardSocketInfo;
+        m_apiInfo.WebSocket.StateChanged -= ScoreboardSocketStateChange;
         m_apiInfo.WebSocket.ErrorOccurred -= ScoreboardSocketError;
 
         if (m_apiInfo.Api == validatedApi.Api && m_apiInfo.Device?.UnitID == validatedApi.Device?.UnitID && validatedApi.Tournament?.TournamentID == m_apiInfo.Tournament?.TournamentID) {
@@ -111,20 +111,25 @@ namespace ScoreboardConnectWinUI3 {
         await ReloadSBCourts();
       }
       m_apiInfo.WebSocket.MessageReceived += ScoreboardSocketMessage;
-      m_apiInfo.WebSocket.Info += ScoreboardSocketInfo;
+      m_apiInfo.WebSocket.StateChanged += ScoreboardSocketStateChange;
       m_apiInfo.WebSocket.ErrorOccurred += ScoreboardSocketError;
       CheckIfAllReady();
     }
 
-    private void ScoreboardSocketError(object sender, ScoreboardWebSocketClient.ErrorEventArgs e) {
+    private void ScoreboardSocketError(object sender, ErrorEventArgs e) {
       SendStatusMessage(e.Error.Message, StatusMessageLevel.Error);
     }
 
-    private void ScoreboardSocketInfo(object sender, ScoreboardWebSocketClient.InfoEventArgs e) {
+    private void ScoreboardSocketStateChange(object sender, StateEventArgs e) {
+      SendStatusMessage(e.State.ToString(), StatusMessageLevel.Info);
+
+    }
+
+    private void ScoreboardSocketInfo(object sender, InfoEventArgs e) {
       SendStatusMessage(e.Info, StatusMessageLevel.Info);
     }
 
-    private void ScoreboardSocketMessage(object sender, ScoreboardWebSocketClient.MessageEventArgs e) {
+    private void ScoreboardSocketMessage(object sender, MessageEventArgs e) {
       SendStatusMessage(e.Message.ToString(), StatusMessageLevel.Info);
       if (e.Message is MatchUpdate matchUpdate) {
         _ = MatchUpdate(matchUpdate);

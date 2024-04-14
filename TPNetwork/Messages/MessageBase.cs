@@ -32,13 +32,13 @@ namespace TPNetwork.Messages {
       AppendChild(root);
     }
 
-    private XmlElement CreateGroup(string id) {
+    protected virtual XmlElement CreateGroup(string id) {
       var element = CreateElement("GROUP");
       element.SetAttribute("ID", id);
       return element;
     }
 
-    private XmlElement CreateItem(string id, string itemType, string text) {
+    protected virtual XmlElement CreateItem(string id, string itemType, string text) {
       var element = CreateElement("ITEM");
       element.SetAttribute("ID", id);
       element.SetAttribute("TYPE", itemType);

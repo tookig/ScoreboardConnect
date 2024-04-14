@@ -166,7 +166,8 @@ namespace ScoreboardConnectWinUI3.Controls {
         return;
       }
       // Try to connect to socket
-      m_webSocket.Start(socketURL); 
+      m_webSocket.Initialize(socketURL);
+      m_webSocket.Start(); 
     }
 
     private void MessageBoxError(string text) {
@@ -176,7 +177,7 @@ namespace ScoreboardConnectWinUI3.Controls {
     private void ScoreboardLiveControl_Load(object sender, EventArgs e) {
     }
 
-    private void Socket_MessageReceived(object sender, ScoreboardWebSocketClient.MessageEventArgs e) {
+    private void Socket_MessageReceived(object sender, MessageEventArgs e) {
     }
 
     private void Socket_StateChanged(object sender, StateEventArgs e) {

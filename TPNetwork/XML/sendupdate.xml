@@ -1,0 +1,102 @@
+﻿﻿<?xml version="1.0" encoding="UTF-8"?>
+<VISUALXML VERSION="1.0">
+  <GROUP ID="Header">
+    <GROUP ID="Version">
+      <ITEM ID="Hi" TYPE="Integer">1</ITEM>
+      <ITEM ID="Lo" TYPE="Integer">1</ITEM>
+    </GROUP>
+  </GROUP>
+  <GROUP ID="Action">
+    <ITEM ID="ID" TYPE="String">SENDUPDATE</ITEM>
+    <ITEM ID="Password" TYPE="String">abc123</ITEM>
+    <ITEM ID="Unicode" TYPE="String">202207231302429039</ITEM>
+  </GROUP>
+  <GROUP ID="Client">
+    <ITEM ID="IP" TYPE="String">192.168.1.20</ITEM>
+  </GROUP>
+  <GROUP ID="Update">
+    <GROUP ID="Tournament">
+      <GROUP ID="Matches">
+        <GROUP ID="Match">
+          <ITEM ID="ID" TYPE="Integer">256</ITEM>
+          <ITEM ID="DrawID" TYPE="Integer">3</ITEM>
+          <ITEM ID="PlanningID" TYPE="Integer">2001</ITEM>
+          <GROUP ID="Sets">
+            <GROUP ID="Set">
+              <ITEM ID="T1" TYPE="Integer">1</ITEM>
+              <ITEM ID="T2" TYPE="Integer">21</ITEM>
+            </GROUP>
+            <GROUP ID="Set">
+              <ITEM ID="T1" TYPE="Integer">2</ITEM>
+              <ITEM ID="T2" TYPE="Integer">21</ITEM>
+            </GROUP>
+          </GROUP>
+          <ITEM ID="Winner" TYPE="Integer">2</ITEM>
+          <ITEM ID="ScoreStatus" TYPE="Integer">0</ITEM>
+          <ITEM ID="Duration" TYPE="Integer">1</ITEM>
+          <ITEM ID="Shuttles" TYPE="Integer">0</ITEM>
+          <ITEM ID="Highlight" TYPE="Integer">0</ITEM>
+          <ITEM ID="Status" TYPE="Integer">0</ITEM>
+          <ITEM ID="MatchOrder" TYPE="Integer">1</ITEM>
+          <ITEM ID="ScoreSheetPrinted" TYPE="Bool">false</ITEM>
+          <ITEM ID="ForwardLoser" TYPE="Bool">false</ITEM>
+          <ITEM ID="CourtID" TYPE="Integer">7</ITEM>
+        </GROUP>
+      </GROUP>
+      <GROUP ID="Players">
+        <GROUP ID="Player">
+          <ITEM ID="ID" TYPE="Integer">77</ITEM>
+          <ITEM ID="Discount" TYPE="Float">0</ITEM>
+          <ITEM ID="WeightChecked" TYPE="Bool">false</ITEM>
+          <ITEM ID="EntryWeight" TYPE="Float">0</ITEM>
+          <ITEM ID="Weight" TYPE="Float">0</ITEM>
+          <ITEM ID="Weight2" TYPE="Float">0</ITEM>
+          <ITEM ID="CheckedIn" TYPE="Bool">false</ITEM>
+          <ITEM ID="FirstCheckIn" TYPE="Bool">false</ITEM>
+          <ITEM ID="LastTimeOnCourt" TYPE="DateTime">
+            <DATETIME Y="2024" MM="4" D="14" H="9" M="27" S="35" MS="769" />
+          </ITEM>
+        </GROUP>
+        <GROUP ID="Player">
+          <ITEM ID="ID" TYPE="Integer">76</ITEM>
+          <ITEM ID="Discount" TYPE="Float">0</ITEM>
+          <ITEM ID="WeightChecked" TYPE="Bool">false</ITEM>
+          <ITEM ID="EntryWeight" TYPE="Float">0</ITEM>
+          <ITEM ID="Weight" TYPE="Float">0</ITEM>
+          <ITEM ID="Weight2" TYPE="Float">0</ITEM>
+          <ITEM ID="CheckedIn" TYPE="Bool">false</ITEM>
+          <ITEM ID="FirstCheckIn" TYPE="Bool">false</ITEM>
+          <ITEM ID="LastTimeOnCourt" TYPE="DateTime">
+            <DATETIME Y="2024" MM="4" D="14" H="9" M="27" S="35" MS="770" />
+          </ITEM>
+        </GROUP>
+        <GROUP ID="Player">
+          <ITEM ID="ID" TYPE="Integer">29</ITEM>
+          <ITEM ID="Discount" TYPE="Float">0</ITEM>
+          <ITEM ID="WeightChecked" TYPE="Bool">false</ITEM>
+          <ITEM ID="EntryWeight" TYPE="Float">0</ITEM>
+          <ITEM ID="Weight" TYPE="Float">0</ITEM>
+          <ITEM ID="Weight2" TYPE="Float">0</ITEM>
+          <ITEM ID="CheckedIn" TYPE="Bool">false</ITEM>
+          <ITEM ID="FirstCheckIn" TYPE="Bool">false</ITEM>
+          <ITEM ID="LastTimeOnCourt" TYPE="DateTime">
+            <DATETIME Y="2024" MM="4" D="14" H="9" M="27" S="35" MS="770" />
+          </ITEM>
+        </GROUP>
+        <GROUP ID="Player">
+          <ITEM ID="ID" TYPE="Integer">75</ITEM>
+          <ITEM ID="Discount" TYPE="Float">0</ITEM>
+          <ITEM ID="WeightChecked" TYPE="Bool">false</ITEM>
+          <ITEM ID="EntryWeight" TYPE="Float">0</ITEM>
+          <ITEM ID="Weight" TYPE="Float">0</ITEM>
+          <ITEM ID="Weight2" TYPE="Float">0</ITEM>
+          <ITEM ID="CheckedIn" TYPE="Bool">false</ITEM>
+          <ITEM ID="FirstCheckIn" TYPE="Bool">false</ITEM>
+          <ITEM ID="LastTimeOnCourt" TYPE="DateTime">
+            <DATETIME Y="2024" MM="4" D="14" H="9" M="27" S="35" MS="770" />
+          </ITEM>
+        </GROUP>
+      </GROUP>
+    </GROUP>
+  </GROUP>
+</VISUALXML>

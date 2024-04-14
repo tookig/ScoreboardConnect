@@ -5,6 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="XML\sendupdate.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="XML\sendupdate.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\..\..\..\Lib\Debug\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
