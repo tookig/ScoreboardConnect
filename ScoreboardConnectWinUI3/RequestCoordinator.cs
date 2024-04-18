@@ -380,11 +380,27 @@ namespace ScoreboardConnectWinUI3 {
         SendStatusMessage($"Cannot update match: Match {tpMatchID} not found in tournament", StatusMessageLevel.Verbose);
         return;
       }
+      // Find draw
+      Draw draw = tpTournament.FindDrawByID(tpMatch.DrawID);
+      if (draw == null) {
+        SendStatusMessage($"Cannot update match: Draw {tpMatch.DrawID} not found in tournament", StatusMessageLevel.Warning);
+        return;
+      }
+      // Find event
+      Event ev = tpTournament.FindEventByID(draw.EventID);
+      if (ev == null) {
+        SendStatusMessage($"Cannot update match: Event {draw.EventID} not found in tournament", StatusMessageLevel.Warning);
+        return;
+      }
+      // Check that the tags match
+      if (matchUpdate.Match.Tag != TP.Tournament.CreateMatchTag(m_apiInfo.Tournament, tpMatch, ev, draw)) {
+        SendStatusMessage($"Match ID's match but tags do not.", StatusMessageLevel.Verbose);
+        return;
+      }
       // Check if the tp match is already finished
-      if ((tpMatch.Winner != TP.Data.PlayerMatchData.Winners.None) ||
-          (tpMatch.Winner == TP.Data.PlayerMatchData.Winners.Entry1 && matchUpdate.Match.Status == "team2won") ||
-          (tpMatch.Winner == TP.Data.PlayerMatchData.Winners.Entry2 && matchUpdate.Match.Status == "team1won")) {
-        SendStatusMessage($"Match {tpMatchID} is already has correct winner", StatusMessageLevel.Verbose);
+      if ((tpMatch.Winner == TP.Data.PlayerMatchData.Winners.Entry1 && matchUpdate.Match.Status == "team1won") ||
+          (tpMatch.Winner == TP.Data.PlayerMatchData.Winners.Entry2 && matchUpdate.Match.Status == "team2won")) {
+        SendStatusMessage($"Match {tpMatchID} already has correct winner", StatusMessageLevel.Verbose);
         return;
       }
       // Update the TP match

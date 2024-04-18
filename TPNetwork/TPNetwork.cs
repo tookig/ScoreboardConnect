@@ -28,6 +28,13 @@ namespace TPNetwork {
       return xml;
     }
 
+    public async Task<XmlDocument> SendUpdate(TP.Match tpMatch) {
+      await PreSend();
+      var xml = await SendRequest(new Messages.SendUpdate(Password, tpMatch));
+      PostSend(xml);
+      return xml;
+    }
+
     private async Task PreSend() {
       // Send the request
       var xml = await SendRequest(new Messages.Login());

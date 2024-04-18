@@ -5,12 +5,14 @@ using System.Xml;
 
 namespace TPNetwork.Messages {
   public class MessageBase : XmlDocument {
+    public XmlElement VisualXMLRoot { get; private set; }
+
     public MessageBase(string password, string actionID, string ip = "127.0.0.1") : base() {
-      var root = CreateElement("VISUALXML");
-      root.SetAttribute("VERSION", "1.0");
+      VisualXMLRoot = CreateElement("VISUALXML");
+      VisualXMLRoot.SetAttribute("VERSION", "1.0");
 
       var header = CreateGroup("Header");
-      root.AppendChild(header);
+      VisualXMLRoot.AppendChild(header);
 
       var version = CreateGroup("Version");
       version.AppendChild(CreateItem("Hi", "Integer", "1"));
@@ -23,13 +25,13 @@ namespace TPNetwork.Messages {
       if (!string.IsNullOrEmpty(password)) {
         _action.AppendChild(CreateItem("Password", "String", password));
       }
-      root.AppendChild(_action);
+      VisualXMLRoot.AppendChild(_action);
 
       var client = CreateGroup("Client");
       client.AppendChild(CreateItem("IP", "String", ip));
-      root.AppendChild(client);
+      VisualXMLRoot.AppendChild(client);
 
-      AppendChild(root);
+      AppendChild(VisualXMLRoot);
     }
 
     protected virtual XmlElement CreateGroup(string id) {

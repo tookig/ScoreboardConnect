@@ -5,11 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="XML\sendupdate.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="XML\sendupdate.xml" />
+    <ProjectReference Include="..\TpLoader\TpTools.csproj" />
   </ItemGroup>
 
   <ItemGroup>
