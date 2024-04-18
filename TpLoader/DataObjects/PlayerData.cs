@@ -18,6 +18,7 @@ namespace TP.Data {
       FirstName = cpy.FirstName;
       ClubID = cpy.ClubID;
       CountryID = cpy.CountryID;
+      CountryString = cpy.CountryString;
     }
 
     public PlayerData(System.Data.IDataReader reader) {

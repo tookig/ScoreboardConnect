@@ -10,6 +10,8 @@ namespace TP {
     private static readonly string NAMEFORMAT = "{0} {1}";
     private static Helpers.PlaceMap PlaceMap = new Helpers.PlaceMap();
 
+    public static bool UseCountryInsteadOfClub { get; set; } = false;
+
     public class ExportClassItem {
       public ScoreboardLiveApi.TournamentClass SBClass { get; }
       public Draw TPDraw { get; }
@@ -173,10 +175,20 @@ namespace TP {
     public static (string, string, string, string) ConvertEntry(TP.Entry entry) {
       return (
         entry.Player1 == null ? "" : string.Format(NAMEFORMAT, entry.Player1.FirstName, entry.Player1.LastName),
-        entry.Player1 == null ? "" : (entry.Player1.Club?.Name ?? ""),
+        entry.Player1 == null ? "" : MakeClubString(entry.Player1),
         entry.Player2 == null ? "" : string.Format(NAMEFORMAT, entry.Player2.FirstName, entry.Player2.LastName),
-        entry.Player2 == null ? "" : (entry.Player2.Club?.Name ?? "")
+        entry.Player2 == null ? "" : MakeClubString(entry.Player2)
       );
+    }
+
+    private static string MakeClubString(Player player) {
+      if (UseCountryInsteadOfClub && ((player.CountryID > 0) || !string.IsNullOrEmpty(player.CountryString))) {
+        string useAsClub = player.CountryID > 0 ? Static.Countries.GetCountryName(player.CountryID) : Static.Countries.GetCountryName(player.CountryString);
+        if (!string.IsNullOrEmpty(useAsClub)) {
+          return useAsClub;
+        }
+      }
+      return player.Club?.Name ?? "";
     }
 
     public static string CreateMatchCategoryString(Event ev) {
