@@ -53,7 +53,7 @@ namespace TestTp {
       }
 
       */
-
+      /*
       foreach (TP.Tournament.ExportClassItem eci in tournament.ExportClasses((x) => true)) {
         Console.WriteLine("-- MAIN DRAW --");
         Console.WriteLine(eci.TPDraw?.ToString());

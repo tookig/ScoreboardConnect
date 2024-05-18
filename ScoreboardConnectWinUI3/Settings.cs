@@ -9,6 +9,7 @@ namespace ScoreboardConnectWinUI3 {
   public class Settings : ISerializable {
     public int UnitID { get; set; }
     public string URL { get; set; }
+    public bool UseCountryInsteadOfClub { get; set; }
     public Dictionary<int, int> SelectedTournaments { get; private set; }
     public Dictionary<int, Dictionary<int, string>> CourtSetup { get; private set; }
 
@@ -45,12 +46,13 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     #region Serialization
-    private const int c_version = 5;
+    private const int c_version = 6;
     private const string c_id_version = "Settings.version";
     private const string c_id_unitid = "Settings.unitid";
     private const string c_id_url = "Settings.url";
     private const string c_id_selected_tournaments = "Settings.selected_tournaments";
     private const string c_id_court_setup = "Settings.court_setup";
+    private const string c_id_use_country_instead_of_club = "Settings.use_country_instead_of_club";
 
     protected Settings(SerializationInfo info, StreamingContext context) : this() {
       int version = info.GetInt32(c_id_version);
@@ -62,6 +64,9 @@ namespace ScoreboardConnectWinUI3 {
       if (version > 4) {
         CourtSetup = (Dictionary<int, Dictionary<int, string>>)info.GetValue(c_id_court_setup, typeof(Dictionary<int, Dictionary<int, string>>));
       }
+      if (version > 5) {
+        UseCountryInsteadOfClub = info.GetBoolean(c_id_use_country_instead_of_club);
+      }
     }
 
     public void GetObjectData(SerializationInfo info, StreamingContext context) {
@@ -70,6 +75,7 @@ namespace ScoreboardConnectWinUI3 {
       info.AddValue(c_id_url, URL);
       info.AddValue(c_id_selected_tournaments, SelectedTournaments);
       info.AddValue(c_id_court_setup, CourtSetup);
+      info.AddValue(c_id_use_country_instead_of_club, UseCountryInsteadOfClub);
     }
     #endregion
   }

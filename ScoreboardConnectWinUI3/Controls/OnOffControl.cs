@@ -16,9 +16,25 @@ namespace ScoreboardConnectWinUI3.Controls {
     private Color knobColor = Color.White;
     private double knobSize = 0.5;
     private double textSize = 0.3;
+    private string onText = "ON";
+    private string offText = "OFF";
 
-    private string OnText { get; set; } = "ON";
-    private string OffText { get; set; } = "OFF";
+    public string OnText {
+      get { return onText; }
+      set {
+        onText = value;
+        Invalidate();
+      }
+    }
+
+    public string OffText {
+      get { return offText; }
+      set {
+        offText = value;
+        Invalidate();
+      }
+    }
+
 
     public event EventHandler CheckedChanged;
 

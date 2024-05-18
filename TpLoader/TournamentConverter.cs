@@ -6,11 +6,19 @@ using System.Linq;
 using System.Security.Cryptography;
 
 namespace TP {
-  public partial class Tournament {
-    private static readonly string NAMEFORMAT = "{0} {1}";
+  public class TournamentConverter {
     private static Helpers.PlaceMap PlaceMap = new Helpers.PlaceMap();
 
-    public static bool UseCountryInsteadOfClub { get; set; } = false;
+    public class ConvertOptions {
+      public bool UseCountryInsteadOfClub { get; set; } = false;
+      public string NameFormat { get; set; } = "{0} {1}";
+      public ConvertOptions Clone() {
+        return new ConvertOptions() {
+          UseCountryInsteadOfClub = UseCountryInsteadOfClub,
+          NameFormat = NameFormat
+        };
+      }
+    }
 
     public class ExportClassItem {
       public ScoreboardLiveApi.TournamentClass SBClass { get; }
@@ -36,9 +44,15 @@ namespace TP {
       public Match TP { get; set; }
     }
 
-    public IEnumerable<ExportClassItem> ExportClasses(Func<Event, bool> eventFilter) {
+    public ConvertOptions Options { get; init; }
+
+    public TournamentConverter(ConvertOptions options) {
+      Options = options;
+    }
+
+    public IEnumerable<ExportClassItem> ExportClasses(Tournament tournament, Func<Event, bool> eventFilter) {
       List<ExportClassItem> exportItems = new List<ExportClassItem>();
-      foreach (Event ev in Events.Where(eventFilter)) {
+      foreach (Event ev in tournament.Events.Where(eventFilter)) {
         var rootDraw = FindMainDraw(ev);
         var rootClass = ConvertDraw(ev, rootDraw).First();
 
@@ -55,7 +69,7 @@ namespace TP {
       return exportItems;
     }
 
-    private static List<ExportClassItem> ConvertDraw(Event ev, Draw draw) {
+    private List<ExportClassItem> ConvertDraw(Event ev, Draw draw) {
       List<ExportClassItem> classItems = new List<ExportClassItem>();
       
       if (draw.DrawType == Data.DrawData.DrawTypes.QualifierCups) {
@@ -79,7 +93,7 @@ namespace TP {
       return classItems;
     }
 
-    private static ScoreboardLiveApi.TournamentClass CreateClass(Event ev, Draw draw) {
+    private ScoreboardLiveApi.TournamentClass CreateClass(Event ev, Draw draw) {
       return new ScoreboardLiveApi.TournamentClass() {
         Category = CreateMatchCategoryString(ev),
         Description = draw.Name,
@@ -87,7 +101,7 @@ namespace TP {
       };
     }
 
-    private static IEnumerable<ExportMatchItem> ConvertDrawMatches(Draw draw, ScoreboardLiveApi.TournamentClass sbClass, Match rootMatch = null) {
+    private IEnumerable<ExportMatchItem> ConvertDrawMatches(Draw draw, ScoreboardLiveApi.TournamentClass sbClass, Match rootMatch = null) {
       if (draw.DrawType == Data.DrawData.DrawTypes.RoundRobin) {
         return draw.Matches.Select(tpMatch => {
           return new ExportMatchItem() {
@@ -99,7 +113,7 @@ namespace TP {
       return TraverseMatchTree(draw, sbClass, rootMatch);
     }
 
-    private static List<ExportMatchItem> TraverseMatchTree(Draw draw, ScoreboardLiveApi.TournamentClass sbClass, Match rootMatch) {
+    private List<ExportMatchItem> TraverseMatchTree(Draw draw, ScoreboardLiveApi.TournamentClass sbClass, Match rootMatch) {
       List<ExportMatchItem> matches = new List<ExportMatchItem>();
       Match root = rootMatch ?? draw.Matches.FirstOrDefault(match => match.WN == 0);
       if (root == null) {
@@ -114,7 +128,7 @@ namespace TP {
       );
     }
 
-    private static void ParseCupMatch(TP.Match tpMatch, ScoreboardLiveApi.TournamentClass sbClass, List<ExportMatchItem> items, int column=1, int startRow=1) {
+    private void ParseCupMatch(TP.Match tpMatch, ScoreboardLiveApi.TournamentClass sbClass, List<ExportMatchItem> items, int column=1, int startRow=1) {
       ScoreboardLiveApi.MatchExtended sbMatch = ConvertMatch(tpMatch, sbClass.Category);
       sbMatch.Place = PlaceMap.GetPlace(column * 1000 + startRow);
 
@@ -131,7 +145,7 @@ namespace TP {
       }
     }
 
-    public static ScoreboardLiveApi.MatchExtended ConvertMatch(TP.Match tpMatch, string category) {
+    public ScoreboardLiveApi.MatchExtended ConvertMatch(TP.Match tpMatch, string category) {
       var entryTextsTeam1 = tpMatch.Entries.Item1 != null ? ConvertEntry(tpMatch.Entries.Item1) : ("", "", "", "");
       var entryTextsTeam2 = tpMatch.Entries.Item2 != null ? ConvertEntry(tpMatch.Entries.Item2) : ("", "", "", "");
 
@@ -172,17 +186,17 @@ namespace TP {
       return sbMatch;
     }
 
-    public static (string, string, string, string) ConvertEntry(TP.Entry entry) {
+    public (string, string, string, string) ConvertEntry(TP.Entry entry) {
       return (
-        entry.Player1 == null ? "" : string.Format(NAMEFORMAT, entry.Player1.FirstName, entry.Player1.LastName),
+        entry.Player1 == null ? "" : string.Format(Options.NameFormat, entry.Player1.FirstName, entry.Player1.LastName),
         entry.Player1 == null ? "" : MakeClubString(entry.Player1),
-        entry.Player2 == null ? "" : string.Format(NAMEFORMAT, entry.Player2.FirstName, entry.Player2.LastName),
+        entry.Player2 == null ? "" : string.Format(Options.NameFormat, entry.Player2.FirstName, entry.Player2.LastName),
         entry.Player2 == null ? "" : MakeClubString(entry.Player2)
       );
     }
 
-    private static string MakeClubString(Player player) {
-      if (UseCountryInsteadOfClub && ((player.CountryID > 0) || !string.IsNullOrEmpty(player.CountryString))) {
+    private string MakeClubString(Player player) {
+      if (Options.UseCountryInsteadOfClub && ((player.CountryID > 0) || !string.IsNullOrEmpty(player.CountryString))) {
         string useAsClub = player.CountryID > 0 ? Static.Countries.GetCountryName(player.CountryID) : Static.Countries.GetCountryName(player.CountryString);
         if (!string.IsNullOrEmpty(useAsClub)) {
           return useAsClub;
@@ -191,7 +205,7 @@ namespace TP {
       return player.Club?.Name ?? "";
     }
 
-    public static string CreateMatchCategoryString(Event ev) {
+    public string CreateMatchCategoryString(Event ev) {
       return ev.Gender switch {
         Event.Genders.Men => ev.EventType == Event.EventTypes.Singles ? "ms" : "md",
         Event.Genders.Boys => ev.EventType == Event.EventTypes.Singles ? "ms" : "md",
@@ -201,7 +215,7 @@ namespace TP {
       };
     }
 
-    protected static int CalculateClassSize(IEnumerable<ExportMatchItem> matchItems) {
+    protected int CalculateClassSize(IEnumerable<ExportMatchItem> matchItems) {
       // Count number of unique entries
       int entryCount = matchItems.Select(mi => mi.TP.Entries.Item1?.ID)
                   .Concat(matchItems.Select(mi => mi.TP.Entries.Item2?.ID))
@@ -222,14 +236,14 @@ namespace TP {
       return 1 << power;
     }
 
-    protected static string CreateClassType(Draw draw) {
+    protected string CreateClassType(Draw draw) {
       return draw.DrawType switch {
         Draw.DrawTypes.RoundRobin => "roundrobin",
         _ => "cup"
       };
     }
 
-    private static Draw FindMainDraw(Event ev) {
+    private Draw FindMainDraw(Event ev) {
       // If there is a playoff cup in the draw list, use that, if not make sure there
       // is only one draw and use that. If there is more then one draw, but no playoff, there
       // is no way of knowing which to use so throw.
@@ -242,10 +256,11 @@ namespace TP {
       throw new Exception("Could not determine root draw in event");
     }
 
-    private static IEnumerable<Draw> FindSubDraws(Event ev, Draw root) {
+    private IEnumerable<Draw> FindSubDraws(Event ev, Draw root) {
       return ev.Draws.Where(draw => draw.ID != root.ID);
     }
-    private static IEnumerable<ScoreboardLiveApi.Link> CreateLinks(IEnumerable<ExportClassItem> ecis) {
+
+    public IEnumerable<ScoreboardLiveApi.Link> CreateLinks(IEnumerable<ExportClassItem> ecis) {
       List<ScoreboardLiveApi.Link> sbLinks = new List<ScoreboardLiveApi.Link>();
       foreach (ExportClassItem eci in ecis) {
         var linkTargets = FindLinkTargetsInClass(eci);
@@ -261,11 +276,11 @@ namespace TP {
       return sbLinks;
     }
 
-    private static IEnumerable<ExportMatchItem> FindLinkTargetsInClass(ExportClassItem eci) {
+    private IEnumerable<ExportMatchItem> FindLinkTargetsInClass(ExportClassItem eci) {
       return eci.Matches.Where(emi => (emi.TP.Links.Item1 != null) || (emi.TP.Links.Item2 != null));
     }
 
-    private static ScoreboardLiveApi.TournamentClass FindLinkSource(Link link, IEnumerable<ExportClassItem> classes) {
+    private ScoreboardLiveApi.TournamentClass FindLinkSource(Link link, IEnumerable<ExportClassItem> classes) {
       return classes.Aggregate(new List<ExportClassItem>(), (c, next) => {
         c.Add(next);
         if (next.SubClasses != null) {
@@ -277,7 +292,7 @@ namespace TP {
       .SBClass;
     }
 
-    private static ScoreboardLiveApi.Link ConvertLink(Link tpLink, ScoreboardLiveApi.TournamentClass tpSourceClass, ScoreboardLiveApi.Match sbTargetMatch, int targetTeamIndex) {
+    private ScoreboardLiveApi.Link ConvertLink(Link tpLink, ScoreboardLiveApi.TournamentClass tpSourceClass, ScoreboardLiveApi.Match sbTargetMatch, int targetTeamIndex) {
       return new ScoreboardLiveApi.Link() {
         SourceClassID = tpSourceClass.ID,
         SourcePlace = tpLink.GetSourcePlacement(),

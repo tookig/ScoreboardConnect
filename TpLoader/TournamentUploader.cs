@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 
 namespace TP {
-  public partial class Tournament {
+  public class TournamentUploader {
     public class TournamentUploadEventArgs {
       public double Progress { get; }
       public string Message { get; }
@@ -20,9 +20,15 @@ namespace TP {
     public event EventHandler<TournamentUploadEventArgs> ProgressUpload;
     public event EventHandler<TournamentUploadEventArgs> EndUpload;
 
+    public Tournament Tournament { get; init; }
+
     private CancellationTokenSource m_doCancel;
     private int progress;
     private int totalNumberOfUploads;
+
+    public TournamentUploader(Tournament tournament) {
+      Tournament = tournament;
+    }
 
     public void Abort() {
       if (m_doCancel == null) {
@@ -39,16 +45,17 @@ namespace TP {
     }
 
 
-    public async Task Upload(IEnumerable<Event> eventsToUpload, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
+    public async Task Upload(IEnumerable<Event> eventsToUpload, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament sbTournament, TournamentConverter.ConvertOptions convertOptions) {
       if (m_doCancel != null) {
         throw new Exception("Upload in progress");
       }
 
       m_doCancel = new CancellationTokenSource();
 
-      OnBeginUpload("Loading data...");
+      OnBeginUpload("Converting tournament...");
 
-      var convertedData = await Task.Run(() => ExportClasses(ev => eventsToUpload.Any(ev2 => ev.ID == ev2.ID)));
+      TournamentConverter converter = new TournamentConverter(convertOptions);
+      var convertedData = await Task.Run(() => converter.ExportClasses(Tournament, ev => eventsToUpload.Any(ev2 => ev.ID == ev2.ID)));
       if (convertedData.Count() < 1) {
         throw new Exception("Nothing to upload");
       }
@@ -56,13 +63,15 @@ namespace TP {
       totalNumberOfUploads = CountOperations(convertedData);
       progress = 0;
 
-      foreach (ExportClassItem eci in convertedData) {
-        await UploadClass(eci, apiHelper, device, tournament);
+      OnProgressUpload(progress, totalNumberOfUploads, "Uploading data...");
+
+      foreach (TournamentConverter.ExportClassItem eci in convertedData) {
+        await UploadClass(eci, apiHelper, device, sbTournament);
       }
 
-      var links = CreateLinks(convertedData);
+      var links = converter.CreateLinks(convertedData);
       foreach (ScoreboardLiveApi.Link link in links) {
-        await UploadLink(link, apiHelper, device, tournament);
+        await UploadLink(link, apiHelper, device, sbTournament);
       }
       
       m_doCancel = null;
@@ -74,21 +83,21 @@ namespace TP {
       CheckIfToCancel();
     }
 
-    private async Task UploadClass(ExportClassItem eci, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
+    private async Task UploadClass(TournamentConverter.ExportClassItem eci, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
       if (eci.SBClass.ClassType == "roundrobin") {
         await UploadRoundRobin(eci, apiHelper, device, tournament);
       } else {
         await UploadCup(eci, apiHelper, device, tournament);
       }
       if (eci.SubClasses?.Count() > 0) {
-        foreach(ExportClassItem subEci in eci.SubClasses) {
+        foreach(TournamentConverter.ExportClassItem subEci in eci.SubClasses) {
           subEci.SBClass.ParentClassID = eci.SBClass.ID;
           await UploadClass(subEci, apiHelper, device, tournament);
         }
       }
     }
 
-    private async Task UploadCup(ExportClassItem eci, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
+    private async Task UploadCup(TournamentConverter.ExportClassItem eci, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
       // Create cup class
       var createdClass = await apiHelper.CreateTournamentClass(device, tournament, eci.SBClass);
       eci.SBClass.ID = createdClass.ID;
@@ -98,9 +107,9 @@ namespace TP {
       CheckIfToCancel();
 
       // Update match IDs and upload matches 
-      foreach (ExportMatchItem emi in eci.Matches) {
+      foreach (TournamentConverter.ExportMatchItem emi in eci.Matches) {
         emi.SB.MatchID = cupMatches.FirstOrDefault(sm => sm.Place == emi.SB.Place)?.MatchID ?? 0;
-        emi.SB.Tag = CreateMatchTag(tournament, emi.TP, eci.TPEvent, eci.TPDraw);
+        emi.SB.Tag = TournamentConverter.CreateMatchTag(tournament, emi.TP, eci.TPEvent, eci.TPDraw);
         await apiHelper.UpdateMatch(device, emi.SB);
         if (ExtendedMatchNeedsScoreUpdate(emi.SB)) {
           await apiHelper.SetScore(device, emi.SB);
@@ -110,15 +119,15 @@ namespace TP {
       }
     }
 
-    private async Task UploadRoundRobin(ExportClassItem eci, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
+    private async Task UploadRoundRobin(TournamentConverter.ExportClassItem eci, ScoreboardLiveApi.ApiHelper apiHelper, ScoreboardLiveApi.Device device, ScoreboardLiveApi.Tournament tournament) {
       // Create roundrobin class
       var createdClass = await apiHelper.CreateTournamentClass(device, tournament, eci.SBClass);
       eci.SBClass.ID = createdClass.ID;
       OnProgressUpload(++progress, totalNumberOfUploads, eci.SBClass.Description);
       CheckIfToCancel();
       // Upload matches
-      foreach (ExportMatchItem emi in eci.Matches) {
-        emi.SB.Tag = CreateMatchTag(tournament, emi.TP, eci.TPEvent, eci.TPDraw);
+      foreach (TournamentConverter.ExportMatchItem emi in eci.Matches) {
+        emi.SB.Tag = TournamentConverter.CreateMatchTag(tournament, emi.TP, eci.TPEvent, eci.TPDraw);
         emi.SB.MatchID = (await apiHelper.CreateMatch(device, tournament, eci.SBClass, emi.SB)).MatchID;
         if (ExtendedMatchNeedsScoreUpdate(emi.SB)) {
           await apiHelper.SetScore(device, emi.SB);
@@ -128,9 +137,9 @@ namespace TP {
       }
     }
 
-      private int CountOperations(IEnumerable<ExportClassItem> ecis, IEnumerable<ScoreboardLiveApi.Link> links = null) {
+      private int CountOperations(IEnumerable<TournamentConverter.ExportClassItem> ecis, IEnumerable<ScoreboardLiveApi.Link> links = null) {
       int count = 0;
-      foreach (ExportClassItem eci in ecis) {
+      foreach (TournamentConverter.ExportClassItem eci in ecis) {
         count += 1 + eci.Matches.Count();
         if (eci.SubClasses?.Count() > 0) {
           count += CountOperations(eci.SubClasses);

@@ -29,6 +29,10 @@
       buttonCancel = new System.Windows.Forms.Button();
       progressBar = new System.Windows.Forms.ProgressBar();
       labelStatus = new System.Windows.Forms.Label();
+      panelOptions = new System.Windows.Forms.Panel();
+      label2 = new System.Windows.Forms.Label();
+      checkCountry = new Controls.OnOffControl();
+      panelOptions.SuspendLayout();
       SuspendLayout();
       // 
       // tournamentClassView1
@@ -39,7 +43,7 @@
       tournamentClassView1.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
       tournamentClassView1.Location = new System.Drawing.Point(12, 58);
       tournamentClassView1.Name = "tournamentClassView1";
-      tournamentClassView1.Size = new System.Drawing.Size(338, 176);
+      tournamentClassView1.Size = new System.Drawing.Size(320, 221);
       tournamentClassView1.TabIndex = 0;
       tournamentClassView1.UseCompatibleStateImageBehavior = false;
       tournamentClassView1.View = System.Windows.Forms.View.Details;
@@ -58,7 +62,7 @@
       // 
       buttonUpload.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
       buttonUpload.Enabled = false;
-      buttonUpload.Location = new System.Drawing.Point(248, 319);
+      buttonUpload.Location = new System.Drawing.Point(230, 392);
       buttonUpload.Name = "buttonUpload";
       buttonUpload.Size = new System.Drawing.Size(102, 36);
       buttonUpload.TabIndex = 2;
@@ -69,7 +73,7 @@
       // buttonCancel
       // 
       buttonCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-      buttonCancel.Location = new System.Drawing.Point(140, 319);
+      buttonCancel.Location = new System.Drawing.Point(122, 392);
       buttonCancel.Name = "buttonCancel";
       buttonCancel.Size = new System.Drawing.Size(102, 36);
       buttonCancel.TabIndex = 3;
@@ -80,23 +84,55 @@
       // progressBar
       // 
       progressBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-      progressBar.Location = new System.Drawing.Point(12, 279);
+      progressBar.Location = new System.Drawing.Point(12, 352);
       progressBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
       progressBar.Name = "progressBar";
-      progressBar.Size = new System.Drawing.Size(338, 33);
+      progressBar.Size = new System.Drawing.Size(320, 33);
       progressBar.TabIndex = 4;
       progressBar.Visible = false;
       // 
       // labelStatus
       // 
       labelStatus.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-      labelStatus.Location = new System.Drawing.Point(12, 247);
+      labelStatus.Location = new System.Drawing.Point(12, 320);
       labelStatus.Name = "labelStatus";
-      labelStatus.Size = new System.Drawing.Size(338, 28);
+      labelStatus.Size = new System.Drawing.Size(320, 28);
       labelStatus.TabIndex = 5;
       labelStatus.Text = "status";
       labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
       labelStatus.Visible = false;
+      // 
+      // panelOptions
+      // 
+      panelOptions.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      panelOptions.Controls.Add(label2);
+      panelOptions.Controls.Add(checkCountry);
+      panelOptions.Location = new System.Drawing.Point(12, 286);
+      panelOptions.Name = "panelOptions";
+      panelOptions.Size = new System.Drawing.Size(320, 31);
+      panelOptions.TabIndex = 6;
+      // 
+      // label2
+      // 
+      label2.AutoSize = true;
+      label2.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+      label2.Location = new System.Drawing.Point(3, 2);
+      label2.Name = "label2";
+      label2.Size = new System.Drawing.Size(188, 20);
+      label2.TabIndex = 1;
+      label2.Text = "Use country instead of club";
+      // 
+      // checkCountry
+      // 
+      checkCountry.BackColor = System.Drawing.Color.FromArgb(255, 100, 100);
+      checkCountry.Checked = false;
+      checkCountry.Location = new System.Drawing.Point(259, 2);
+      checkCountry.Name = "checkCountry";
+      checkCountry.OffText = "OFF";
+      checkCountry.OnText = "ON";
+      checkCountry.Size = new System.Drawing.Size(58, 26);
+      checkCountry.TabIndex = 0;
+      checkCountry.Text = "onOffControl1";
       // 
       // FormUpload
       // 
@@ -104,8 +140,9 @@
       AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
       AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       CancelButton = buttonCancel;
-      ClientSize = new System.Drawing.Size(362, 367);
+      ClientSize = new System.Drawing.Size(344, 440);
       ControlBox = false;
+      Controls.Add(panelOptions);
       Controls.Add(labelStatus);
       Controls.Add(progressBar);
       Controls.Add(buttonCancel);
@@ -116,6 +153,8 @@
       Name = "FormUpload";
       Text = "Upload Tournament";
       Load += FormUpload_Load;
+      panelOptions.ResumeLayout(false);
+      panelOptions.PerformLayout();
       ResumeLayout(false);
       PerformLayout();
     }
@@ -128,5 +167,8 @@
     private System.Windows.Forms.Button buttonCancel;
     private System.Windows.Forms.ProgressBar progressBar;
     private System.Windows.Forms.Label labelStatus;
+    private System.Windows.Forms.Panel panelOptions;
+    private Controls.OnOffControl checkCountry;
+    private System.Windows.Forms.Label label2;
   }
 }

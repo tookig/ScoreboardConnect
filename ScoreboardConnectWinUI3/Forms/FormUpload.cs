@@ -13,8 +13,9 @@ namespace ScoreboardConnectWinUI3.Forms {
   public partial class FormUpload : Form {
     ApiHelper m_api;
     Device m_device;
-    Tournament m_sbTournament;
+    ScoreboardLiveApi.Tournament m_sbTournament;
     TP.Tournament m_tpTournament;
+    TP.TournamentUploader m_tournamentUploader;
 
     bool m_uploading = false;
 
@@ -24,10 +25,14 @@ namespace ScoreboardConnectWinUI3.Forms {
       m_device = device;
       m_sbTournament = sbTournament;
       m_tpTournament = tpTournament;
+      m_tournamentUploader = new TP.TournamentUploader(m_tpTournament);
 
-      m_tpTournament.ProgressUpload += M_tpTournament_ProgressUpload;
-      m_tpTournament.BeginUpload += M_tpTournament_BeginUpload;
-      m_tpTournament.EndUpload += M_tpTournament_EndUpload;
+      m_tournamentUploader.ProgressUpload += M_tpTournament_ProgressUpload;
+      m_tournamentUploader.BeginUpload += M_tpTournament_BeginUpload;
+      m_tournamentUploader.EndUpload += M_tpTournament_EndUpload;
+
+      checkCountry.OnText = "Yes";
+      checkCountry.OffText = "No";
     }
 
     private void FillList() {
@@ -43,6 +48,7 @@ namespace ScoreboardConnectWinUI3.Forms {
       buttonUpload.Enabled = false;
       labelStatus.Visible = true;
       progressBar.Visible = true;
+      panelOptions.Visible = false;
     }
 
     private void SetStatusComplete() {
@@ -50,6 +56,7 @@ namespace ScoreboardConnectWinUI3.Forms {
       progressBar.Value = 100;
       tournamentClassView1.Enabled = true;
       buttonUpload.Enabled = true;
+      panelOptions.Visible = true;
     }
 
     private void SetStatusFailed() {
@@ -57,6 +64,7 @@ namespace ScoreboardConnectWinUI3.Forms {
       progressBar.Value = 0;
       tournamentClassView1.Enabled = true;
       buttonUpload.Enabled = true;
+      panelOptions.Visible = true;
     }
 
     private async Task UploadTournamentClasses() {
@@ -64,9 +72,13 @@ namespace ScoreboardConnectWinUI3.Forms {
       var tournamentEventsToUpload = tournamentClassView1.GetSelectedTournamentEvents();
       progressBar.Maximum = 100;
 
+      TP.TournamentConverter.ConvertOptions convertOptions = new TP.TournamentConverter.ConvertOptions() {
+        UseCountryInsteadOfClub = checkCountry.Checked
+      };
+
       try {
         m_uploading = true;
-        await m_tpTournament.Upload(tournamentEventsToUpload, m_api, m_device, m_sbTournament);
+        await m_tournamentUploader.Upload(tournamentEventsToUpload, m_api, m_device, m_sbTournament, convertOptions);
         m_uploading = false;
         SetStatusComplete();
         MessageBox.Show("Upload complete", "Upload complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -83,7 +95,7 @@ namespace ScoreboardConnectWinUI3.Forms {
     private void buttonCancel_Click(object sender, EventArgs e) {
       if (m_uploading) {
         m_uploading = false;
-        m_tpTournament.Abort();
+        m_tournamentUploader.Abort();
       }
       Close();
     }
@@ -100,15 +112,15 @@ namespace ScoreboardConnectWinUI3.Forms {
       await UploadTournamentClasses();
     }
 
-    private void M_tpTournament_EndUpload(object sender, TP.Tournament.TournamentUploadEventArgs e) {
+    private void M_tpTournament_EndUpload(object sender, TP.TournamentUploader.TournamentUploadEventArgs e) {
     }
 
-    private void M_tpTournament_BeginUpload(object sender, TP.Tournament.TournamentUploadEventArgs e) {
+    private void M_tpTournament_BeginUpload(object sender, TP.TournamentUploader.TournamentUploadEventArgs e) {
       progressBar.Value = 0;
       labelStatus.Invoke(new Action(() => labelStatus.Text = e.Message));
     }
 
-    private void M_tpTournament_ProgressUpload(object sender, TP.Tournament.TournamentUploadEventArgs e) {
+    private void M_tpTournament_ProgressUpload(object sender, TP.TournamentUploader.TournamentUploadEventArgs e) {
       if (m_uploading) {
         progressBar.Invoke(new Action(() => progressBar.Value = (int)e.Progress));
         labelStatus.Invoke(new Action(() => labelStatus.Text = e.Message));

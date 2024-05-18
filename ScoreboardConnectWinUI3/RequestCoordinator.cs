@@ -1,15 +1,10 @@
-﻿using ScoreboardLiveApi;
-using ScoreboardLiveSocket.Messages;
+﻿using ScoreboardLiveSocket.Messages;
 using ScoreboardLiveWebSockets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TP;
-using TP.VisualXML;
 using TPNetwork;
 
 namespace ScoreboardConnectWinUI3 {
@@ -31,6 +26,10 @@ namespace ScoreboardConnectWinUI3 {
     private TPListener m_tpListener;
     private ICourtCorrelator m_courtCorrelator;
     private bool m_enableCourtSync = false;
+
+    private object m_optionsLock = new object();
+    private TournamentConverter.ConvertOptions m_convertOptions;
+    private TournamentConverter m_converter;
 
     public event EventHandler<StatusMessageEventArgs> Status;
 
@@ -74,7 +73,27 @@ namespace ScoreboardConnectWinUI3 {
       }
     }
 
-    public RequestCoordinator(SocketClient tpNetwork, TPListener tpListener, ICourtCorrelator courtCorrelator = null) {
+    public TournamentConverter.ConvertOptions ConvertOptions {
+      set {
+        lock (m_optionsLock) {
+          m_convertOptions = value;
+          m_converter = null;
+        }
+      }
+    }
+
+    private TournamentConverter Converter {
+      get {
+        if (m_converter == null) {
+          lock (m_optionsLock) {
+            m_converter = new TournamentConverter( m_convertOptions);
+          }
+        }
+        return m_converter;
+      }
+    }
+
+    public RequestCoordinator(SocketClient tpNetwork, TPListener tpListener, ICourtCorrelator courtCorrelator = null, TournamentConverter.ConvertOptions convertOptions = null) {
       _ = InitSocket(tpNetwork);
       InitListener(tpListener);
       if (courtCorrelator != null) {
@@ -303,7 +322,7 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private string GetMatchTag(TP.Match tpMatch, TP.Event tpEvent, TP.Draw tpDraw) {
-      return TP.Tournament.CreateMatchTag(m_apiInfo.Tournament, tpMatch, tpEvent, tpDraw);
+      return TP.TournamentConverter.CreateMatchTag(m_apiInfo.Tournament, tpMatch, tpEvent, tpDraw);
     }
 
     private async Task<ScoreboardLiveApi.Match> GetSBMatch(TP.Match tpMatch, string sbTag) {    
@@ -317,15 +336,15 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private async Task<ScoreboardLiveApi.Match> CreateOnTheFlySBMatch(TP.Match tpMatch, TP.Event tpEvent, string tag) {
-      string category = TP.Tournament.CreateMatchCategoryString(tpEvent);
-      var sbMatch = TP.Tournament.ConvertMatch(tpMatch, category);
+      string category = Converter.CreateMatchCategoryString(tpEvent);
+      var sbMatch = Converter.ConvertMatch(tpMatch, category);
       sbMatch.Tag = tag;
       return await m_apiInfo.Api.CreateOnTheFlyMatch(m_apiInfo.Device, m_apiInfo.Tournament, sbMatch);
     }
 
     private async Task<ScoreboardLiveApi.Match> CheckIfScoreboardServerNeedsMatchUpdate(TP.Match tpMatch, ScoreboardLiveApi.Match sbMatch) {
-      (string team1player1name, string team1player1team, string team1player2name, string team1player2team) = TP.Tournament.ConvertEntry(tpMatch.Entries.Item1);
-      (string team2player1name, string team2player1team, string team2player2name, string team2player2team) = TP.Tournament.ConvertEntry(tpMatch.Entries.Item2);
+      (string team1player1name, string team1player1team, string team1player2name, string team1player2team) = Converter.ConvertEntry(tpMatch.Entries.Item1);
+      (string team2player1name, string team2player1team, string team2player2name, string team2player2team) = Converter.ConvertEntry(tpMatch.Entries.Item2);
       
       if (sbMatch.Team1Player1Name != team1player1name || sbMatch.Team1Player1Team != team1player1team ||
                  sbMatch.Team1Player2Name != team1player2name || sbMatch.Team1Player2Team != team1player2team ||
@@ -367,7 +386,7 @@ namespace ScoreboardConnectWinUI3 {
       // Extract the TP match id from the SB match tag
       int tpMatchID;
       try { 
-        tpMatchID = TP.Tournament.ExtractMatchIDFromTag(matchUpdate.Match.Tag);
+        tpMatchID = TP.TournamentConverter.ExtractMatchIDFromTag(matchUpdate.Match.Tag);
       } catch (Exception e) {
         // Set to verbose since this match can be from another tournament
         SendStatusMessage($"Cannot update match: Failed to extract match ID from tag {matchUpdate.Match.Tag}: {e.Message}", StatusMessageLevel.Verbose);
@@ -393,7 +412,7 @@ namespace ScoreboardConnectWinUI3 {
         return;
       }
       // Check that the tags match
-      if (matchUpdate.Match.Tag != TP.Tournament.CreateMatchTag(m_apiInfo.Tournament, tpMatch, ev, draw)) {
+      if (matchUpdate.Match.Tag != TP.TournamentConverter.CreateMatchTag(m_apiInfo.Tournament, tpMatch, ev, draw)) {
         SendStatusMessage($"Match ID's match but tags do not.", StatusMessageLevel.Verbose);
         return;
       }
