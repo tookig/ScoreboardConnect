@@ -6,7 +6,7 @@ using System.Xml;
 
 namespace TPNetwork.Messages {
   public class SendUpdate : MessageBase {
-    public SendUpdate(string password, TP.Match tpMatch) : base(password, "SENDUPDATE") {
+    public SendUpdate(string password, string unicode, TP.Match tpMatch) : base(password, "SENDUPDATE", unicode: unicode) {
       var update = CreateGroup("Update");
       VisualXMLRoot.AppendChild(update);
 
@@ -24,8 +24,8 @@ namespace TPNetwork.Messages {
 
       var sets = CreateGroup("Sets");
       for (int setIndex = 1; setIndex <= 5; setIndex++) {
-        int team1Score = (int)typeof(TP.Match).GetProperty(@"Team1Set{setIndex}").GetValue(tpMatch);
-        int team2Score = (int)typeof(TP.Match).GetProperty(@"Team2Set{setIndex}").GetValue(tpMatch);
+        int team1Score = tpMatch.GetScore(setIndex, 1); // (int)typeof(TP.Match).GetProperty(@"Team1Set{setIndex}").GetValue(tpMatch);
+        int team2Score = tpMatch.GetScore(setIndex, 2); // (int)typeof(TP.Match).GetProperty(@"Team2Set{setIndex}").GetValue(tpMatch);
         if (team1Score == 0 && team2Score == 0) {
           break;
         }
@@ -42,7 +42,8 @@ namespace TPNetwork.Messages {
         _ => 0,
       };
       match.AppendChild(CreateItem("Winner", "Integer", winner.ToString()));
-
+      match.AppendChild(CreateItem("ScoreStatus", "Integer", "0"));
+      match.AppendChild(CreateItem("Duration", "Integer", "12"));
       match.AppendChild(CreateItem("Shuttles", "Integer", tpMatch.Shuttles.ToString()));
     }
   }

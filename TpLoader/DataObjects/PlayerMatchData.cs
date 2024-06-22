@@ -112,11 +112,11 @@ namespace TP.Data {
       }
       for (int i = 1; i <= 5; i++) {
         if (sets.Count >= i) {
-          GetType().GetProperty(string.Format("Team1Set{0}", i)).SetValue(this, sets[i - 1].Item1);
-          GetType().GetProperty(string.Format("Team2Set{0}", i)).SetValue(this, sets[i - 1].Item2);
+          SetScore(i, 1, sets[i - 1].Item1);
+          SetScore(i, 2, sets[i - 1].Item2);
         } else {
-          GetType().GetProperty(string.Format("Team1Set{0}", i)).SetValue(this, 0);
-          GetType().GetProperty(string.Format("Team2Set{0}", i)).SetValue(this, 0);
+          SetScore(i, 1, 0);
+          SetScore(i, 2, 0);
         }
       }
     }
@@ -154,10 +154,30 @@ namespace TP.Data {
         for (int setIndex = 1; setIndex <= sets.Groups.Count; setIndex++) {
           var scoreTeam1 = ((ItemNode<int>)sets.Groups[setIndex - 1]["T1"]).Value;
           var scoreTeam2 = ((ItemNode<int>)sets.Groups[setIndex - 1]["T2"]).Value;
-          GetType().GetProperty(string.Format("Team1Set{0}", setIndex)).SetValue(this, scoreTeam1);
-          GetType().GetProperty(string.Format("Team2Set{0}", setIndex)).SetValue(this, scoreTeam2);
+          SetScore(setIndex, 1, scoreTeam1);
+          SetScore(setIndex, 2, scoreTeam2);
         }
       }
+    }
+
+    public int GetScore(int setIndex, int teamIndex) {
+      if (setIndex < 1 || setIndex > 5) {
+        throw new ArgumentOutOfRangeException("setIndex", "Set index must be between 1 and 5");
+      }
+      if (teamIndex < 1 || teamIndex > 2) {
+        throw new ArgumentOutOfRangeException("teamIndex", "Team index must be between 1 and 2");
+      }
+      return (int)GetType().GetProperty(string.Format("Team{0}Set{1}", teamIndex, setIndex)).GetValue(this);
+    }
+
+    public void SetScore(int setIndex, int teamIndex, int score) {
+      if (setIndex < 1 || setIndex > 5) {
+        throw new ArgumentOutOfRangeException("setIndex", "Set index must be between 1 and 5");
+      }
+      if (teamIndex < 1 || teamIndex > 2) {
+        throw new ArgumentOutOfRangeException("teamIndex", "Team index must be between 1 and 2");
+      }
+      GetType().GetProperty(string.Format("Team{0}Set{1}", teamIndex, setIndex)).SetValue(this, score);
     }
   }
 }

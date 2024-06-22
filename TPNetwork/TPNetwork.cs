@@ -15,6 +15,7 @@ namespace TPNetwork {
     private static string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
     private string Password { get; set; }
+    private string Unicode { get; set; }
     public int Port { get; set; }
 
     public SocketClient(int port = 9901) {
@@ -30,7 +31,7 @@ namespace TPNetwork {
 
     public async Task<XmlDocument> SendUpdate(TP.Match tpMatch) {
       await PreSend();
-      var xml = await SendRequest(new Messages.SendUpdate(Password, tpMatch));
+      var xml = await SendRequest(new Messages.SendUpdate(Password, Unicode, tpMatch));
       PostSend(xml);
       return xml;
     }
@@ -47,6 +48,9 @@ namespace TPNetwork {
       if (!int.TryParse(xml.SelectSingleNode("//GROUP[@ID='Action']/ITEM[@ID='Result']").InnerText, out statusCode)
         || (statusCode != 1)) { 
         throw new Exception(string.Format("Request failed, server reported an error (code {0})", statusCode));
+      }
+      if (xml.SelectSingleNode("//GROUP[@ID='Action']/ITEM[@ID='Unicode']") != null) {
+        Unicode = xml.SelectSingleNode("//GROUP[@ID='Action']/ITEM[@ID='Unicode']").InnerText;
       }
     }
 

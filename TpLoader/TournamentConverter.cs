@@ -47,6 +47,9 @@ namespace TP {
     public ConvertOptions Options { get; init; }
 
     public TournamentConverter(ConvertOptions options) {
+      if (options == null) {
+        throw new ArgumentNullException($"{nameof(options)} cannot be null");
+      }
       Options = options;
     }
 

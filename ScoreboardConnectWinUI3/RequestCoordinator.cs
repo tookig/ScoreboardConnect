@@ -99,6 +99,7 @@ namespace ScoreboardConnectWinUI3 {
       if (courtCorrelator != null) {
         _ = InitCourtCorrelator(courtCorrelator);
       }
+      ConvertOptions = convertOptions ?? new TournamentConverter.ConvertOptions();
     }
 
     protected async Task InitSocket(SocketClient socketClient) {
@@ -388,14 +389,12 @@ namespace ScoreboardConnectWinUI3 {
       try { 
         tpMatchID = TP.TournamentConverter.ExtractMatchIDFromTag(matchUpdate.Match.Tag);
       } catch (Exception e) {
-        // Set to verbose since this match can be from another tournament
         SendStatusMessage($"Cannot update match: Failed to extract match ID from tag {matchUpdate.Match.Tag}: {e.Message}", StatusMessageLevel.Verbose);
         return;
       }
       // Find the match in the TP tournament
       TP.Match tpMatch = tpTournament.FindMatchByID(tpMatchID);
       if (tpMatch == null) {
-        // Set to verbose since this match can be from another tournament
         SendStatusMessage($"Cannot update match: Match {tpMatchID} not found in tournament", StatusMessageLevel.Verbose);
         return;
       }
@@ -423,6 +422,18 @@ namespace ScoreboardConnectWinUI3 {
         return;
       }
       // Update the TP match
+      for (int i = 1; i <= 5; i++) {
+        tpMatch.SetScore(i, 1, matchUpdate.Match.Sets[i][1]);
+        tpMatch.SetScore(i, 2, matchUpdate.Match.Sets[i][2]);
+      }
+      tpMatch.Winner = matchUpdate.Match.Status == "team1won" ? TP.Data.PlayerMatchData.Winners.Entry1 : TP.Data.PlayerMatchData.Winners.Entry2;
+      // Send update message
+      try {
+        await m_tpNetwork.SendUpdate(tpMatch);
+      } catch (Exception e) {
+        SendStatusMessage($"Failed to update match {tpMatchID} in TP: {e.Message}", StatusMessageLevel.Error);
+        return;
+      }
     }
     #endregion
 

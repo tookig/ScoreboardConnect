@@ -7,7 +7,7 @@ namespace TPNetwork.Messages {
   public class MessageBase : XmlDocument {
     public XmlElement VisualXMLRoot { get; private set; }
 
-    public MessageBase(string password, string actionID, string ip = "127.0.0.1") : base() {
+    public MessageBase(string password, string actionID, string ip = "127.0.0.1", string unicode = null) : base() {
       VisualXMLRoot = CreateElement("VISUALXML");
       VisualXMLRoot.SetAttribute("VERSION", "1.0");
 
@@ -24,6 +24,9 @@ namespace TPNetwork.Messages {
       _action.AppendChild(CreateItem("ID", "String", actionID));
       if (!string.IsNullOrEmpty(password)) {
         _action.AppendChild(CreateItem("Password", "String", password));
+      }
+      if (!string.IsNullOrEmpty(unicode)) {
+        _action.AppendChild(CreateItem("Unicode", "String", unicode));
       }
       VisualXMLRoot.AppendChild(_action);
 
