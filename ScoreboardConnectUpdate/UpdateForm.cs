@@ -51,9 +51,9 @@ namespace ScoreboardConnectUpdate {
           DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
         return await JsonSerializer.DeserializeAsync<Version>(await response.Content.ReadAsStreamAsync(), options) as Version;
-      } catch (TaskCanceledException error) {
+      } catch (TaskCanceledException) {
         return null;
-      } catch (Exception error) {
+      } catch (Exception) {
         return null;
       } finally {
         lock (m_cancelLock) {

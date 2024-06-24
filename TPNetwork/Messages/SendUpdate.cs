@@ -42,7 +42,7 @@ namespace TPNetwork.Messages {
         _ => 0,
       };
       match.AppendChild(CreateItem("Winner", "Integer", winner.ToString()));
-      match.AppendChild(CreateItem("ScoreStatus", "Integer", "0"));
+      match.AppendChild(CreateItem("ScoreStatus", "Integer", ((int)tpMatch.ScoreStatus).ToString()));
       match.AppendChild(CreateItem("Duration", "Integer", "12"));
       match.AppendChild(CreateItem("Shuttles", "Integer", tpMatch.Shuttles.ToString()));
     }

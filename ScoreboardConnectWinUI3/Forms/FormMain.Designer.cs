@@ -184,6 +184,8 @@ namespace ScoreboardConnectWinUI3
       onOffCourtChanges.Checked = false;
       onOffCourtChanges.Location = new System.Drawing.Point(415, 3);
       onOffCourtChanges.Name = "onOffCourtChanges";
+      onOffCourtChanges.OffText = "OFF";
+      onOffCourtChanges.OnText = "ON";
       onOffCourtChanges.Size = new System.Drawing.Size(91, 45);
       onOffCourtChanges.TabIndex = 0;
       onOffCourtChanges.Text = "onOffControl1";

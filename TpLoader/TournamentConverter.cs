@@ -177,13 +177,26 @@ namespace TP {
         Team2Player2Team = entryTextsTeam2.Item4,
       };
 
-      if (tpMatch.WalkOver || tpMatch.Retired) {
+      if (tpMatch.ScoreStatus != Data.PlayerMatchData.ScoreStatusValue.None) {
         sbMatch.Status = tpMatch.Winner switch {
           Data.PlayerMatchData.Winners.Entry1 => "team1won",
           Data.PlayerMatchData.Winners.Entry2 => "team2won",
           _ => "nowinner"
         };
-        sbMatch.Special = tpMatch.WalkOver ? "walkover" : "retired";
+        switch (tpMatch.ScoreStatus) {
+          case Data.PlayerMatchData.ScoreStatusValue.WalkOver:
+            sbMatch.Special = ScoreboardLiveApi.Special.WalkOver;
+            break;
+          case Data.PlayerMatchData.ScoreStatusValue.Retired:
+            sbMatch.Special = ScoreboardLiveApi.Special.Retired;
+            break;
+          case Data.PlayerMatchData.ScoreStatusValue.Disqualified:
+            sbMatch.Special = ScoreboardLiveApi.Special.Disqualified;
+            break;
+          default:
+            sbMatch.Special = ScoreboardLiveApi.Special.None;
+            break;
+        }
       }
 
       return sbMatch;

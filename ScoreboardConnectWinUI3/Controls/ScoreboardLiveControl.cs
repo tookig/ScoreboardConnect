@@ -162,7 +162,7 @@ namespace ScoreboardConnectWinUI3.Controls {
       string socketURL;
       try {
         socketURL = await m_api.GetSocketURL();
-      } catch (Exception e) {
+      } catch {
         return;
       }
       // Try to connect to socket

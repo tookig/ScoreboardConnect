@@ -422,11 +422,7 @@ namespace ScoreboardConnectWinUI3 {
         return;
       }
       // Update the TP match
-      for (int i = 1; i <= 5; i++) {
-        tpMatch.SetScore(i, 1, matchUpdate.Match.Sets[i][1]);
-        tpMatch.SetScore(i, 2, matchUpdate.Match.Sets[i][2]);
-      }
-      tpMatch.Winner = matchUpdate.Match.Status == "team1won" ? TP.Data.PlayerMatchData.Winners.Entry1 : TP.Data.PlayerMatchData.Winners.Entry2;
+      UpdateTpMatch(tpMatch, matchUpdate.Match);
       // Send update message
       try {
         await m_tpNetwork.SendUpdate(tpMatch);
@@ -459,6 +455,21 @@ namespace ScoreboardConnectWinUI3 {
         var tournament = await TP.Tournament.LoadFromVisualXMLAsync(tmpNetworkData);
         m_courtCorrelator.SetTPCourts(tournament.Courts);
       });
+    }
+
+    private void UpdateTpMatch(TP.Match tpMatch, ScoreboardLiveApi.MatchExtended sbMatch) {
+      for (int i = 1; i <= 5; i++) {
+        tpMatch.SetScore(i, 1, sbMatch.Sets[i][1]);
+        tpMatch.SetScore(i, 2, sbMatch.Sets[i][2]);
+      }
+      tpMatch.Winner = sbMatch.Status == "team1won" ? TP.Data.PlayerMatchData.Winners.Entry1 : TP.Data.PlayerMatchData.Winners.Entry2;
+      if (sbMatch.Special == ScoreboardLiveApi.Special.Retired) {
+        tpMatch.ScoreStatus = TP.Data.PlayerMatchData.ScoreStatusValue.Retired;
+      } else if (sbMatch.Special == ScoreboardLiveApi.Special.WalkOver) {
+        tpMatch.ScoreStatus = TP.Data.PlayerMatchData.ScoreStatusValue.WalkOver;
+      } else if (sbMatch.Special == ScoreboardLiveApi.Special.Disqualified) {
+        tpMatch.ScoreStatus = TP.Data.PlayerMatchData.ScoreStatusValue.Disqualified;
+      }
     }
   }
 }

@@ -60,7 +60,7 @@ namespace ScoreboardConnectWinUI3.Controls {
         var xml = await m_socketClient.GetTournamentInfo();
         m_tournament = Tournament.LoadFromVisualXML(new TP.VisualXML.TPNetwork(xml));
         SetStatusConnected();
-      } catch (Exception e) {
+      } catch {
         SetStatusNotConnected();
       }
     }

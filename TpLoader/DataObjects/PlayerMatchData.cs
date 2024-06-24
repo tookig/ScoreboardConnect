@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Reflection.PortableExecutable;
-using System.Text;
 using System.Xml;
-using ScoreboardLiveApi;
 using TP.VisualXML;
 
 namespace TP.Data {
   public class PlayerMatchData : TpDataObject {
     public enum Winners { None = 0, Entry1 = 1, Entry2 = 2 }
+    public enum ScoreStatusValue { None = 0, WalkOver = 1, Retired = 2, Disqualified = 3, NoMatch = 4, Promoted = 21 }
     
     public int ID { get; set; }
     public int EventID { get; set; }
@@ -34,9 +32,7 @@ namespace TP.Data {
     public int Team2Set5 { get; set; }
     public int Shuttles { get; set; }
     public int MatchNr { get; set; }
-
-    public bool WalkOver { get; set; }
-    public bool Retired { get; set; }
+    public ScoreStatusValue ScoreStatus { get; set; }
 
     public PlayerMatchData() { }
     public PlayerMatchData(PlayerMatchData cpy) {
@@ -63,8 +59,7 @@ namespace TP.Data {
       Team2Set5 = cpy.Team2Set5;
       Shuttles = cpy.Shuttles;
       MatchNr = cpy.MatchNr;
-      WalkOver = cpy.WalkOver;
-      Retired = cpy.Retired;
+      ScoreStatus = cpy.ScoreStatus;
     }
 
     public PlayerMatchData(IDataReader reader) {
@@ -91,8 +86,7 @@ namespace TP.Data {
       Team2Set5 = GetInt(reader, "team2set5");
       Shuttles = GetInt(reader, "shuttles");
       MatchNr = GetInt(reader, "id");
-      WalkOver = GetBool(reader, "walkover");
-      Retired = GetBool(reader, "retired");
+      ScoreStatus = ScoreStatusValueFromInt(GetInt(reader, "scorestatus"));
     }
 
     public PlayerMatchData(XmlReader reader) {
@@ -148,7 +142,7 @@ namespace TP.Data {
         LinkID = ((ItemNode<int>)match["LinkID"]).Value;
       } 
       Shuttles = ((ItemNode<int>)match["Shuttles"]).Value;
-      // TODO : Walkover and Retired
+      ScoreStatus = ScoreStatusValueFromInt(((ItemNode<int>)match["ScoreStatus"]).Value);
       var sets = match.GetGroup("Sets");
       if (sets != null) {
         for (int setIndex = 1; setIndex <= sets.Groups.Count; setIndex++) {
@@ -178,6 +172,17 @@ namespace TP.Data {
         throw new ArgumentOutOfRangeException("teamIndex", "Team index must be between 1 and 2");
       }
       GetType().GetProperty(string.Format("Team{0}Set{1}", teamIndex, setIndex)).SetValue(this, score);
+    }
+
+    private ScoreStatusValue ScoreStatusValueFromInt(int value) {
+      switch (value) {
+        case 1: return ScoreStatusValue.WalkOver;
+        case 2: return ScoreStatusValue.Retired;
+        case 3: return ScoreStatusValue.Disqualified;
+        case 4: return ScoreStatusValue.NoMatch;
+        case 21: return ScoreStatusValue.Promoted;
+        default: return ScoreStatusValue.None;
+      }
     }
   }
 }
