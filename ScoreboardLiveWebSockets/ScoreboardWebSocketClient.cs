@@ -152,7 +152,8 @@ namespace ScoreboardLiveWebSockets {
           case ThreadStop threadStop:
             autoReconnect = threadStop.AutoReconnect;
             ChangeState(ClientState.Stopping);
-            clientWebSocket = (await ThreadDoStop(clientWebSocket, cancellationToken)) ? null : clientWebSocket;
+            await ThreadDoStop(clientWebSocket, cancellationToken);
+            clientWebSocket = null;
             ChangeState(ClientState.Stopped);
             break;
           case ThreadSend send:

@@ -16,11 +16,12 @@ using static ScoreboardLiveWebSockets.ScoreboardWebSocketClient;
 
 namespace ScoreboardConnectWinUI3.Controls {
   public partial class ScoreboardLiveControl : UserControl {
+    private static readonly int RECONNECT_INTERVAL = 10000;
     private static readonly string CONNECTED = "Connected";
     private static readonly string DISCONNECTED = "Not connected";
     private static readonly string PARTIALLY_CONNECTED = "Partially connected";
     private static readonly string LOADING = "Loading...";
-   
+
     private Settings m_settings;
     private ApiHelper m_api;
     private Device m_device;
@@ -31,6 +32,8 @@ namespace ScoreboardConnectWinUI3.Controls {
 
     private object m_lock = new();
     private bool m_apiChecked = false;
+    private bool m_isConnecting = false;
+    private bool m_isConnected = false;
 
     public event EventHandler<ScoreboardLiveConnectedEventArgs> Connected;
     public event EventHandler<AsyncVoidMethodBuilder> Disconnected;
@@ -65,8 +68,11 @@ namespace ScoreboardConnectWinUI3.Controls {
       labelStatus.ForeColor = Color.Red;
       labelUnit.Text = "";
       labelTournament.Text = "";
+      labelUnit.Visible = false;
+      labelTournament.Visible = false;
       pictureLoading.Visible = false;
       Disconnected?.Invoke(this, default);
+      ScheduleReconnectAttempt();
     }
 
     private void SetStatusLoading() {
@@ -74,12 +80,16 @@ namespace ScoreboardConnectWinUI3.Controls {
       labelStatus.ForeColor = Color.Blue;
       labelUnit.Text = "";
       labelTournament.Text = "";
+      labelUnit.Visible = false;
+      labelTournament.Visible = false;
       pictureLoading.Visible = true;
     }
 
     private void SetStatusPartiallyConnected() {
       labelUnit.Text = string.Format(m_unit.Name);
       labelTournament.Text = m_tournament.Name;
+      labelUnit.Visible = true;
+      labelTournament.Visible = true;
       labelStatus.Text = PARTIALLY_CONNECTED;
       labelStatus.ForeColor = Color.Orange;
       pictureLoading.Visible = false;
@@ -90,6 +100,8 @@ namespace ScoreboardConnectWinUI3.Controls {
     private void SetStatusConnected() {
       labelUnit.Text = string.Format(m_unit.Name);
       labelTournament.Text = m_tournament.Name;
+      labelUnit.Visible = true;
+      labelTournament.Visible = true;
       labelStatus.Text = CONNECTED;
       labelStatus.ForeColor = Color.Green;
       pictureLoading.Visible = false;
@@ -104,35 +116,54 @@ namespace ScoreboardConnectWinUI3.Controls {
 
 
     private async Task Connect() {
-      lock (m_lock) {
-        m_apiChecked = false;
-      }
-
       if ((m_settings == null) || (m_keyStore == null)) {
         throw new InvalidOperationException("Settings and key store must be set before connecting");
       }
 
+      lock (m_lock) {
+        if (m_isConnecting || m_isConnected) return;
+        m_apiChecked = false;
+        m_isConnecting = true;
+        m_isConnected = false;
+      }
+
       SetStatusLoading();
       m_api = new ApiHelper(m_settings.URL, acceptAnyCertificates: true); // TODO: Remove acceptAnyCertificates in production
+      m_api.Error += OnApiError;
       if ((m_settings.UnitID < 1) || !m_settings.SelectedTournaments.ContainsKey(m_settings.UnitID)) {
         SetStatusDisconnected();
+        lock (m_lock) m_isConnecting = false;
         return;
       }
       m_device = m_keyStore.Get(m_settings.UnitID);
       if (m_device == null) {
         SetStatusDisconnected();
+        lock (m_lock) m_isConnecting = false;
         return;
       }
 
-      m_unit = (await m_api.GetUnits()).Find(u => u.UnitID == m_device.UnitID);
+      m_unit = null;
+      try {
+        m_unit = (await m_api.GetUnits()).Find(u => u.UnitID == m_device.UnitID);
+      } catch {
+        SetStatusDisconnected();
+      }
       if (m_unit == null) {
+        lock (m_lock) m_isConnecting = false;
         return;
       }
+      
 
       if (m_settings.SelectedTournaments.TryGetValue(m_unit.UnitID, out int selectedTournamentID)) {
-        m_tournament = await m_api.GetTournament(selectedTournamentID, m_device);
+        try {
+          m_tournament = await m_api.GetTournament(selectedTournamentID, m_device);
+        }
+        catch { 
+          SetStatusDisconnected();
+        }
       }
       if (m_tournament == null) {
+        lock (m_lock) m_isConnecting = false;
         return;
       }
 
@@ -148,13 +179,42 @@ namespace ScoreboardConnectWinUI3.Controls {
         SetStatusDisconnected();
         MessageBoxError(string.Format("Could not verify activation code, make sure settings{1}are correct.{1}{1}{0}", e.Message, Environment.NewLine));
         return;
+      } finally {
+        lock (m_lock) m_isConnecting = false;
       }
 
       lock (m_lock) {
         m_apiChecked = true;
+        m_isConnected = true;
       }
 
       await ConnectSocket();
+    }
+
+    private void Disconnect() {
+      lock (m_lock) {
+        if (!m_isConnected) return;
+        m_isConnected = false;
+        m_apiChecked = false;
+        m_api = null;
+        m_device = null;
+        m_unit = null;
+        m_tournament = null;
+      }
+      if (m_webSocket != null) {
+        m_webSocket.Stop();
+      }
+      Invoke((MethodInvoker)delegate {
+        SetStatusDisconnected();
+      });
+    }
+
+    private void OnApiError(object sender, ApiHelperErrorEventArgs e) {
+      if (e.Sender != m_api) return;
+      if (e.Stage == ApiHelperErrorEventArgs.ErrorStage.ConnectionError) {
+        // Connection failed, disconnect
+        Disconnect();
+      }
     }
 
     private async Task ConnectSocket() {
@@ -170,6 +230,17 @@ namespace ScoreboardConnectWinUI3.Controls {
       m_webSocket.Start(); 
     }
 
+    private void ScheduleReconnectAttempt() {
+      if ((m_settings == null) || (m_keyStore == null)) {
+        return;
+      }
+      Task.Delay(RECONNECT_INTERVAL).ContinueWith(_ => {
+        Invoke((MethodInvoker)delegate {
+          _ = Connect();
+        });
+      });
+    }
+
     private void MessageBoxError(string text) {
       MessageBox.Show(text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
@@ -183,7 +254,7 @@ namespace ScoreboardConnectWinUI3.Controls {
     private void Socket_StateChanged(object sender, StateEventArgs e) {
       bool apiConnected = false;
       lock (m_lock) {
-        apiConnected = m_apiChecked;
+        apiConnected = m_apiChecked && m_isConnected;
       }
 
       Invoke((MethodInvoker)delegate {
