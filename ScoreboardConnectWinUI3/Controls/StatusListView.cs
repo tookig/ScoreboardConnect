@@ -20,23 +20,20 @@ namespace ScoreboardConnectWinUI3 {
       InitColumns();
       View = View.Details;
       FullRowSelect = true;
+      ConnectLogger.Singleton.Message += OnLog;
     }
 
-    internal void Listen(RequestCoordinator coordinator) {
-      coordinator.Status += OnStatus;
-    }
-
-    private void OnStatus(object sender, RequestCoordinator.StatusMessageEventArgs message) {
+    private void OnLog(object sender, ConnectLogger.LogEntry entry) {
       ListViewItem item = new ListViewItem();
-      item.Text = DateTime.Now.ToString("HH:mm");
-      item.SubItems.Add(message.Message);
-      item.BackColor = message.Level switch {
-        RequestCoordinator.StatusMessageLevel.Error => Color.Red,
-        RequestCoordinator.StatusMessageLevel.Warning => Color.FromArgb(255, 255, 150),
+      item.Text = entry.Timestamp.ToString("HH:mm");
+      item.SubItems.Add(entry.Message);
+      item.BackColor = entry.Level switch {
+        ConnectLogger.LogLevels.Error => Color.Red,
+        ConnectLogger.LogLevels.Warning => Color.FromArgb(255, 255, 150),
         _ => Color.White
       };
-      item.ForeColor = message.Level switch {
-        RequestCoordinator.StatusMessageLevel.Error => Color.White,
+      item.ForeColor = entry.Level switch {
+        ConnectLogger.LogLevels.Error => Color.White,
         _ => Color.Black
       };
       Invoke((MethodInvoker)delegate {

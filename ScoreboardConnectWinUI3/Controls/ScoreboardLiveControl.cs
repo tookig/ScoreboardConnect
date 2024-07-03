@@ -93,7 +93,6 @@ namespace ScoreboardConnectWinUI3.Controls {
       labelStatus.Text = PARTIALLY_CONNECTED;
       labelStatus.ForeColor = Color.Orange;
       pictureLoading.Visible = false;
-
       Connected?.Invoke(this, new ScoreboardLiveConnectedEventArgs(m_tournament, m_device, m_api, m_webSocket));
     }
 
@@ -105,7 +104,6 @@ namespace ScoreboardConnectWinUI3.Controls {
       labelStatus.Text = CONNECTED;
       labelStatus.ForeColor = Color.Green;
       pictureLoading.Visible = false;
-
       Connected?.Invoke(this, new ScoreboardLiveConnectedEventArgs(m_tournament, m_device, m_api, m_webSocket));
     }
 
@@ -143,6 +141,7 @@ namespace ScoreboardConnectWinUI3.Controls {
       }
 
       m_unit = null;
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, $"Connecting to {m_api?.BaseUrl}");
       try {
         m_unit = (await m_api.GetUnits()).Find(u => u.UnitID == m_device.UnitID);
       } catch {
@@ -150,6 +149,7 @@ namespace ScoreboardConnectWinUI3.Controls {
       }
       if (m_unit == null) {
         lock (m_lock) m_isConnecting = false;
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Warning, $"Could not connect to the ScoreboardLive network: unit {m_device.UnitID} not found. Check the settings and select another club.");
         return;
       }
       
@@ -164,6 +164,7 @@ namespace ScoreboardConnectWinUI3.Controls {
       }
       if (m_tournament == null) {
         lock (m_lock) m_isConnecting = false;
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Warning, $"Could not connect to the ScoreboardLive network: Tournament not found. Check the settings and select another tournament.");
         return;
       }
 
@@ -172,11 +173,13 @@ namespace ScoreboardConnectWinUI3.Controls {
           SetStatusPartiallyConnected();
         } else {
           SetStatusDisconnected();
+          ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Warning, "Device activation code has expired. Enter a new activation code.");
           MessageBoxError(string.Format("Device activation code has expired. Enter a new activation code."));
           return;
         }
       } catch (Exception e) {
         SetStatusDisconnected();
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Warning, string.Format("Could not verify activation code, make sure settings{1}are correct.{1}{1}{0}", e.Message, Environment.NewLine));
         MessageBoxError(string.Format("Could not verify activation code, make sure settings{1}are correct.{1}{1}{0}", e.Message, Environment.NewLine));
         return;
       } finally {
@@ -187,6 +190,8 @@ namespace ScoreboardConnectWinUI3.Controls {
         m_apiChecked = true;
         m_isConnected = true;
       }
+
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, $"Connected to {m_api?.BaseUrl}");
 
       await ConnectSocket();
     }
@@ -204,6 +209,7 @@ namespace ScoreboardConnectWinUI3.Controls {
       if (m_webSocket != null) {
         m_webSocket.Stop();
       }
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, "Disconnected from the ScoreboardLive network.");
       Invoke((MethodInvoker)delegate {
         SetStatusDisconnected();
       });
@@ -234,6 +240,7 @@ namespace ScoreboardConnectWinUI3.Controls {
       if ((m_settings == null) || (m_keyStore == null)) {
         return;
       }
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, $"Reconnecting in {RECONNECT_INTERVAL / 1000} seconds...");
       Task.Delay(RECONNECT_INTERVAL).ContinueWith(_ => {
         Invoke((MethodInvoker)delegate {
           _ = Connect();
@@ -249,6 +256,7 @@ namespace ScoreboardConnectWinUI3.Controls {
     }
 
     private void Socket_MessageReceived(object sender, MessageEventArgs e) {
+
     }
 
     private void Socket_StateChanged(object sender, StateEventArgs e) {
@@ -259,10 +267,13 @@ namespace ScoreboardConnectWinUI3.Controls {
 
       Invoke((MethodInvoker)delegate {
         if (e.State == ClientState.Connected) {
+          ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, "WebSocket connected.");
           SetStatusConnected();
         } else if (apiConnected) {
+          ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, "WebSocket disconnected.");
           SetStatusPartiallyConnected();
         } else {
+          ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, "WebSocket disconnected.");
           SetStatusDisconnected();
         }
       });

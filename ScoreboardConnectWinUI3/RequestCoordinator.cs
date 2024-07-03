@@ -9,18 +9,6 @@ using TPNetwork;
 
 namespace ScoreboardConnectWinUI3 {
   internal class RequestCoordinator {
-    public enum StatusMessageLevel {
-      Verbose,
-      Info,
-      Warning,
-      Error
-    }
-
-    public class StatusMessageEventArgs : EventArgs {
-      public string Message { get; set; }
-      public StatusMessageLevel Level { get; set; }
-    }
-
     private Controls.ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs m_apiInfo;
     private SocketClient m_tpNetwork;
     private TPListener m_tpListener;
@@ -30,8 +18,6 @@ namespace ScoreboardConnectWinUI3 {
     private object m_optionsLock = new object();
     private TournamentConverter.ConvertOptions m_convertOptions;
     private TournamentConverter m_converter;
-
-    public event EventHandler<StatusMessageEventArgs> Status;
 
     public bool EnableCourtSync {
       get {
@@ -137,20 +123,19 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void ScoreboardSocketError(object sender, ErrorEventArgs e) {
-      SendStatusMessage(e.Error.Message, StatusMessageLevel.Error);
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, e.Error.Message, e.Error);
     }
 
     private void ScoreboardSocketStateChange(object sender, StateEventArgs e) {
-      SendStatusMessage(e.State.ToString(), StatusMessageLevel.Info);
-
+      // ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, e.State.ToString());
     }
 
     private void ScoreboardSocketInfo(object sender, InfoEventArgs e) {
-      SendStatusMessage(e.Info, StatusMessageLevel.Info);
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, e.Info);
     }
 
     private void ScoreboardSocketMessage(object sender, MessageEventArgs e) {
-      SendStatusMessage(e.Message.ToString(), StatusMessageLevel.Info);
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, e.Message.ToString());
       if (e.Message is MatchUpdate matchUpdate) {
         _ = MatchUpdate(matchUpdate);
       }
@@ -222,14 +207,14 @@ namespace ScoreboardConnectWinUI3 {
         return;
       }
       if (m_apiInfo == null) {
-        SendStatusMessage("Court update received, but no Scoreboard API connection", StatusMessageLevel.Warning);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Warning, "Court update received, but no Scoreboard API connection");
         return;
       }
 
       var sbCourts = m_courtCorrelator.Correlate(e.CourtName);
 
       if (sbCourts.Count == 0) {
-        SendStatusMessage($"An update was received for unassigned TP court {e.CourtName}.", StatusMessageLevel.Warning);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Warning, $"An update was received for unassigned TP court {e.CourtName}.");
         return;
       }
 
@@ -245,10 +230,10 @@ namespace ScoreboardConnectWinUI3 {
         try {
           await m_apiInfo.Api.ClearCourt(m_apiInfo.Device, sbCourt);
         } catch (Exception e) {
-          SendStatusMessage($"Failed to clear court {sbCourt.Name} ({sbCourt.Venue?.Name}): {e.Message}", StatusMessageLevel.Error);
+          ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, $"Failed to clear court {sbCourt.Name} ({sbCourt.Venue?.Name}): {e.Message}");
           continue;
         }
-        SendStatusMessage($"Court {sbCourt.Name} ({sbCourt.Venue?.Name}) is now free", StatusMessageLevel.Info);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, $"Court {sbCourt.Name} ({sbCourt.Venue?.Name}) is now free");
       }
     }
 
@@ -260,19 +245,19 @@ namespace ScoreboardConnectWinUI3 {
 
       var updatedTPMatch = tpTournament.FindMatchByID(tpMatch.ID);
       if (updatedTPMatch == null) {
-        SendStatusMessage($"TP match {tpMatch.ID} not found in tournament", StatusMessageLevel.Warning);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Warning, $"TP match {tpMatch.ID} not found in tournament");
         return;
       }
 
       var tpDraw = tpTournament.FindDrawByID(updatedTPMatch.DrawID);
       if (tpDraw == null) {
-        SendStatusMessage($"Draw {updatedTPMatch.DrawID} not found in tournament", StatusMessageLevel.Warning);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Warning, $"Draw {updatedTPMatch.DrawID} not found in tournament");
         return;
       }
 
       var tpEvent = tpTournament.FindEventByID(tpDraw.EventID);
       if (tpEvent == null) {
-        SendStatusMessage($"Event {tpDraw.EventID} not found in tournament", StatusMessageLevel.Warning);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Warning, $"Event {tpDraw.EventID} not found in tournament");
         return;
       }
 
@@ -285,7 +270,7 @@ namespace ScoreboardConnectWinUI3 {
       try {
         sbMatch = await GetSBMatch(updatedTPMatch, sbTag);
       } catch (Exception ex) {
-        SendStatusMessage(ex.Message, StatusMessageLevel.Error);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, ex.Message, ex);
         return;
       }
 
@@ -293,21 +278,21 @@ namespace ScoreboardConnectWinUI3 {
         try {
           sbMatch = await CreateOnTheFlySBMatch(updatedTPMatch, tpEvent, sbTag);
         } catch (Exception ex) {
-          SendStatusMessage(ex.Message, StatusMessageLevel.Error);
+          ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, ex.Message, ex);
           return;
         }
       } else {
         try {
           sbMatch = await CheckIfScoreboardServerNeedsMatchUpdate(updatedTPMatch, sbMatch);
         } catch (Exception ex) {
-          SendStatusMessage(ex.Message, StatusMessageLevel.Error);
+          ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, ex.Message, ex);
           return;
         }
       }
 
       foreach (var sbCourt in sbCourts) {
         await AssignMatchToCourt(sbMatch, sbCourt);
-        SendStatusMessage($"Court {sbCourt.Name} ({sbCourt.Venue?.Name}) is now occupied by {updatedTPMatch}", StatusMessageLevel.Info);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, $"Match {sbMatch.MatchID} is now on court {sbCourt.Name} ({sbCourt.Venue?.Name})");
       }
     }
 
@@ -317,7 +302,7 @@ namespace ScoreboardConnectWinUI3 {
         var tmpNetworkData = new TP.VisualXML.TPNetwork(tpXML);
         return await TP.Tournament.LoadFromVisualXMLAsync(tmpNetworkData);
       } catch (Exception e) {
-        SendStatusMessage($"Failed to load tournament from TP: {e.Message}", StatusMessageLevel.Error);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, $"Failed to load tournament from TP: {e.Message}", e);
         return null;
       }
     }
@@ -360,7 +345,7 @@ namespace ScoreboardConnectWinUI3 {
       try {
         await m_apiInfo.Api.AssignMatchToCourt(m_apiInfo.Device, sbMatch, sbCourt);
       } catch (Exception e) {
-        SendStatusMessage($"Failed to assign match {sbMatch.MatchID} to court {sbCourt.Name}: {e.Message}", StatusMessageLevel.Error);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, $"Failed to assign match {sbMatch.MatchID} to court {sbCourt.Name}: {e.Message}", e);
         return false;
       }
       return true;
@@ -372,16 +357,16 @@ namespace ScoreboardConnectWinUI3 {
 
     private async Task MatchUpdate(MatchUpdate matchUpdate) {
       // Send info message
-      SendStatusMessage($"Match update received for {matchUpdate.Match?.ToString()}", StatusMessageLevel.Verbose);
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, $"Match update received for {matchUpdate.Match?.ToString()}");
       // Check if match is complete
       if (matchUpdate.Match == null || !finishedMatchStatus.Contains(matchUpdate.Match.Status)) {
-        SendStatusMessage("Match not finished; no update done", StatusMessageLevel.Verbose);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, "Match not finished; no update done");
         return;
       }
       // Look up the match in the TP tournament
       TP.Tournament tpTournament = await GetTPTournament();
       if (tpTournament == null) {
-        SendStatusMessage("Cannot update match: Failed to load tournament from TP", StatusMessageLevel.Error);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, "Cannot update match: Failed to load tournament from TP");
         return;
       }
       // Extract the TP match id from the SB match tag
@@ -389,36 +374,36 @@ namespace ScoreboardConnectWinUI3 {
       try { 
         tpMatchID = TP.TournamentConverter.ExtractMatchIDFromTag(matchUpdate.Match.Tag);
       } catch (Exception e) {
-        SendStatusMessage($"Cannot update match: Failed to extract match ID from tag {matchUpdate.Match.Tag}: {e.Message}", StatusMessageLevel.Verbose);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, $"Cannot update match: Failed to extract match ID from tag {matchUpdate.Match.Tag}: {e.Message}");
         return;
       }
       // Find the match in the TP tournament
       TP.Match tpMatch = tpTournament.FindMatchByID(tpMatchID);
       if (tpMatch == null) {
-        SendStatusMessage($"Cannot update match: Match {tpMatchID} not found in tournament", StatusMessageLevel.Verbose);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, $"Cannot update match: Match {tpMatchID} not found in tournament");
         return;
       }
       // Find draw
       Draw draw = tpTournament.FindDrawByID(tpMatch.DrawID);
       if (draw == null) {
-        SendStatusMessage($"Cannot update match: Draw {tpMatch.DrawID} not found in tournament", StatusMessageLevel.Warning);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Warning, $"Cannot update match: Draw {tpMatch.DrawID} not found in tournament");
         return;
       }
       // Find event
       Event ev = tpTournament.FindEventByID(draw.EventID);
       if (ev == null) {
-        SendStatusMessage($"Cannot update match: Event {draw.EventID} not found in tournament", StatusMessageLevel.Warning);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Warning, $"Cannot update match: Event {draw.EventID} not found in tournament");
         return;
       }
       // Check that the tags match
       if (matchUpdate.Match.Tag != TP.TournamentConverter.CreateMatchTag(m_apiInfo.Tournament, tpMatch, ev, draw)) {
-        SendStatusMessage($"Match ID's match but tags do not.", StatusMessageLevel.Verbose);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Warning, $"Match ID's match but tags do not.");
         return;
       }
       // Check if the tp match is already finished
       if ((tpMatch.Winner == TP.Data.PlayerMatchData.Winners.Entry1 && matchUpdate.Match.Status == "team1won") ||
           (tpMatch.Winner == TP.Data.PlayerMatchData.Winners.Entry2 && matchUpdate.Match.Status == "team2won")) {
-        SendStatusMessage($"Match {tpMatchID} already has correct winner", StatusMessageLevel.Verbose);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, $"Match {tpMatchID} already has correct winner");
         return;
       }
       // Update the TP match
@@ -427,15 +412,11 @@ namespace ScoreboardConnectWinUI3 {
       try {
         await m_tpNetwork.SendUpdate(tpMatch);
       } catch (Exception e) {
-        SendStatusMessage($"Failed to update match {tpMatchID} in TP: {e.Message}", StatusMessageLevel.Error);
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, $"Failed to send update to TP: {e.Message}");
         return;
       }
     }
     #endregion
-
-    private void SendStatusMessage(string message, StatusMessageLevel level) {
-      Status?.Invoke(this, new StatusMessageEventArgs() { Message = message, Level = level });
-    }
 
     private async Task ReloadSBCourts() {
       if (m_apiInfo == null || m_courtCorrelator == null) {
