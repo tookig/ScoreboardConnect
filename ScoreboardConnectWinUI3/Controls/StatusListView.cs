@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace ScoreboardConnectWinUI3 {
   public class StatusListView : ListView {
+    const int MAX_NUMBER_OF_ITEMS = 1000;
     /// <summary>
     /// Required designer variable.
     /// </summary>
@@ -39,6 +40,9 @@ namespace ScoreboardConnectWinUI3 {
       Invoke((MethodInvoker)delegate {
         Items.Add(item);
         EnsureVisible(Items.Count - 1);
+        while (Items.Count > MAX_NUMBER_OF_ITEMS) {
+          Items.RemoveAt(0);
+        }
       });
     }
 
