@@ -17,6 +17,7 @@ using static ScoreboardLiveWebSockets.ScoreboardWebSocketClient;
 namespace ScoreboardConnectWinUI3.Controls {
   public partial class ScoreboardLiveControl : UserControl {
     private static readonly int RECONNECT_INTERVAL = 10000;
+    private static readonly int CHECK_CONNECTION_INTERVAL = 30000;
     private static readonly string CONNECTED = "Connected";
     private static readonly string DISCONNECTED = "Not connected";
     private static readonly string PARTIALLY_CONNECTED = "Partially connected";
@@ -34,6 +35,8 @@ namespace ScoreboardConnectWinUI3.Controls {
     private bool m_apiChecked = false;
     private bool m_isConnecting = false;
     private bool m_isConnected = false;
+
+    private Timer m_reconnectCheckTimer = new Timer();
 
     public event EventHandler<ScoreboardLiveConnectedEventArgs> Connected;
     public event EventHandler<AsyncVoidMethodBuilder> Disconnected;
@@ -55,6 +58,7 @@ namespace ScoreboardConnectWinUI3.Controls {
       InitializeComponent();
       InitSocket();
       SetStatusDisconnected();
+      BeginCheckingConnection();
     }
 
     public void SetSettings(Settings settings, IKeyStore keyStore) {
@@ -246,6 +250,21 @@ namespace ScoreboardConnectWinUI3.Controls {
           _ = Connect();
         });
       });
+    }
+
+    /// <summary>
+    /// Call a function on the API object (if any). This is just so that if the connection is 
+    /// lost, this object will receive an api error and can show this to the user. Any errors
+    /// from this function is discarded.
+    /// </summary>
+    private void BeginCheckingConnection() {
+      m_reconnectCheckTimer.Interval = CHECK_CONNECTION_INTERVAL;
+      m_reconnectCheckTimer.Tick += (sender, e) => {
+        try {
+          m_api?.GetUnits();
+        } catch { }
+      };
+      m_reconnectCheckTimer.Start();
     }
 
     private void MessageBoxError(string text) {
