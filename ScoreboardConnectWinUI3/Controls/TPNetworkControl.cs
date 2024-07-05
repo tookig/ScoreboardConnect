@@ -16,6 +16,7 @@ namespace ScoreboardConnectWinUI3.Controls {
     private static readonly int CONNECTION_CHECK_INTERVAL = 10000;
 
     private DateTime m_lastCheck = DateTime.MinValue;
+    private bool m_lastCheckSuccess = false;
     private Tournament m_tournament;
     private TPNetwork.SocketClient m_socketClient;
 
@@ -61,15 +62,21 @@ namespace ScoreboardConnectWinUI3.Controls {
         return;
       }
       m_lastCheck = DateTime.Now;
-      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, "Trying to connect to TP Network");
+      if (!m_lastCheckSuccess) {
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, "Trying to connect to TP Network");
+      }
       try {
         var xml = await m_socketClient.GetTournamentInfo();
         m_tournament = Tournament.LoadFromVisualXML(new TP.VisualXML.TPNetworkDocument(xml));
         SetStatusConnected();
-        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, $"Connected to TP Network on port {m_socketClient.Port}");
+        if (!m_lastCheckSuccess) {
+          ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, $"Connected to TP Network on port {m_socketClient.Port}");
+        }
+        m_lastCheckSuccess = true;
       } catch (Exception e) {
         SetStatusNotConnected();
         ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, $"Failed to connect to TP Network on port {m_socketClient.Port}", e);
+        m_lastCheckSuccess = false;
       }
     }
 
