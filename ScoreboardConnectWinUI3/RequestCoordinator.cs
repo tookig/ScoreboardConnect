@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml;
 using TP;
 using TPNetwork;
 
@@ -46,7 +47,7 @@ namespace ScoreboardConnectWinUI3 {
         return m_tpNetwork;
       }
       set {
-        _ = InitSocket(value);
+        InitSocket(value);
       }
     }
 
@@ -80,7 +81,7 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     public RequestCoordinator(SocketClient tpNetwork, TPListener tpListener, ICourtCorrelator courtCorrelator = null, TournamentConverter.ConvertOptions convertOptions = null) {
-      _ = InitSocket(tpNetwork);
+      InitSocket(tpNetwork);
       InitListener(tpListener);
       if (courtCorrelator != null) {
         _ = InitCourtCorrelator(courtCorrelator);
@@ -88,13 +89,29 @@ namespace ScoreboardConnectWinUI3 {
       ConvertOptions = convertOptions ?? new TournamentConverter.ConvertOptions();
     }
 
-    protected async Task InitSocket(SocketClient socketClient) {
+    protected void InitSocket(SocketClient socketClient) {
       SocketClient validatedClient = socketClient ?? throw new ArgumentNullException("SocketClient reference cannot be null");
       if (m_tpNetwork != null) {
+        m_tpNetwork.MessageReceived -= ScoreboardSocketMessage;
       }
       m_tpNetwork = validatedClient;
-      await ReloadTPCourts();
+      m_tpNetwork.MessageReceived += ScoreboardSocketMessage;
       CheckIfAllReady();
+    }
+
+    private async void ScoreboardSocketMessage(object sender, XmlDocument tournamentXML) {
+      if (m_courtCorrelator == null) {
+        return;
+      }
+      if (tournamentXML.SelectSingleNode("//GROUP[@ID='Action']/ITEM[@ID='Result']").InnerText.ToUpper() == "SENDTOURNAMENTINFO") {
+        try {
+          var tmpNetworkData = new TP.VisualXML.TPNetworkDocument(tournamentXML);
+          var tournament = await TP.Tournament.LoadFromVisualXMLAsync(tmpNetworkData);
+          m_courtCorrelator.SetTPCourts(tournament.Courts);
+        } catch (Exception e) {
+          ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, $"Failed to parse tournament from TP: {e.Message}", e);
+        }
+      }
     }
 
     protected async Task InitApi(Controls.ScoreboardLiveControl.ScoreboardLiveConnectedEventArgs apiInfo) {
@@ -299,7 +316,7 @@ namespace ScoreboardConnectWinUI3 {
     private async Task<TP.Tournament> GetTPTournament() {
       try {
         var tpXML = await m_tpNetwork.GetTournamentInfo();
-        var tmpNetworkData = new TP.VisualXML.TPNetwork(tpXML);
+        var tmpNetworkData = new TP.VisualXML.TPNetworkDocument(tpXML);
         return await TP.Tournament.LoadFromVisualXMLAsync(tmpNetworkData);
       } catch (Exception e) {
         ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, $"Failed to load tournament from TP: {e.Message}", e);
@@ -432,7 +449,7 @@ namespace ScoreboardConnectWinUI3 {
         return;
       }
       await m_tpNetwork.GetTournamentInfo().ContinueWith(async (tournamentXML) => {
-        var tmpNetworkData = new TP.VisualXML.TPNetwork(tournamentXML.Result);
+        var tmpNetworkData = new TP.VisualXML.TPNetworkDocument(tournamentXML.Result);
         var tournament = await TP.Tournament.LoadFromVisualXMLAsync(tmpNetworkData);
         m_courtCorrelator.SetTPCourts(tournament.Courts);
       });

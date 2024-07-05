@@ -13,6 +13,8 @@ using TPNetwork;
 
 namespace ScoreboardConnectWinUI3.Controls {
   public partial class TPNetworkControl : UserControl {
+    private static readonly int CONNECTION_CHECK_INTERVAL = 10000;
+
     private DateTime m_lastCheck = DateTime.MinValue;
     private Tournament m_tournament;
     private TPNetwork.SocketClient m_socketClient;
@@ -32,6 +34,9 @@ namespace ScoreboardConnectWinUI3.Controls {
     public TPNetworkControl() {
       InitializeComponent();
       m_socketClient = new TPNetwork.SocketClient();
+      m_socketClient.Error += (sender, e) => ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, e.Message, e);
+      m_socketClient.MessageReceived += (sender, xml) => ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, "Received XML from TP Network");
+      m_socketClient.MessageSent += (sender, message) => ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, $"Sent {message.ActionID} message to TP Network");
     }
 
     private void SetStatusNotConnected() {
@@ -52,16 +57,19 @@ namespace ScoreboardConnectWinUI3.Controls {
     }
 
     public async Task CheckConnection() {
-      if (DateTime.Now - m_lastCheck < TimeSpan.FromSeconds(10)) {
+      if (DateTime.Now - m_lastCheck < TimeSpan.FromMilliseconds(CONNECTION_CHECK_INTERVAL)) {
         return;
       }
       m_lastCheck = DateTime.Now;
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, "Trying to connect to TP Network");
       try {
         var xml = await m_socketClient.GetTournamentInfo();
-        m_tournament = Tournament.LoadFromVisualXML(new TP.VisualXML.TPNetwork(xml));
+        m_tournament = Tournament.LoadFromVisualXML(new TP.VisualXML.TPNetworkDocument(xml));
         SetStatusConnected();
-      } catch {
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, $"Connected to TP Network on port {m_socketClient.Port}");
+      } catch (Exception e) {
         SetStatusNotConnected();
+        ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, $"Failed to connect to TP Network on port {m_socketClient.Port}", e);
       }
     }
 

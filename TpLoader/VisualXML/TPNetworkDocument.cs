@@ -4,10 +4,10 @@ using System.Text;
 using System.Xml;
 
 namespace TP.VisualXML {
-  public class TPNetwork : GroupNode {
+  public class TPNetworkDocument : GroupNode {
     public XmlDocument XMLSource { get; }
 
-    public TPNetwork(XmlDocument doc) {
+    public TPNetworkDocument(XmlDocument doc) {
       XMLSource = doc;
       Parse();
     }

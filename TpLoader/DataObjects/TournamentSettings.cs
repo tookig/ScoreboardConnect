@@ -17,7 +17,7 @@ namespace TP.Data {
       TournamentName = GetString(reader, "value");
     }
 
-    public TournamentSettings(TPNetwork network) {
+    public TournamentSettings(TPNetworkDocument network) {
       network.GetGroup("Result/Tournament/Settings").Groups.ForEach(setting => {
         if (((ItemNode<int>)setting["ID"]).Value == 1001) {
           TournamentName = ((ItemNode<string>)setting["Value"]).Value;

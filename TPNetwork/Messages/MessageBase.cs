@@ -6,8 +6,11 @@ using System.Xml;
 namespace TPNetwork.Messages {
   public class MessageBase : XmlDocument {
     public XmlElement VisualXMLRoot { get; private set; }
+    public string ActionID { get; private set; }
 
     public MessageBase(string password, string actionID, string ip = "127.0.0.1", string unicode = null) : base() {
+      ActionID = actionID;
+      
       VisualXMLRoot = CreateElement("VISUALXML");
       VisualXMLRoot.SetAttribute("VERSION", "1.0");
 
@@ -22,9 +25,7 @@ namespace TPNetwork.Messages {
 
       var _action = CreateGroup("Action");
       _action.AppendChild(CreateItem("ID", "String", actionID));
-      if (!string.IsNullOrEmpty(password)) {
-        _action.AppendChild(CreateItem("Password", "String", password));
-      }
+      _action.AppendChild(CreateItem("Password", "String", String.IsNullOrEmpty(password) ? "" : password));
       if (!string.IsNullOrEmpty(unicode)) {
         _action.AppendChild(CreateItem("Unicode", "String", unicode));
       }
@@ -35,6 +36,10 @@ namespace TPNetwork.Messages {
       VisualXMLRoot.AppendChild(client);
 
       AppendChild(VisualXMLRoot);
+    }
+
+    public void SetPassword(string password) {
+      VisualXMLRoot.SelectSingleNode("//GROUP[@ID='Action']/ITEM[@ID='Password']").InnerText = password;
     }
 
     protected virtual XmlElement CreateGroup(string id) {

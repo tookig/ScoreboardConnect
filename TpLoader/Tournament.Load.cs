@@ -50,11 +50,11 @@ namespace TP {
       return tournament;
     }
 
-    public static async Task<Tournament> LoadFromVisualXMLAsync(VisualXML.TPNetwork visualXml) { 
+    public static async Task<Tournament> LoadFromVisualXMLAsync(VisualXML.TPNetworkDocument visualXml) { 
       return await Task.Run(() => LoadFromVisualXML(visualXml));
     }
 
-    public static Tournament LoadFromVisualXML(VisualXML.TPNetwork visualXml) {
+    public static Tournament LoadFromVisualXML(VisualXML.TPNetworkDocument visualXml) {
       List<ClubData> clubs = new List<ClubData>();
       foreach (var club in visualXml.GetGroup("Result/Tournament/Clubs").Groups) {
         clubs.Add(new ClubData(club));
