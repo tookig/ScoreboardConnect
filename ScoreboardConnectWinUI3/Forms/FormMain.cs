@@ -161,7 +161,11 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void onOffCourtChanges_CheckedChanged(object sender, EventArgs e) {
-        m_requestCoordinator.EnableCourtSync = onOffCourtChanges.Checked;
+      m_requestCoordinator.EnableCourtSync = onOffCourtChanges.Checked;
+    }
+
+    private void onOffUpdateMatchResult_Click(object sender, EventArgs e) {
+      m_requestCoordinator.EnableMatchResultUpdates = onOffUpdateMatchResult.Checked;
     }
   }
 }

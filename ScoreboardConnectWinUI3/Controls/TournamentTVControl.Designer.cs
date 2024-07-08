@@ -24,38 +24,28 @@
     /// </summary>
     private void InitializeComponent() {
       components = new System.ComponentModel.Container();
-      groupBox1 = new System.Windows.Forms.GroupBox();
+      textTimer = new System.Windows.Forms.Timer(components);
       labelErrors = new System.Windows.Forms.Label();
       labelUpdates = new System.Windows.Forms.Label();
       labelStatus = new System.Windows.Forms.Label();
-      textTimer = new System.Windows.Forms.Timer(components);
-      groupBox1.SuspendLayout();
+      labelHeader = new System.Windows.Forms.Label();
       SuspendLayout();
       // 
-      // groupBox1
+      // textTimer
       // 
-      groupBox1.Controls.Add(labelErrors);
-      groupBox1.Controls.Add(labelUpdates);
-      groupBox1.Controls.Add(labelStatus);
-      groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-      groupBox1.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
-      groupBox1.ForeColor = System.Drawing.Color.SeaGreen;
-      groupBox1.Location = new System.Drawing.Point(0, 0);
-      groupBox1.Name = "groupBox1";
-      groupBox1.Size = new System.Drawing.Size(435, 90);
-      groupBox1.TabIndex = 0;
-      groupBox1.TabStop = false;
-      groupBox1.Text = "Tournament TV";
+      textTimer.Enabled = true;
+      textTimer.Interval = 400;
+      textTimer.Tick += textTimer_Tick;
       // 
       // labelErrors
       // 
       labelErrors.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       labelErrors.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
       labelErrors.ForeColor = System.Drawing.Color.OrangeRed;
-      labelErrors.Location = new System.Drawing.Point(6, 29);
+      labelErrors.Location = new System.Drawing.Point(3, 45);
       labelErrors.Name = "labelErrors";
-      labelErrors.Size = new System.Drawing.Size(423, 27);
-      labelErrors.TabIndex = 3;
+      labelErrors.Size = new System.Drawing.Size(427, 27);
+      labelErrors.TabIndex = 6;
       labelErrors.Text = "Errormessage";
       labelErrors.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
       // 
@@ -64,10 +54,10 @@
       labelUpdates.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       labelUpdates.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
       labelUpdates.ForeColor = System.Drawing.Color.RoyalBlue;
-      labelUpdates.Location = new System.Drawing.Point(6, 52);
+      labelUpdates.Location = new System.Drawing.Point(3, 68);
       labelUpdates.Name = "labelUpdates";
-      labelUpdates.Size = new System.Drawing.Size(423, 26);
-      labelUpdates.TabIndex = 2;
+      labelUpdates.Size = new System.Drawing.Size(427, 26);
+      labelUpdates.TabIndex = 5;
       labelUpdates.Text = "No updates received";
       labelUpdates.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
       // 
@@ -77,38 +67,45 @@
       labelStatus.AutoSize = true;
       labelStatus.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
       labelStatus.ForeColor = System.Drawing.Color.Red;
-      labelStatus.Location = new System.Drawing.Point(293, 0);
+      labelStatus.Location = new System.Drawing.Point(294, 9);
       labelStatus.Name = "labelStatus";
       labelStatus.Size = new System.Drawing.Size(136, 25);
-      labelStatus.TabIndex = 1;
+      labelStatus.TabIndex = 4;
       labelStatus.Text = "Not connected";
       labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
       // 
-      // textTimer
+      // labelHeader
       // 
-      textTimer.Enabled = true;
-      textTimer.Interval = 400;
-      textTimer.Tick += textTimer_Tick;
+      labelHeader.AutoSize = true;
+      labelHeader.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
+      labelHeader.ForeColor = System.Drawing.Color.Teal;
+      labelHeader.Location = new System.Drawing.Point(3, 9);
+      labelHeader.Name = "labelHeader";
+      labelHeader.Size = new System.Drawing.Size(142, 25);
+      labelHeader.TabIndex = 7;
+      labelHeader.Text = "Tournament TV";
       // 
       // TournamentTVControl
       // 
       AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
       AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      Controls.Add(groupBox1);
+      BackColor = System.Drawing.Color.White;
+      Controls.Add(labelHeader);
+      Controls.Add(labelErrors);
+      Controls.Add(labelUpdates);
+      Controls.Add(labelStatus);
       Name = "TournamentTVControl";
-      Size = new System.Drawing.Size(435, 90);
+      Size = new System.Drawing.Size(433, 109);
       Load += TournamentTVControl_Load;
-      groupBox1.ResumeLayout(false);
-      groupBox1.PerformLayout();
       ResumeLayout(false);
+      PerformLayout();
     }
 
     #endregion
-
-    private System.Windows.Forms.GroupBox groupBox1;
-    private System.Windows.Forms.Label labelStatus;
-    private System.Windows.Forms.Label labelUpdates;
     private System.Windows.Forms.Timer textTimer;
     private System.Windows.Forms.Label labelErrors;
+    private System.Windows.Forms.Label labelUpdates;
+    private System.Windows.Forms.Label labelStatus;
+    private System.Windows.Forms.Label labelHeader;
   }
 }

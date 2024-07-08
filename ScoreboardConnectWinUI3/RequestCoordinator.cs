@@ -15,6 +15,7 @@ namespace ScoreboardConnectWinUI3 {
     private TPListener m_tpListener;
     private ICourtCorrelator m_courtCorrelator;
     private bool m_enableCourtSync = false;
+    private bool m_enableMatchResultUpdates = false;
 
     private object m_optionsLock = new object();
     private TournamentConverter.ConvertOptions m_convertOptions;
@@ -30,6 +31,23 @@ namespace ScoreboardConnectWinUI3 {
         }
         m_enableCourtSync = value;
         CheckIfAllReady();
+      }
+    }
+
+    public bool EnableMatchResultUpdates { 
+      get {
+       return m_enableMatchResultUpdates;
+      }
+      set {
+        if (value == m_enableMatchResultUpdates) {
+          return;
+        }
+        m_enableMatchResultUpdates = value;
+        if (m_enableMatchResultUpdates) {
+          ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, "Match result updates enabled");
+        } else {
+          ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, "Match result updates disabled");
+        }
       }
     }
 
@@ -373,6 +391,9 @@ namespace ScoreboardConnectWinUI3 {
     private static readonly string[] finishedMatchStatus = ["team1won", "team2won"];
 
     private async Task MatchUpdate(MatchUpdate matchUpdate) {
+      if (!m_enableMatchResultUpdates) {
+        return;
+      }
       // Send info message
       ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Verbose, $"Match update received for {matchUpdate.Match?.ToString()}");
       // Check if match is complete

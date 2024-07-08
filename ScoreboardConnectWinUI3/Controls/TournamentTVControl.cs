@@ -51,6 +51,7 @@ namespace ScoreboardConnectWinUI3.Controls {
     }
 
     private void M_listener_ServiceError(object sender, (string, Exception) e) {
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, e.Item1, e.Item2);
       Invoke((MethodInvoker)delegate {
         m_lastUpdate = null;
         m_lastError = "Error: " + e.Item1 + ";" + e.Item2.Message;
@@ -58,6 +59,7 @@ namespace ScoreboardConnectWinUI3.Controls {
     }
 
     private void M_listener_ServiceStopped(object sender, EventArgs e) {
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, "Tournament TV service stopped", null);
       Invoke((MethodInvoker)delegate {
         SetStatusNotConnected();
       });
@@ -66,13 +68,15 @@ namespace ScoreboardConnectWinUI3.Controls {
     }
 
     private void M_listener_ServiceStarted(object sender, EventArgs e) {
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, "Tournament TV service started", null);
       Invoke((MethodInvoker)delegate {
         SetStatusListening();
       });
     }
 
     private void M_listener_CourtUpdate(object sender, TPListener.TPCourtUpdateEventArgs e) {
-        Invoke((MethodInvoker)delegate {
+      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, $"Court update received for TP court {e.CourtName}", null);
+      Invoke((MethodInvoker)delegate {
           m_lastUpdate = DateTime.Now;
           m_lastError = null;
         });
