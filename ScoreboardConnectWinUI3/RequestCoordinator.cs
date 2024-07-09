@@ -166,11 +166,11 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void ScoreboardSocketInfo(object sender, InfoEventArgs e) {
-      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, e.Info);
+      // ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, e.Info);
     }
 
     private void ScoreboardSocketMessage(object sender, MessageEventArgs e) {
-      ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, e.Message.ToString());
+      // ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, e.Message.ToString());
       if (e.Message is MatchUpdate matchUpdate) {
         _ = MatchUpdate(matchUpdate);
       }

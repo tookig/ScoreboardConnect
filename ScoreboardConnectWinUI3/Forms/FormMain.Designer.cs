@@ -40,15 +40,14 @@ namespace ScoreboardConnectWinUI3
       toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
       exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       openTPFileDialog = new System.Windows.Forms.OpenFileDialog();
-      statusListView = new StatusListView();
-      label1 = new System.Windows.Forms.Label();
       panel1 = new System.Windows.Forms.Panel();
       courtListView = new CourtListView();
       labelCourtListen = new System.Windows.Forms.Label();
       panel2 = new System.Windows.Forms.Panel();
+      label3 = new System.Windows.Forms.Label();
       onOffUpdateMatchResult = new Controls.OnOffControl();
       label2 = new System.Windows.Forms.Label();
-      label3 = new System.Windows.Forms.Label();
+      curtainLogs = new Controls.CurtainControl();
       menuMain.SuspendLayout();
       panel1.SuspendLayout();
       panel2.SuspendLayout();
@@ -141,29 +140,6 @@ namespace ScoreboardConnectWinUI3
       openTPFileDialog.Filter = "TP-files (*.tp)|*.tp|All files (*.*)|*.*";
       openTPFileDialog.Title = "Open TP file";
       // 
-      // statusListView
-      // 
-      statusListView.BorderStyle = System.Windows.Forms.BorderStyle.None;
-      statusListView.FullRowSelect = true;
-      statusListView.Location = new System.Drawing.Point(10, 447);
-      statusListView.Name = "statusListView";
-      statusListView.Size = new System.Drawing.Size(497, 260);
-      statusListView.TabIndex = 14;
-      statusListView.UseCompatibleStateImageBehavior = false;
-      statusListView.View = System.Windows.Forms.View.Details;
-      // 
-      // label1
-      // 
-      label1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-      label1.Font = new System.Drawing.Font("Segoe UI Semibold", 14F, System.Drawing.FontStyle.Bold);
-      label1.ForeColor = System.Drawing.Color.Gray;
-      label1.Location = new System.Drawing.Point(10, 419);
-      label1.Name = "label1";
-      label1.Size = new System.Drawing.Size(500, 25);
-      label1.TabIndex = 16;
-      label1.Text = "Event log";
-      label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-      // 
       // panel1
       // 
       panel1.BackColor = System.Drawing.Color.White;
@@ -210,6 +186,17 @@ namespace ScoreboardConnectWinUI3
       panel2.Size = new System.Drawing.Size(497, 301);
       panel2.TabIndex = 18;
       // 
+      // label3
+      // 
+      label3.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+      label3.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+      label3.ForeColor = System.Drawing.Color.FromArgb(192, 0, 0);
+      label3.Location = new System.Drawing.Point(3, 62);
+      label3.Name = "label3";
+      label3.Size = new System.Drawing.Size(488, 101);
+      label3.TabIndex = 6;
+      label3.Text = "Please note that this feature is still in an experimental stage. To avoid data loss, backup the Tournament Planner file before proceeding.";
+      // 
       // onOffUpdateMatchResult
       // 
       onOffUpdateMatchResult.BackColor = System.Drawing.Color.FromArgb(255, 100, 100);
@@ -235,16 +222,14 @@ namespace ScoreboardConnectWinUI3
       label2.Text = "Update match results";
       label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
       // 
-      // label3
+      // curtainLogs
       // 
-      label3.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-      label3.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-      label3.ForeColor = System.Drawing.Color.FromArgb(192, 0, 0);
-      label3.Location = new System.Drawing.Point(3, 62);
-      label3.Name = "label3";
-      label3.Size = new System.Drawing.Size(488, 101);
-      label3.TabIndex = 6;
-      label3.Text = "Please note that this feature is still in an experimental stage. To avoid data loss, backup the Tournament Planner file before proceeding.";
+      curtainLogs.ForeColor = System.Drawing.Color.Gray;
+      curtainLogs.IsOpen = false;
+      curtainLogs.Location = new System.Drawing.Point(10, 410);
+      curtainLogs.Name = "curtainLogs";
+      curtainLogs.Size = new System.Drawing.Size(497, 297);
+      curtainLogs.TabIndex = 19;
       // 
       // FormMain
       // 
@@ -252,10 +237,9 @@ namespace ScoreboardConnectWinUI3
       AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
       AutoScroll = true;
       ClientSize = new System.Drawing.Size(1039, 741);
+      Controls.Add(curtainLogs);
       Controls.Add(panel2);
       Controls.Add(panel1);
-      Controls.Add(label1);
-      Controls.Add(statusListView);
       Controls.Add(tournamenttvControl);
       Controls.Add(tpNetworkControl1);
       Controls.Add(scoreboardLiveControl1);
@@ -286,8 +270,6 @@ namespace ScoreboardConnectWinUI3
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
     private System.Windows.Forms.ToolStripMenuItem uploadTournamentToolStripMenuItem;
     private System.Windows.Forms.OpenFileDialog openTPFileDialog;
-    private StatusListView statusListView;
-    private System.Windows.Forms.Label label1;
     private Controls.OnOffControl onOffCourtChanges;
     private System.Windows.Forms.Panel panel1;
     private System.Windows.Forms.Label labelCourtListen;
@@ -296,6 +278,7 @@ namespace ScoreboardConnectWinUI3
     private System.Windows.Forms.Label label2;
     private Controls.OnOffControl onOffUpdateMatchResult;
     private System.Windows.Forms.Label label3;
+    private Controls.CurtainControl curtainLogs;
   }
 }
 

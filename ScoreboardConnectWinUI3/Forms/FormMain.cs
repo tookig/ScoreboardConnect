@@ -31,9 +31,14 @@ namespace ScoreboardConnectWinUI3 {
       InitializeComponent();
 
       m_requestCoordinator = new RequestCoordinator(tpNetworkControl1.SocketClient, tournamenttvControl.Listener, courtListView);
-
-
       UpdateButtons();
+
+      curtainLogs.Text = "Event log";
+      var logControl = new StatusListView();
+      logControl.Dock = DockStyle.Fill;
+      logControl.BackColor = Color.White;
+      logControl.BorderStyle = BorderStyle.None;
+      curtainLogs.ContentsPanel.Controls.Add(logControl);
     }
 
     private void LoadSettings() {
