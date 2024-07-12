@@ -10,15 +10,15 @@ using System.Threading.Tasks;
 
 namespace TP.Static {
   internal static class Countries {
-    private static Dictionary<string, string>? s_lookupTable;
-    private static Dictionary<int, string>? i_lookupTable;
+    private static Dictionary<string, string> s_lookupTable;
+    private static Dictionary<int, string> i_lookupTable;
 
     public static string GetCountryName(string code) {
       if (s_lookupTable == null) {
         Init();
       }
 
-      if (s_lookupTable.TryGetValue(code, out string? name)) {
+      if (s_lookupTable.TryGetValue(code, out string name)) {
         return name;
       }
 
@@ -30,7 +30,7 @@ namespace TP.Static {
         Init();
       }
 
-      if (i_lookupTable.TryGetValue(code, out string? name)) {
+      if (i_lookupTable.TryGetValue(code, out string name)) {
         return name;
       }
 

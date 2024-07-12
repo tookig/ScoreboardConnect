@@ -9,7 +9,7 @@ using TP.Data;
 namespace TP {
   public partial class Tournament {
     public async static Task<Tournament> LoadFromTP(TPFile file) {
-      TournamentSettings tournamentSettings = new TournamentSettings(await file.LoadTournamentSettings());
+      TournamentSettings tournamentSettings = new(await file.LoadTournamentSettings());
       List<Data.LocationData> locations = await file.LoadLocations();
       List<Court> courts = (await file.LoadCourts()).Select(cd => Court.Parse(cd, locations)).ToList();
 
@@ -25,7 +25,7 @@ namespace TP {
 
       List<Event> events = (await file.LoadEvents()).Select(ev => Event.Parse(ev, draws, tournamentSettings)).ToList();
 
-      Tournament tournament = new Tournament() {
+      Tournament tournament = new() {
         TournamentSettings = tournamentSettings,
         Locations = locations,
         Courts = courts,
@@ -37,13 +37,13 @@ namespace TP {
     }
 
     public static Tournament LoadFromXML(XmlReader reader) {
-      List<Event> events = new List<Event>();
+      List<Event> events = [];
 
       while (reader.ReadToFollowing("EVENT")) {
         events.Add(Event.Parse(reader.ReadSubtree()));
       }
 
-      Tournament tournament = new Tournament() {
+      Tournament tournament = new() {
         Events = events
       };
 
@@ -55,59 +55,59 @@ namespace TP {
     }
 
     public static Tournament LoadFromVisualXML(VisualXML.TPNetworkDocument visualXml) {
-      List<ClubData> clubs = new List<ClubData>();
+      List<ClubData> clubs = [];
       foreach (var club in visualXml.GetGroup("Result/Tournament/Clubs").Groups) {
         clubs.Add(new ClubData(club));
       }
 
-      List<Player> players = new List<Player>();
+      List<Player> players = [];
       foreach (var player in visualXml.GetGroup("Result/Tournament/Players").Groups) {
         players.Add(Player.Parse(new PlayerData(player), clubs));
       }
 
-      List<Entry> entries = new List<Entry>();
+      List<Entry> entries = [];
       foreach (var entry in visualXml.GetGroup("Result/Tournament/Entries").Groups) {
         entries.Add(Entry.Parse(new EntryData(entry), players));
       }
 
-      List<PlayerMatchData> matches = new List<PlayerMatchData>();
+      List<PlayerMatchData> matches = [];
       foreach (var match in visualXml.GetGroup("Result/Tournament/Matches").Groups) {
         matches.Add(new PlayerMatchData(match));
       }
 
-      List<DrawData> rawDraws = new List<DrawData>();
+      List<DrawData> rawDraws = [];
       foreach (var draw in visualXml.GetGroup("Result/Tournament/Draws").Groups) {
         rawDraws.Add(new DrawData(draw));
       }
 
-      List<Link> links = new List<Link>();
+      List<Link> links = [];
       foreach (var link in visualXml.GetGroup("Result/Tournament/Links").Groups) {
         links.Add(Link.Parse(new LinkData(link), rawDraws));
       }
 
-      List<Draw> draws = new List<Draw>();
+      List<Draw> draws = [];
       foreach (var draw in rawDraws) {
         draws.Add(Draw.Parse(draw, matches, entries, links));
       }
 
-      TournamentSettings tournamentSettings = new TournamentSettings(visualXml);
+      TournamentSettings tournamentSettings = new(visualXml);
 
-      List<Event> events = new List<Event>(); 
+      List<Event> events = []; 
       foreach (var ev in visualXml.GetGroup("Result/Tournament/Events").Groups) {
         events.Add(Event.Parse(new EventData(ev), draws, tournamentSettings));
       }
 
-      List<LocationData> locations = new List<LocationData>();
+      List<LocationData> locations = [];
       foreach (var location in visualXml.GetGroup("Result/Tournament/Locations").Groups) {
         locations.Add(new LocationData(location));
       }
 
-      List<Court> courts = new List<Court>();
+      List<Court> courts = [];
       foreach (var court in visualXml.GetGroup("Result/Tournament/Courts").Groups) {
         courts.Add(Court.Parse(new CourtData(court), locations));
       }
 
-      Tournament tournament = new Tournament() {
+      Tournament tournament = new() {
         TournamentSettings = tournamentSettings,
         Events = events,
         Entries = entries,

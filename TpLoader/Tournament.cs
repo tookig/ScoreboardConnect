@@ -7,10 +7,10 @@ using System.Diagnostics;
 namespace TP {
   public partial class Tournament {
     public Data.TournamentSettings TournamentSettings { get; private set; }
-    public List<Data.LocationData> Locations { get; private set; } = new List<Data.LocationData>();
-    public List<Court> Courts { get; private set; } = new List<Court>();
-    public List<Entry> Entries { get; private set; } = new List<Entry>();
-    public List<Event> Events { get; private set; } = new List<Event>();
+    public List<Data.LocationData> Locations { get; private set; } = [];
+    public List<Court> Courts { get; private set; } = [];
+    public List<Entry> Entries { get; private set; } = [];
+    public List<Event> Events { get; private set; } = [];
 
     public Match FindMatchByID(int id) {
       foreach (Event e in Events) {
@@ -43,7 +43,7 @@ namespace TP {
     }
 
     public override string ToString() {
-      StringBuilder sb = new StringBuilder();
+      StringBuilder sb = new();
       sb.AppendLine("-- TOURNAMENT --");
       sb.AppendLine(TournamentSettings.TournamentName);
       sb.AppendLine("Courts:");

@@ -24,10 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="ScoreboardApiLib">
       <HintPath>..\..\ScoreboardLiveApiExample\ScoreboardApiLib\bin\Debug\net8.0\ScoreboardApiLib.dll</HintPath>
     </Reference>
