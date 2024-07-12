@@ -121,7 +121,8 @@ namespace ScoreboardConnectWinUI3 {
       if (m_courtCorrelator == null) {
         return;
       }
-      if (tournamentXML.SelectSingleNode("//GROUP[@ID='Action']/ITEM[@ID='Result']").InnerText.ToUpper() == "SENDTOURNAMENTINFO") {
+      if ((tournamentXML.SelectSingleNode("//GROUP[@ID='Action']/ITEM[@ID='ID']")?.InnerText.ToUpper() == "REPLY") &&
+        (tournamentXML.SelectSingleNode("//GROUP[@ID='Action']/ITEM[@ID='Action']")?.InnerText.ToUpper() == "SENDTOURNAMENTINFO")) {
         try {
           var tmpNetworkData = new TP.VisualXML.TPNetworkDocument(tournamentXML);
           var tournament = await TP.Tournament.LoadFromVisualXMLAsync(tmpNetworkData);
