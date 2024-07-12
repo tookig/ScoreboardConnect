@@ -11,7 +11,7 @@ using ScoreboardLiveSocket.Messages;
 using System.Data;
 
 namespace ScoreboardLiveWebSockets {
-  public class ScoreboardWebSocketClient : IDisposable {
+  public sealed class ScoreboardWebSocketClient : IDisposable {
     private static readonly int RECONNECT_CHECK_INTERVAL = 5;
     private static readonly int RECONNECT_TRY_INTERVAL = 30;
     private static readonly ClientState[] RECONNECT_STATES = [ClientState.Stopped, ClientState.WaitingForReconnect];
@@ -20,51 +20,39 @@ namespace ScoreboardLiveWebSockets {
     public event EventHandler<ErrorEventArgs>? ErrorOccurred;
     public event EventHandler<StateEventArgs>? StateChanged;
 
-    private object m_lock = new object();
+    private readonly object m_lock = new();
     private ClientState m_state = ClientState.NotInitialized;
-    private Timer m_reconnectTimer;
+    private readonly Timer m_reconnectTimer;
 
     #region Thread safe fields
-    private SemaphoreSlim m_sendLock = new SemaphoreSlim(0);
-    private CancellationTokenSource m_cancelThread = new CancellationTokenSource();
-    private Queue<ThreadMessage> m_threadQueue = new Queue<ThreadMessage>();
+    private readonly SemaphoreSlim m_sendLock = new(0);
+    private readonly CancellationTokenSource m_cancelThread = new();
+    private readonly Queue<ThreadMessage> m_threadQueue = new();
     #endregion
 
     private abstract class ThreadMessage {
     }
 
-    private class ThreadInitialize : ThreadMessage {
-      public string Url { get; init; }
-      public ThreadInitialize(string url) {
-        Url = url;
-      }
+    private class ThreadInitialize(string url) : ThreadMessage {
+      public string Url { get; init; } = url;
     }
 
     private class ThreadStart : ThreadMessage {
     }
 
-    private class ThreadStop : ThreadMessage {
-      public bool AutoReconnect { get; init; }
-      public ThreadStop(bool autoReconnect = false) {
-        AutoReconnect = autoReconnect;
-      }
+    private class ThreadStop(bool autoReconnect = false) : ThreadMessage {
+      public bool AutoReconnect { get; init; } = autoReconnect;
     }
 
     private class ThreadCheckReconnect : ThreadMessage {
     }
 
-    private class ThreadSend : ThreadMessage {
-      public Message Message { get; init; }
-      public ThreadSend(Message message) {
-        Message = message;
-      }
+    private class ThreadSend(Message message) : ThreadMessage {
+      public Message Message { get; init; } = message;
     }
 
-    private class ThreadReceive : ThreadMessage {
-      public Message Message { get; init; }
-      public ThreadReceive(Message message) {
-        Message = message;
-      }
+    private class ThreadReceive(Message message) : ThreadMessage {
+      public Message Message { get; init; } = message;
     }
 
     /**
