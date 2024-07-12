@@ -11,6 +11,8 @@ using System.Windows.Forms;
 
 namespace ScoreboardConnectWinUI3 {
   partial class FormSettings : Form {
+    const int MAX_TOURNAMENTS = 30;
+
     private class ComboUnit {
       public Unit Unit { get; set; }
 
@@ -125,13 +127,14 @@ namespace ScoreboardConnectWinUI3 {
 
     private async Task LoadTournaments() {
       try {
-        PopulateTournaments(await m_api.GetTournaments(m_device, 15));
+        var tournaments = await m_api.GetTournaments(m_device, MAX_TOURNAMENTS);
+        PopulateTournaments(tournaments.Where(t => TournamentType.FromString(t.TournamentType) == TournamentType.Individual));
       } catch (Exception e) {
         MessageBox.Show(string.Format("Could not retrieve tournaments from server:{1}{0}", e.Message, Environment.NewLine), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
       }
     }
 
-    private void PopulateTournaments(List<Tournament> tournaments) {
+    private void PopulateTournaments(IEnumerable<Tournament> tournaments) {
       comboTournament.Items.Clear();
       comboTournament.Items.AddRange(tournaments.ToArray());
 

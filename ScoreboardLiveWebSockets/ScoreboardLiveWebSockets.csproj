@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <Reference Include="ScoreboardApiLib">
-      <HintPath>..\..\ScoreboardLiveApiExample\ScoreboardApiLib\bin\Debug\netcoreapp3.1\ScoreboardApiLib.dll</HintPath>
+      <HintPath>..\..\ScoreboardLiveApiExample\ScoreboardApiLib\bin\Debug\net8.0\ScoreboardApiLib.dll</HintPath>
     </Reference>
     <Reference Include="ScoreboardLiveSocketLib">
       <HintPath>..\..\ScoreboardLiveSocketServer\ScoreboardLiveSocketLib\bin\Debug\net8.0\ScoreboardLiveSocketLib.dll</HintPath>

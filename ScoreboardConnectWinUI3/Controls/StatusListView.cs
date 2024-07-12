@@ -16,6 +16,13 @@ namespace ScoreboardConnectWinUI3 {
     /// </summary>
     private System.ComponentModel.Container components = null;
 
+    private ConnectLogger.LogLevels m_logLevel = ConnectLogger.LogLevels.Verbose;
+
+    internal ConnectLogger.LogLevels LogLevel {
+      get => m_logLevel;
+      set => m_logLevel = value;
+    }
+
     public StatusListView() {
       InitializeComponent();
       InitColumns();
@@ -25,6 +32,10 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     private void OnLog(object sender, ConnectLogger.LogEntry entry) {
+      if (entry.Level < m_logLevel) {
+        return;
+      }
+
       ListViewItem item = new ListViewItem();
       item.Text = entry.Timestamp.ToString("HH:mm");
       item.SubItems.Add(entry.Message);

@@ -48,15 +48,15 @@ namespace ScoreboardConnectWinUI3.Controls {
       InitializeComponent();
       buttonExpand.Click += ButtonExpand_Click;
       label1.ForeColor = ForeColor;
+      if (m_isOpen) {
+        OpenCurtain();
+      } else {
+        CloseCurtain();
+      }
     }
 
     private void ButtonExpand_Click(object sender, EventArgs e) {
-      m_isOpen = !m_isOpen;
-      if (m_isOpen) {
-        CloseCurtain();
-      } else {
-        OpenCurtain();
-      }
+      IsOpen = !m_isOpen;
     }
 
     public void OpenCurtain() {

@@ -86,7 +86,9 @@ namespace ScoreboardConnectWinUI3 {
 
       Invoke((MethodInvoker)delegate {
         lock (m_tpCourts) {
-          m_tpCourts.ForEach(RemoveTPCourt);
+          foreach (TP.Court tpCourt in m_tpCourts.ToArray()) {
+            RemoveTPCourt(tpCourt);
+          }
           m_tpCourts.Clear();
         }
         tpCourts.ForEach(AddTPCourt);
@@ -135,7 +137,9 @@ namespace ScoreboardConnectWinUI3 {
 
       Invoke((MethodInvoker)delegate {
         lock (m_sbCourts) {
-          m_sbCourts.ForEach(RemoveSBCourt);
+          foreach (ScoreboardLiveApi.Court sbCourt in m_sbCourts.ToArray()) {
+            RemoveSBCourt(sbCourt);
+          }
           m_sbCourts.Clear();
         }
         sbCourts.ForEach(AddSBCourt);

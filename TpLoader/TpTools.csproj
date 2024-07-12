@@ -24,13 +24,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="ScoreboardApiLib">
-      <HintPath>D:\Programmering\Source\CSharp\ScoreboardLiveApiExample\ScoreboardApiLib\bin\Debug\netcoreapp3.1\ScoreboardApiLib.dll</HintPath>
-    </Reference>
+    <Folder Include="Interfaces\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
+    <Reference Include="ScoreboardApiLib">
+      <HintPath>..\..\ScoreboardLiveApiExample\ScoreboardApiLib\bin\Debug\net8.0\ScoreboardApiLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

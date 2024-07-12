@@ -12,10 +12,12 @@ namespace ScoreboardConnectWinUI3 {
     public bool UseCountryInsteadOfClub { get; set; }
     public Dictionary<int, int> SelectedTournaments { get; private set; }
     public Dictionary<int, Dictionary<int, string>> CourtSetup { get; private set; }
+    internal ConnectLogger.LogLevels LogLevel { get; set; }
 
     public Settings() {
       SelectedTournaments = new Dictionary<int, int>();
       CourtSetup = new Dictionary<int, Dictionary<int, string>>();
+      LogLevel = ConnectLogger.LogLevels.Info;
     }
 
     public Settings(string url) : this() {
@@ -46,13 +48,14 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     #region Serialization
-    private const int c_version = 6;
+    private const int c_version = 7;
     private const string c_id_version = "Settings.version";
     private const string c_id_unitid = "Settings.unitid";
     private const string c_id_url = "Settings.url";
     private const string c_id_selected_tournaments = "Settings.selected_tournaments";
     private const string c_id_court_setup = "Settings.court_setup";
     private const string c_id_use_country_instead_of_club = "Settings.use_country_instead_of_club";
+    private const string c_id_log_level = "Settings.log_level";
 
     protected Settings(SerializationInfo info, StreamingContext context) : this() {
       int version = info.GetInt32(c_id_version);
@@ -67,6 +70,9 @@ namespace ScoreboardConnectWinUI3 {
       if (version > 5) {
         UseCountryInsteadOfClub = info.GetBoolean(c_id_use_country_instead_of_club);
       }
+      if (version > 6) {
+        LogLevel = (ConnectLogger.LogLevels)info.GetValue(c_id_log_level, typeof(ConnectLogger.LogLevels));
+      }
     }
 
     public void GetObjectData(SerializationInfo info, StreamingContext context) {
@@ -76,6 +82,7 @@ namespace ScoreboardConnectWinUI3 {
       info.AddValue(c_id_selected_tournaments, SelectedTournaments);
       info.AddValue(c_id_court_setup, CourtSetup);
       info.AddValue(c_id_use_country_instead_of_club, UseCountryInsteadOfClub);
+      info.AddValue(c_id_log_level, LogLevel);
     }
     #endregion
   }

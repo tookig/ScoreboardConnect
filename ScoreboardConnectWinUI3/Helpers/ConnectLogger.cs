@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace ScoreboardConnectWinUI3 {
   internal class ConnectLogger {
     public enum LogLevels {
-      Verbose,
-      Info,
-      Warning,
-      Error
+      Verbose = 1,
+      Info = 2,
+      Warning = 3,
+      Error = 4
     }
 
     public class LogEntry {
@@ -41,6 +41,22 @@ namespace ScoreboardConnectWinUI3 {
         Timestamp = DateTime.Now
       };
       Task.Run(() => Message?.Invoke(this, entry));
+    }
+
+    public void Verbose(string message) {
+      Log(LogLevels.Verbose, message);
+    }
+
+    public void Info(string message) {
+      Log(LogLevels.Info, message);
+    }
+
+    public void Warning(string message) {
+      Log(LogLevels.Warning, message);
+    }
+
+    public void Error(string message, Exception exception = null) {
+      Log(LogLevels.Error, message, exception);
     }
 
     private ConnectLogger() { }

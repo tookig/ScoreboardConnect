@@ -36,9 +36,15 @@ namespace ScoreboardConnectWinUI3
       menuMain = new System.Windows.Forms.MenuStrip();
       fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       uploadTournamentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-      settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
       exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+      settingsToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+      settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+      logLevelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+      allToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+      infoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+      warningsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+      errorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
       openTPFileDialog = new System.Windows.Forms.OpenFileDialog();
       panel1 = new System.Windows.Forms.Panel();
       courtListView = new CourtListView();
@@ -94,7 +100,7 @@ namespace ScoreboardConnectWinUI3
       // 
       // menuMain
       // 
-      menuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem });
+      menuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem, settingsToolStripMenuItem1 });
       menuMain.Location = new System.Drawing.Point(0, 0);
       menuMain.Name = "menuMain";
       menuMain.Size = new System.Drawing.Size(1039, 24);
@@ -103,7 +109,7 @@ namespace ScoreboardConnectWinUI3
       // 
       // fileToolStripMenuItem
       // 
-      fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { uploadTournamentToolStripMenuItem, settingsToolStripMenuItem, toolStripSeparator1, exitToolStripMenuItem });
+      fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { uploadTournamentToolStripMenuItem, toolStripSeparator1, exitToolStripMenuItem });
       fileToolStripMenuItem.Name = "fileToolStripMenuItem";
       fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
       fileToolStripMenuItem.Text = "&File";
@@ -114,13 +120,6 @@ namespace ScoreboardConnectWinUI3
       uploadTournamentToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
       uploadTournamentToolStripMenuItem.Text = "&Upload tournament";
       uploadTournamentToolStripMenuItem.Click += uploadTournamentToolStripMenuItem_Click;
-      // 
-      // settingsToolStripMenuItem
-      // 
-      settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-      settingsToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
-      settingsToolStripMenuItem.Text = "&Settings";
-      settingsToolStripMenuItem.Click += settingsToolStripMenuItem_Click;
       // 
       // toolStripSeparator1
       // 
@@ -134,6 +133,55 @@ namespace ScoreboardConnectWinUI3
       exitToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
       exitToolStripMenuItem.Text = "E&xit";
       exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
+      // 
+      // settingsToolStripMenuItem1
+      // 
+      settingsToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { settingsToolStripMenuItem, logLevelToolStripMenuItem });
+      settingsToolStripMenuItem1.Name = "settingsToolStripMenuItem1";
+      settingsToolStripMenuItem1.Size = new System.Drawing.Size(61, 20);
+      settingsToolStripMenuItem1.Text = "&Settings";
+      // 
+      // settingsToolStripMenuItem
+      // 
+      settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+      settingsToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+      settingsToolStripMenuItem.Text = "Scoreboard Live Settings";
+      settingsToolStripMenuItem.Click += settingsToolStripMenuItem_Click;
+      // 
+      // logLevelToolStripMenuItem
+      // 
+      logLevelToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { allToolStripMenuItem, infoToolStripMenuItem, warningsToolStripMenuItem, errorsToolStripMenuItem });
+      logLevelToolStripMenuItem.Name = "logLevelToolStripMenuItem";
+      logLevelToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+      logLevelToolStripMenuItem.Text = "Log level";
+      // 
+      // allToolStripMenuItem
+      // 
+      allToolStripMenuItem.Name = "allToolStripMenuItem";
+      allToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+      allToolStripMenuItem.Text = "All";
+      allToolStripMenuItem.Click += logLevelToolStripChange_Click;
+      // 
+      // infoToolStripMenuItem
+      // 
+      infoToolStripMenuItem.Name = "infoToolStripMenuItem";
+      infoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+      infoToolStripMenuItem.Text = "Info";
+      infoToolStripMenuItem.Click += logLevelToolStripChange_Click;
+      // 
+      // warningsToolStripMenuItem
+      // 
+      warningsToolStripMenuItem.Name = "warningsToolStripMenuItem";
+      warningsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+      warningsToolStripMenuItem.Text = "Warnings";
+      warningsToolStripMenuItem.Click += logLevelToolStripChange_Click;
+      // 
+      // errorsToolStripMenuItem
+      // 
+      errorsToolStripMenuItem.Name = "errorsToolStripMenuItem";
+      errorsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+      errorsToolStripMenuItem.Text = "Errors";
+      errorsToolStripMenuItem.Click += logLevelToolStripChange_Click;
       // 
       // openTPFileDialog
       // 
@@ -266,7 +314,6 @@ namespace ScoreboardConnectWinUI3
     private System.Windows.Forms.MenuStrip menuMain;
     private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-    private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
     private System.Windows.Forms.ToolStripMenuItem uploadTournamentToolStripMenuItem;
     private System.Windows.Forms.OpenFileDialog openTPFileDialog;
@@ -279,6 +326,13 @@ namespace ScoreboardConnectWinUI3
     private Controls.OnOffControl onOffUpdateMatchResult;
     private System.Windows.Forms.Label label3;
     private Controls.CurtainControl curtainLogs;
+    private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem1;
+    private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
+    private System.Windows.Forms.ToolStripMenuItem logLevelToolStripMenuItem;
+    private System.Windows.Forms.ToolStripMenuItem allToolStripMenuItem;
+    private System.Windows.Forms.ToolStripMenuItem infoToolStripMenuItem;
+    private System.Windows.Forms.ToolStripMenuItem warningsToolStripMenuItem;
+    private System.Windows.Forms.ToolStripMenuItem errorsToolStripMenuItem;
   }
 }
 

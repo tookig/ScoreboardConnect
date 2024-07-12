@@ -65,7 +65,7 @@ namespace ScoreboardConnectWinUI3 {
         return m_tpNetwork;
       }
       set {
-        InitSocket(value);
+        InitTPNetwork(value);
       }
     }
 
@@ -99,7 +99,7 @@ namespace ScoreboardConnectWinUI3 {
     }
 
     public RequestCoordinator(SocketClient tpNetwork, TPListener tpListener, ICourtCorrelator courtCorrelator = null, TournamentConverter.ConvertOptions convertOptions = null) {
-      InitSocket(tpNetwork);
+      InitTPNetwork(tpNetwork);
       InitListener(tpListener);
       if (courtCorrelator != null) {
         _ = InitCourtCorrelator(courtCorrelator);
@@ -107,17 +107,18 @@ namespace ScoreboardConnectWinUI3 {
       ConvertOptions = convertOptions ?? new TournamentConverter.ConvertOptions();
     }
 
-    protected void InitSocket(SocketClient socketClient) {
+    protected void InitTPNetwork(SocketClient socketClient) {
       SocketClient validatedClient = socketClient ?? throw new ArgumentNullException("SocketClient reference cannot be null");
       if (m_tpNetwork != null) {
-        m_tpNetwork.MessageReceived -= ScoreboardSocketMessage;
+        m_tpNetwork.MessageReceived -= TPNetworkMessage;
+        
       }
       m_tpNetwork = validatedClient;
-      m_tpNetwork.MessageReceived += ScoreboardSocketMessage;
+      m_tpNetwork.MessageReceived += TPNetworkMessage;
       CheckIfAllReady();
     }
 
-    private async void ScoreboardSocketMessage(object sender, XmlDocument tournamentXML) {
+    private async void TPNetworkMessage(object sender, XmlDocument tournamentXML) {
       if (m_courtCorrelator == null) {
         return;
       }
@@ -139,9 +140,9 @@ namespace ScoreboardConnectWinUI3 {
       bool doReload = true;
 
       if (m_apiInfo != null) {
-        m_apiInfo.WebSocket.MessageReceived -= ScoreboardSocketMessage;
-        m_apiInfo.WebSocket.StateChanged -= ScoreboardSocketStateChange;
-        m_apiInfo.WebSocket.ErrorOccurred -= ScoreboardSocketError;
+        m_apiInfo.WebSocket.MessageReceived -= ScoreboardWebSocketMessage;
+        m_apiInfo.WebSocket.StateChanged -= ScoreboardWebSocketStateChange;
+        m_apiInfo.WebSocket.ErrorOccurred -= ScoreboardWebSocketError;
 
         if (m_apiInfo.Api == validatedApi.Api && m_apiInfo.Device?.UnitID == validatedApi.Device?.UnitID && validatedApi.Tournament?.TournamentID == m_apiInfo.Tournament?.TournamentID) {
           doReload = false;
@@ -152,17 +153,17 @@ namespace ScoreboardConnectWinUI3 {
       if (doReload) {
         await ReloadSBCourts();
       }
-      m_apiInfo.WebSocket.MessageReceived += ScoreboardSocketMessage;
-      m_apiInfo.WebSocket.StateChanged += ScoreboardSocketStateChange;
-      m_apiInfo.WebSocket.ErrorOccurred += ScoreboardSocketError;
+      m_apiInfo.WebSocket.MessageReceived += ScoreboardWebSocketMessage;
+      m_apiInfo.WebSocket.StateChanged += ScoreboardWebSocketStateChange;
+      m_apiInfo.WebSocket.ErrorOccurred += ScoreboardWebSocketError;
       CheckIfAllReady();
     }
 
-    private void ScoreboardSocketError(object sender, ErrorEventArgs e) {
+    private void ScoreboardWebSocketError(object sender, ErrorEventArgs e) {
       ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Error, e.Error.Message, e.Error);
     }
 
-    private void ScoreboardSocketStateChange(object sender, StateEventArgs e) {
+    private void ScoreboardWebSocketStateChange(object sender, StateEventArgs e) {
       // ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, e.State.ToString());
     }
 
@@ -170,7 +171,7 @@ namespace ScoreboardConnectWinUI3 {
       // ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, e.Info);
     }
 
-    private void ScoreboardSocketMessage(object sender, MessageEventArgs e) {
+    private void ScoreboardWebSocketMessage(object sender, MessageEventArgs e) {
       // ConnectLogger.Singleton.Log(ConnectLogger.LogLevels.Info, e.Message.ToString());
       if (e.Message is MatchUpdate matchUpdate) {
         _ = MatchUpdate(matchUpdate);

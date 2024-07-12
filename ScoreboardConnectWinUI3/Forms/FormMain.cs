@@ -27,6 +27,8 @@ namespace ScoreboardConnectWinUI3 {
 
     private RequestCoordinator m_requestCoordinator;
 
+    private StatusListView m_logControl;
+
     public FormMain() {
       InitializeComponent();
 
@@ -34,11 +36,11 @@ namespace ScoreboardConnectWinUI3 {
       UpdateButtons();
 
       curtainLogs.Text = "Event log";
-      var logControl = new StatusListView();
-      logControl.Dock = DockStyle.Fill;
-      logControl.BackColor = Color.White;
-      logControl.BorderStyle = BorderStyle.None;
-      curtainLogs.ContentsPanel.Controls.Add(logControl);
+      m_logControl = new StatusListView();
+      m_logControl.Dock = DockStyle.Fill;
+      m_logControl.BackColor = Color.White;
+      m_logControl.BorderStyle = BorderStyle.None;
+      curtainLogs.ContentsPanel.Controls.Add(m_logControl);
     }
 
     private void LoadSettings() {
@@ -71,6 +73,7 @@ namespace ScoreboardConnectWinUI3 {
 
     private void UpdateButtons() {
       uploadTournamentToolStripMenuItem.Enabled = m_SBConnected != null;
+      onOffCourtChanges.Enabled = m_SBConnected != null;
     }
 
     private void FormMain_Load(object sender, EventArgs e) {
@@ -97,7 +100,6 @@ namespace ScoreboardConnectWinUI3 {
     private void TpNetworkControl1_Disconnected(object sender, System.Runtime.CompilerServices.AsyncVoidMethodBuilder e) {
       m_TPNetworkConnected = null;
       UpdateButtons();
-
     }
 
     private void TpNetworkControl1_Connected(object sender, TPNetworkControl.TPNetworkConnectedEventArgs args) {
@@ -123,6 +125,8 @@ namespace ScoreboardConnectWinUI3 {
         courtListView.SetDefaultSetup(courtSetup);
       }
       scoreboardLiveControl1.SetSettings(m_settings, m_keyStore);
+      m_logControl.LogLevel = m_settings.LogLevel;
+      UpdateLogLevelMenuCheckmarks();
     }
 
     private void FormMain_Shown(object sender, EventArgs e) {
@@ -171,6 +175,49 @@ namespace ScoreboardConnectWinUI3 {
 
     private void onOffUpdateMatchResult_Click(object sender, EventArgs e) {
       m_requestCoordinator.EnableMatchResultUpdates = onOffUpdateMatchResult.Checked;
+    }
+
+    private void logLevelToolStripChange_Click(object sender, EventArgs e) {
+      if (sender == allToolStripMenuItem) {
+        m_logControl.LogLevel = ConnectLogger.LogLevels.Verbose;
+      } else if (sender == errorsToolStripMenuItem) {
+        m_logControl.LogLevel = ConnectLogger.LogLevels.Error;
+      } else if (sender == warningsToolStripMenuItem) {
+        m_logControl.LogLevel = ConnectLogger.LogLevels.Warning;
+      } else if (sender == infoToolStripMenuItem) {
+        m_logControl.LogLevel = ConnectLogger.LogLevels.Info;
+      }
+      UpdateLogLevelMenuCheckmarks();
+      m_settings.LogLevel = m_logControl.LogLevel;
+      SaveSettings(true);
+    }
+
+    private void UpdateLogLevelMenuCheckmarks() {
+      allToolStripMenuItem.Checked = errorsToolStripMenuItem.Checked = warningsToolStripMenuItem.Checked = infoToolStripMenuItem.Checked = false;
+      switch (m_logControl.LogLevel) {
+        case ConnectLogger.LogLevels.Verbose:
+          allToolStripMenuItem.Checked = true;
+          break;
+        case ConnectLogger.LogLevels.Error:
+          errorsToolStripMenuItem.Checked = true;
+          break;
+        case ConnectLogger.LogLevels.Warning:
+          warningsToolStripMenuItem.Checked = true;
+          break;
+        case ConnectLogger.LogLevels.Info:
+          infoToolStripMenuItem.Checked = true;
+          break;
+      }
+    }
+
+    private void SaveSettings(bool quiet = false) {
+      try {
+        m_settings.Save(settingsFile);
+      } catch (Exception e) {
+        if (!quiet) {
+          ConnectLogger.Singleton.Error("Could not save settings", e);
+        }
+      }
     }
   }
 }
