@@ -8,20 +8,16 @@ using ICSharpCode.SharpZipLib.GZip;
 using TPNetwork.Messages;
 
 namespace TPNetwork {
-  public class SocketClient {
-    private static string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+  public class SocketClient(int port = 9901) {
+    private static readonly string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
     private string Password { get; set; }
     private string Unicode { get; set; }
-    public int Port { get; set; }
+    public int Port { get; set; } = port;
 
     public event EventHandler<MessageBase> MessageSent;
     public event EventHandler<XmlDocument> MessageReceived;
     public event EventHandler<Exception> Error;
-
-    public SocketClient(int port = 9901) {
-      Port = port;
-    }
 
     public async Task<XmlDocument> Login() {
       var preSendXml = await SendRequest(new Login());
@@ -46,13 +42,12 @@ namespace TPNetwork {
       // Send main message
       var xml = await SendRequest(message);
       // Post send events
-      int statusCode;
-      if (!int.TryParse(xml.SelectSingleNode("//GROUP[@ID='Action']/ITEM[@ID='Result']").InnerText, out statusCode)) {
-        Exception e = new Exception("Request failed; coult not parse return data");
+      if (!int.TryParse(xml.SelectSingleNode("//GROUP[@ID='Action']/ITEM[@ID='Result']").InnerText, out int statusCode)) {
+        Exception e = new("Request failed; coult not parse return data");
         OnError(e);
         throw e;
       } else if (statusCode != 1) {
-        Exception e = new Exception(string.Format("Request failed, server reported an error (code {0})", statusCode));
+        Exception e = new(string.Format("Request failed, server reported an error (code {0})", statusCode));
         OnError(e);
         throw e;
       }
@@ -62,12 +57,12 @@ namespace TPNetwork {
       return xml;
     }
 
-    private MemoryStream CompressXml(XmlDocument xml)
+    private static MemoryStream CompressXml(XmlDocument xml)
     {
-      MemoryStream output = new MemoryStream();
+      MemoryStream output = new();
 
-      using MemoryStream xmlInput = new MemoryStream();
-      using StreamWriter xmlWriter = new StreamWriter(xmlInput);
+      using MemoryStream xmlInput = new();
+      using StreamWriter xmlWriter = new(xmlInput);
 
       xmlWriter.WriteLine(xmlHeader);
       xmlWriter.Write(xml.OuterXml);
@@ -80,14 +75,14 @@ namespace TPNetwork {
       return output;
     }
 
-    private XmlDocument DecompressXml(Stream input)
+    private static XmlDocument DecompressXml(Stream input)
     {
-      MemoryStream output = new MemoryStream();
+      MemoryStream output = new();
       GZip.Decompress(input, output, false);
       output.Position = 0;
 
-      using StreamReader reader = new StreamReader(output);
-      XmlDocument xml = new XmlDocument();
+      using StreamReader reader = new(output);
+      XmlDocument xml = new();
       xml.LoadXml(reader.ReadToEnd());
       return xml;
     }
@@ -100,22 +95,21 @@ namespace TPNetwork {
 
           var compressedStream = CompressXml(message);
 
-          using (TcpClient client = new TcpClient(ipAddress.ToString(), Port)) {
-            OnMessageSent(message);
-            var stream = client.GetStream();
+          using TcpClient client = new(ipAddress.ToString(), Port);
+          OnMessageSent(message);
+          var stream = client.GetStream();
 
-            byte[] size = BitConverter.GetBytes((Int32)compressedStream.Length);
-            if (BitConverter.IsLittleEndian) {
-              Array.Reverse(size);
-            }
-            stream.Write(size);
-            stream.Write(compressedStream.ToArray());
-
-            stream.Read(size, 0, 4);
-            var returnXml = DecompressXml(stream);
-            OnMessageReceived(returnXml);
-            return returnXml;
+          byte[] size = BitConverter.GetBytes((Int32)compressedStream.Length);
+          if (BitConverter.IsLittleEndian) {
+            Array.Reverse(size);
           }
+          stream.Write(size);
+          stream.Write(compressedStream.ToArray());
+
+          stream.Read(size, 0, 4);
+          var returnXml = DecompressXml(stream);
+          OnMessageReceived(returnXml);
+          return returnXml;
         } catch (Exception e) {
           OnError(e);
           throw;
