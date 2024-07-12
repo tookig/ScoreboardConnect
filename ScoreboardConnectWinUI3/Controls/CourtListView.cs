@@ -85,17 +85,21 @@ namespace ScoreboardConnectWinUI3 {
       if (tpCourts.Exists(tpCourt => tpCourt == null)) throw new ArgumentNullException("tpCourts", "TP courts list cannot contain a null value");
 
       Invoke((MethodInvoker)delegate {
-        m_tpCourts.ForEach(RemoveTPCourt);
-        m_tpCourts.Clear();
+        lock (m_tpCourts) {
+          m_tpCourts.ForEach(RemoveTPCourt);
+          m_tpCourts.Clear();
+        }
         tpCourts.ForEach(AddTPCourt);
        });
     }
 
     public void AddTPCourt(TP.Court tpCourt) {
       if (tpCourt == null) throw new ArgumentNullException("tpCourt", "TP court reference cannot be null");
-      if (m_tpCourts.Contains(tpCourt, m_TPCourtComparer)) return;
-            
-      m_tpCourts.Add(tpCourt);
+      lock (m_tpCourts) {
+        if (m_tpCourts.Contains(tpCourt, m_TPCourtComparer)) return;
+        m_tpCourts.Add(tpCourt);
+      }
+        
       m_combo.Items.Add(tpCourt);
 
       CheckAllDefaultValues();
@@ -109,9 +113,12 @@ namespace ScoreboardConnectWinUI3 {
 
     public void RemoveTPCourt(TP.Court tpCourt) {
       if (tpCourt == null) throw new ArgumentNullException("tpCourt", "TP court reference cannot be null");
-      if (!m_tpCourts.Contains(tpCourt, m_TPCourtComparer)) return;
 
-      m_tpCourts.Remove(tpCourt);
+      lock (m_tpCourts) {
+        if (!m_tpCourts.Contains(tpCourt, m_TPCourtComparer)) return;
+        m_tpCourts.Remove(tpCourt);
+      }
+        
       m_combo.Items.Remove(tpCourt);
 
       foreach (ListViewItem item in Items) {
@@ -127,17 +134,22 @@ namespace ScoreboardConnectWinUI3 {
       if (sbCourts.Exists(sbCourt => sbCourt == null)) throw new ArgumentNullException("sbCourts", "Courts list cannot contain a null value");
 
       Invoke((MethodInvoker)delegate {
-        m_sbCourts.ForEach(RemoveSBCourt);
-        m_sbCourts.Clear();
+        lock (m_sbCourts) {
+          m_sbCourts.ForEach(RemoveSBCourt);
+          m_sbCourts.Clear();
+        }
         sbCourts.ForEach(AddSBCourt);
       });
     }
 
     public void AddSBCourt(ScoreboardLiveApi.Court sbCourt) {
       if (sbCourt == null) throw new ArgumentNullException("sbCourt", "Court reference cannot be null");
-      if (m_sbCourts.Contains(sbCourt, m_SBCourtComparer)) return;
 
-      m_sbCourts.Add(sbCourt);
+      lock (m_sbCourts) {
+        if (m_sbCourts.Contains(sbCourt, m_SBCourtComparer)) return;
+        m_sbCourts.Add(sbCourt);
+      }
+
       var lvi = Items.Add(new ListViewItem(FormatCourtName(sbCourt)) {
         Tag = sbCourt
       });
@@ -152,7 +164,11 @@ namespace ScoreboardConnectWinUI3 {
 
     public void RemoveSBCourt(ScoreboardLiveApi.Court sbCourt) {
       if (sbCourt == null) throw new ArgumentNullException("sbCourt", "Court reference cannot be null");
-      if (!m_sbCourts.Contains(sbCourt, m_SBCourtComparer)) return;
+
+      lock (m_sbCourts) {
+        if (!m_sbCourts.Contains(sbCourt, m_SBCourtComparer)) return;
+        m_sbCourts.Remove(sbCourt);
+      }
 
       foreach (ListViewItem item in Items) {
         if (m_SBCourtComparer.Equals(item.Tag as ScoreboardLiveApi.Court, sbCourt)) {
@@ -169,6 +185,9 @@ namespace ScoreboardConnectWinUI3 {
     private void CheckDefaultValue(int sbCourtID) {
       // Make sure this item has a default value that is in the tp court list
       if (!m_defaultSetup.TryGetValue(sbCourtID, out string defaultTPCourtName)) return;
+      lock (m_tpCourts) { 
+        if (!m_tpCourts.Exists(tpCourt => tpCourt.Name == defaultTPCourtName)) return;
+      }
       var selectedCourt = m_tpCourts.FirstOrDefault(tpCourt => tpCourt.Name == defaultTPCourtName);
       if (selectedCourt == null) return;
 
