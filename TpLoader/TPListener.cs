@@ -20,7 +20,7 @@ namespace TP {
     }
 
     private CancellationTokenSource m_doCancel;
-    private List<Data.CourtData> m_activeCourts = new List<Data.CourtData>();
+    private readonly List<Data.CourtData> m_activeCourts = [];
 
     public event EventHandler ServiceStarted;
     public event EventHandler ServiceStopped;
@@ -53,14 +53,12 @@ namespace TP {
     }
 
     public void Stop() {
-      if (m_doCancel != null) {
-        m_doCancel.Cancel();
-      }
+      m_doCancel?.Cancel();
     }
 
     private void Run() {
       Task.Run(() => {
-        TcpListener tcp = new TcpListener(IPAddress.Any, 13333);
+        TcpListener tcp = new(IPAddress.Any, 13333);
         try {
           tcp.Start();
         } catch (Exception e) {
@@ -98,42 +96,39 @@ namespace TP {
     private void HandleConnection(TcpClient connection) {
       var connectionStream = connection.GetStream();
       connectionStream.Read(new byte[4], 0, 4);
-      using (var unzip = new GZipStream(connectionStream, CompressionMode.Decompress))
-      using (MemoryStream ms = new MemoryStream()) {
-        Stream streamXMLReaderShouldUse = unzip;
+      using GZipStream unzip = new(connectionStream, CompressionMode.Decompress);
+      using MemoryStream ms = new();
+      Stream streamXMLReaderShouldUse = unzip;
 
-        XmlReaderSettings xmlSettings = new XmlReaderSettings() {
-          // Async = true,
-          IgnoreWhitespace = true
-        };
+      XmlReaderSettings xmlSettings = new() {
+        // Async = true,
+        IgnoreWhitespace = true
+      };
 
-        List<Data.CourtData> courtsToUpdate = null;
-        Tournament tournament = null;
-        using (XmlReader xmlReader = XmlReader.Create(streamXMLReaderShouldUse, xmlSettings)) {
-          if (xmlReader.ReadToFollowing("ONCOURT")) {
-            using (XmlReader onCourt = xmlReader.ReadSubtree()) {
-              courtsToUpdate = ReadOnCourt(onCourt);
-            }
-          }
-          if (xmlReader.ReadToFollowing("EVENTS")) {
-            tournament = Tournament.LoadFromXML(xmlReader.ReadSubtree());
-          }
-        }
-
-        // Send update event
-        courtsToUpdate.ForEach(item => OnCourtUpdate(item.Name, tournament.FindMatchByID(item.TpMatchID)));
+      List<Data.CourtData> courtsToUpdate = null;
+      Tournament tournament = null;
+      using XmlReader xmlReader = XmlReader.Create(streamXMLReaderShouldUse, xmlSettings);
+      if (xmlReader.ReadToFollowing("ONCOURT")) {
+        using XmlReader onCourt = xmlReader.ReadSubtree();
+        courtsToUpdate = ReadOnCourt(onCourt);
       }
+      if (xmlReader.ReadToFollowing("EVENTS")) {
+        tournament = Tournament.LoadFromXML(xmlReader.ReadSubtree());
+      }
+
+      // Send update event
+      courtsToUpdate.ForEach(item => OnCourtUpdate(item.Name, tournament.FindMatchByID(item.TpMatchID)));
     }
 
     private List<Data.CourtData> ReadOnCourt(XmlReader reader) {
       // Read from XML
-      List<string> courtsWithMatchesAssigned = new List<string>();
-      List<Data.CourtData> onCourts = new List<Data.CourtData>();
+      List<string> courtsWithMatchesAssigned = [];
+      List<Data.CourtData> onCourts = [];
       while (reader.ReadToFollowing("MATCH")) {
         onCourts.Add(new Data.CourtData(reader));
       }
 
-      List<Data.CourtData> sendUpdates = new List<Data.CourtData>();
+      List<Data.CourtData> sendUpdates = [];
       lock (m_activeCourts) {
         // Find courts with new matches
         foreach (Data.CourtData court in onCourts) {
