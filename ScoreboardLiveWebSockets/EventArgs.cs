@@ -15,31 +15,19 @@ namespace ScoreboardLiveWebSockets {
     Stopped
   }
 
-  public class StateEventArgs : EventArgs {
-    public ClientState State { get; private set; }
-    public StateEventArgs(ClientState state) {
-      State = state;
-    }
+  public class StateEventArgs(ClientState state) : EventArgs {
+    public ClientState State { get; private set; } = state;
   }
 
-  public class MessageEventArgs : EventArgs {
-    public Message Message { get; private set; }
-    public MessageEventArgs(Message message) {
-      Message = message;
-    }
+  public class MessageEventArgs(Message message) : EventArgs {
+    public Message Message { get; private set; } = message;
   }
 
-  public class ErrorEventArgs : EventArgs {
-    public Exception Error { get; private set; }
-    public ErrorEventArgs(Exception error) {
-      Error = error;
-    }
+  public class ErrorEventArgs(Exception error) : EventArgs {
+    public Exception Error { get; private set; } = error;
   }
 
-  public class InfoEventArgs : EventArgs {
-    public string Info { get; private set; }
-    public InfoEventArgs(string info) {
-      Info = info;
-    }
+  public class InfoEventArgs(string info) : EventArgs {
+    public string Info { get; private set; } = info;
   }
 }
