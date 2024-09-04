@@ -64,6 +64,7 @@ namespace ScoreboardConnectWinUI3.Controls {
     public void SetSettings(Settings settings, IKeyStore keyStore) {
       m_settings = settings ?? throw new ArgumentNullException(nameof(settings), "Settings reference cannot be null");
       m_keyStore = keyStore ?? throw new ArgumentNullException(nameof(keyStore), "Key store reference cannot be null");
+      Disconnect();
       _ = Connect();
      }
 

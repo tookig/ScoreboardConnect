@@ -7,6 +7,7 @@ namespace TPNetwork.Messages {
   public class MessageBase : XmlDocument {
     public XmlElement VisualXMLRoot { get; private set; }
     public string ActionID { get; private set; }
+    public int ResendCount { get; set; } = 0;
 
     public MessageBase(string password, string actionID, string ip = "127.0.0.1", string unicode = null) : base() {
       ActionID = actionID;

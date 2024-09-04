@@ -74,6 +74,7 @@ namespace ScoreboardConnectWinUI3 {
     private void UpdateButtons() {
       uploadTournamentToolStripMenuItem.Enabled = m_SBConnected != null;
       onOffCourtChanges.Enabled = m_SBConnected != null;
+      onOffUpdateMatchResult.Enabled = (m_SBConnected != null) && (m_TPNetworkConnected != null);
     }
 
     private void FormMain_Load(object sender, EventArgs e) {

@@ -20,5 +20,9 @@ namespace TP {
     public override string ToString() {
       return string.Format("{0} ({1})", Name, Location.Name);
     }
+
+    public bool CompareCourtProperties(Court other) {
+      return ID == other.ID && Name == other.Name && LocationID == other.LocationID;
+    }
   }
 }

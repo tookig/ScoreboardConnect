@@ -13,11 +13,11 @@ namespace ScoreboardConnectWinUI3 {
   public class CourtListView : ListView, ICourtCorrelator {
     private class TPCourtComparer : IEqualityComparer<TP.Court> {
       public bool Equals(TP.Court x, TP.Court y) {
-        return (x != null) && (y!= null) && (x.Name == y.Name);
+        return (x != null) && (y!= null) && x.CompareCourtProperties(y);
       }
 
       public int GetHashCode(TP.Court obj) {
-        return obj.Name.GetHashCode();
+        return obj.Name.GetHashCode() ^ obj.ID.GetHashCode() ^ obj.LocationID.GetHashCode();
       }
     }
 
@@ -85,13 +85,14 @@ namespace ScoreboardConnectWinUI3 {
       if (tpCourts.Exists(tpCourt => tpCourt == null)) throw new ArgumentNullException("tpCourts", "TP courts list cannot contain a null value");
 
       Invoke((MethodInvoker)delegate {
-        lock (m_tpCourts) {
-          foreach (TP.Court tpCourt in m_tpCourts.ToArray()) {
-            RemoveTPCourt(tpCourt);
-          }
-          m_tpCourts.Clear();
+            lock (m_tpCourts) {
+          // Remove courts that are not in the new list
+          m_tpCourts.Except(tpCourts, m_TPCourtComparer).ToList()
+                    .ForEach(RemoveTPCourt);
+          // Add courts that are in the new list but not in the current list
+          tpCourts.Except(m_tpCourts, m_TPCourtComparer).ToList()
+                  .ForEach(AddTPCourt);
         }
-        tpCourts.ForEach(AddTPCourt);
        });
     }
 
@@ -216,22 +217,6 @@ namespace ScoreboardConnectWinUI3 {
     private void OnCourtAssignmentChanged(int sbCourtID, string tpCourtName) {
       CourtAssignmentChanged?.Invoke(this, (sbCourtID, tpCourtName));
     }
-
-    /*
-    public void AssignTPCourtToScoreboardCourt(int scoreboardCourtID, string tpCourtName) {
-      foreach (ListViewItem item in Items) {
-        if (((ScoreboardLiveApi.Court)item.Tag).CourtID == scoreboardCourtID) {
-          foreach (object o in m_combo.Items) {
-            TP.Court tpCourt = (TP.Court)o;
-            if (tpCourt?.Name == tpCourtName) {
-              item.SubItems[1].Text = tpCourt.ToString();
-              item.SubItems[1].Tag = tpCourt;
-            }
-          }
-        }
-      }
-    }
-    */
 
     public List<ScoreboardLiveApi.Court> GetScoreboardCourtsAssignedToTPCourt(string tpCourtName) {
       List<ScoreboardLiveApi.Court> scoreboardCourtsFound = new List<ScoreboardLiveApi.Court>();

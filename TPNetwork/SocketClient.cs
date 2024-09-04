@@ -34,6 +34,12 @@ namespace TPNetwork {
     }
 
     private async Task<XmlDocument> Send(MessageBase message) {
+      // Check resend count
+      if (message.ResendCount > 1) {
+        Exception e = new("Request failed; resend count exceeded");
+        OnError(e);
+        throw e;
+      }
       // Check if we have a login password
       if (Password == null) {
         await Login();
@@ -41,11 +47,16 @@ namespace TPNetwork {
       }
       // Send main message
       var xml = await SendRequest(message);
+      message.ResendCount++;
       // Post send events
       if (!int.TryParse(xml.SelectSingleNode("//GROUP[@ID='Action']/ITEM[@ID='Result']").InnerText, out int statusCode)) {
         Exception e = new("Request failed; coult not parse return data");
         OnError(e);
         throw e;
+      } else if (statusCode == 3) {
+        // Try to reset password and try again
+        Password = null;
+        return await Send(message);
       } else if (statusCode != 1) {
         Exception e = new(string.Format("Request failed, server reported an error (code {0})", statusCode));
         OnError(e);
