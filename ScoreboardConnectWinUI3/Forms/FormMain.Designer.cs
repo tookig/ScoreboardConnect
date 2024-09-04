@@ -50,7 +50,6 @@ namespace ScoreboardConnectWinUI3
       courtListView = new CourtListView();
       labelCourtListen = new System.Windows.Forms.Label();
       panel2 = new System.Windows.Forms.Panel();
-      label3 = new System.Windows.Forms.Label();
       onOffUpdateMatchResult = new Controls.OnOffControl();
       label2 = new System.Windows.Forms.Label();
       curtainLogs = new Controls.CurtainControl();
@@ -88,7 +87,7 @@ namespace ScoreboardConnectWinUI3
       onOffCourtChanges.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
       onOffCourtChanges.BackColor = System.Drawing.Color.FromArgb(255, 100, 100);
       onOffCourtChanges.Checked = false;
-      onOffCourtChanges.Location = new System.Drawing.Point(403, 3);
+      onOffCourtChanges.Location = new System.Drawing.Point(403, 8);
       onOffCourtChanges.MinimumSize = new System.Drawing.Size(10, 10);
       onOffCourtChanges.Name = "onOffCourtChanges";
       onOffCourtChanges.OffText = "OFF";
@@ -158,28 +157,28 @@ namespace ScoreboardConnectWinUI3
       // allToolStripMenuItem
       // 
       allToolStripMenuItem.Name = "allToolStripMenuItem";
-      allToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+      allToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
       allToolStripMenuItem.Text = "All";
       allToolStripMenuItem.Click += logLevelToolStripChange_Click;
       // 
       // infoToolStripMenuItem
       // 
       infoToolStripMenuItem.Name = "infoToolStripMenuItem";
-      infoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+      infoToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
       infoToolStripMenuItem.Text = "Info";
       infoToolStripMenuItem.Click += logLevelToolStripChange_Click;
       // 
       // warningsToolStripMenuItem
       // 
       warningsToolStripMenuItem.Name = "warningsToolStripMenuItem";
-      warningsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+      warningsToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
       warningsToolStripMenuItem.Text = "Warnings";
       warningsToolStripMenuItem.Click += logLevelToolStripChange_Click;
       // 
       // errorsToolStripMenuItem
       // 
       errorsToolStripMenuItem.Name = "errorsToolStripMenuItem";
-      errorsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+      errorsToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
       errorsToolStripMenuItem.Text = "Errors";
       errorsToolStripMenuItem.Click += logLevelToolStripChange_Click;
       // 
@@ -205,9 +204,9 @@ namespace ScoreboardConnectWinUI3
       courtListView.BorderStyle = System.Windows.Forms.BorderStyle.None;
       courtListView.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
       courtListView.FullRowSelect = true;
-      courtListView.Location = new System.Drawing.Point(3, 57);
+      courtListView.Location = new System.Drawing.Point(3, 72);
       courtListView.Name = "courtListView";
-      courtListView.Size = new System.Drawing.Size(487, 302);
+      courtListView.Size = new System.Drawing.Size(487, 287);
       courtListView.TabIndex = 4;
       courtListView.UseCompatibleStateImageBehavior = false;
       courtListView.View = System.Windows.Forms.View.Details;
@@ -216,7 +215,7 @@ namespace ScoreboardConnectWinUI3
       // 
       labelCourtListen.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       labelCourtListen.Font = new System.Drawing.Font("Segoe UI Semibold", 14F, System.Drawing.FontStyle.Bold);
-      labelCourtListen.Location = new System.Drawing.Point(3, 3);
+      labelCourtListen.Location = new System.Drawing.Point(3, 8);
       labelCourtListen.Name = "labelCourtListen";
       labelCourtListen.Size = new System.Drawing.Size(375, 42);
       labelCourtListen.TabIndex = 3;
@@ -226,7 +225,6 @@ namespace ScoreboardConnectWinUI3
       // panel2
       // 
       panel2.BackColor = System.Drawing.Color.White;
-      panel2.Controls.Add(label3);
       panel2.Controls.Add(onOffUpdateMatchResult);
       panel2.Controls.Add(label2);
       panel2.Location = new System.Drawing.Point(531, 406);
@@ -234,22 +232,11 @@ namespace ScoreboardConnectWinUI3
       panel2.Size = new System.Drawing.Size(497, 301);
       panel2.TabIndex = 18;
       // 
-      // label3
-      // 
-      label3.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-      label3.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
-      label3.ForeColor = System.Drawing.Color.FromArgb(192, 0, 0);
-      label3.Location = new System.Drawing.Point(3, 62);
-      label3.Name = "label3";
-      label3.Size = new System.Drawing.Size(488, 101);
-      label3.TabIndex = 6;
-      label3.Text = "Please note that this feature is still in an experimental stage. To avoid data loss, backup the Tournament Planner file before proceeding.";
-      // 
       // onOffUpdateMatchResult
       // 
       onOffUpdateMatchResult.BackColor = System.Drawing.Color.FromArgb(255, 100, 100);
       onOffUpdateMatchResult.Checked = false;
-      onOffUpdateMatchResult.Location = new System.Drawing.Point(403, 3);
+      onOffUpdateMatchResult.Location = new System.Drawing.Point(403, 10);
       onOffUpdateMatchResult.MinimumSize = new System.Drawing.Size(10, 10);
       onOffUpdateMatchResult.Name = "onOffUpdateMatchResult";
       onOffUpdateMatchResult.OffText = "OFF";
@@ -263,7 +250,7 @@ namespace ScoreboardConnectWinUI3
       // 
       label2.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
       label2.Font = new System.Drawing.Font("Segoe UI Semibold", 14F, System.Drawing.FontStyle.Bold);
-      label2.Location = new System.Drawing.Point(3, 4);
+      label2.Location = new System.Drawing.Point(3, 11);
       label2.Name = "label2";
       label2.Size = new System.Drawing.Size(375, 42);
       label2.TabIndex = 4;
@@ -324,7 +311,6 @@ namespace ScoreboardConnectWinUI3
     private System.Windows.Forms.Panel panel2;
     private System.Windows.Forms.Label label2;
     private Controls.OnOffControl onOffUpdateMatchResult;
-    private System.Windows.Forms.Label label3;
     private Controls.CurtainControl curtainLogs;
     private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem1;
     private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
