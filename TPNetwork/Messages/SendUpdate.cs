@@ -45,6 +45,29 @@ namespace TPNetwork.Messages {
       match.AppendChild(CreateItem("ScoreStatus", "Integer", ((int)tpMatch.ScoreStatus).ToString()));
       match.AppendChild(CreateItem("Duration", "Integer", "12"));
       match.AppendChild(CreateItem("Shuttles", "Integer", tpMatch.Shuttles.ToString()));
+
+      var players = CreateGroup("Players");
+      DateTime lastTimeOnCourt = DateTime.Now;
+      if (tpMatch.Entries.Item1?.Player1 != null) {
+        players.AppendChild(CreatePlayer(tpMatch.Entries.Item1.Player1, lastTimeOnCourt));
+      }
+      if (tpMatch.Entries.Item1?.Player2 != null) {
+        players.AppendChild(CreatePlayer(tpMatch.Entries.Item1.Player2, lastTimeOnCourt));
+      }
+      if (tpMatch.Entries.Item2?.Player1 != null) {
+        players.AppendChild(CreatePlayer(tpMatch.Entries.Item2.Player1, lastTimeOnCourt));
+      }
+      if (tpMatch.Entries.Item2?.Player2 != null) {
+        players.AppendChild(CreatePlayer(tpMatch.Entries.Item2.Player2, lastTimeOnCourt));
+      }
+      tournament.AppendChild(players);
+    }
+
+    private XmlElement CreatePlayer(TP.Player player, DateTime lastTimeOnCourt) {
+      var xmlPlayer = CreateGroup("Player");
+      xmlPlayer.AppendChild(CreateItem("ID", "Integer", player.ID.ToString()));
+      xmlPlayer.AppendChild(CreateItem("LastTimeOnCourt", lastTimeOnCourt));
+      return xmlPlayer;
     }
   }
 }

@@ -56,5 +56,21 @@ namespace TPNetwork.Messages {
       element.AppendChild(CreateTextNode(text));
       return element;
     }
+
+    protected virtual XmlElement CreateItem(string id, DateTime dateTime) {
+      var element = CreateElement("ITEM");
+      element.SetAttribute("ID", id);
+      element.SetAttribute("TYPE", "DateTime");
+      var dateTimeXml = CreateElement("DATETIME");
+      dateTimeXml.SetAttribute("Y", dateTime.Year.ToString());
+      dateTimeXml.SetAttribute("MM", dateTime.Month.ToString());
+      dateTimeXml.SetAttribute("D", dateTime.Day.ToString());
+      dateTimeXml.SetAttribute("H", dateTime.Hour.ToString());
+      dateTimeXml.SetAttribute("M", dateTime.Minute.ToString());
+      dateTimeXml.SetAttribute("S", dateTime.Second.ToString());
+      dateTimeXml.SetAttribute("MS", dateTime.Millisecond.ToString());
+      element.AppendChild(dateTimeXml);
+      return element;
+    }
   }
 }
