@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime;
@@ -133,6 +134,7 @@ namespace ScoreboardConnectWinUI3 {
     private void FormMain_Shown(object sender, EventArgs e) {
       ScoreboardConnectUpdate.UpdateForm updateForm = new ScoreboardConnectUpdate.UpdateForm();
       updateForm.ShowDialog(this);
+      Text = Text.Replace("$version", updateForm.Version.ToString(CultureInfo.InvariantCulture));
     }
 
     private void exitToolStripMenuItem_Click(object sender, EventArgs e) {

@@ -52,7 +52,7 @@ namespace TP.VisualXML {
       } else if (itemType == "Integer") {
         return ParseIntItem(reader);
       } else if (itemType == "Float") {
-        return ParseDoubleItem(reader);
+        return ParseFloatItem(reader);
       } else if (itemType == "Bool") {
         return ParseBoolItem(reader);
       } else if (itemType == "DateTime") {
@@ -85,11 +85,11 @@ namespace TP.VisualXML {
       return item;
     }
 
-    protected ItemNode<double> ParseDoubleItem(XmlReader reader) {
-      ItemNode<double> item = new ItemNode<double>();
+    protected ItemNode<float> ParseFloatItem(XmlReader reader) {
+      ItemNode<float> item = new ItemNode<float>();
       item.ID = reader.GetAttribute("ID");
       item.Type = reader.GetAttribute("TYPE");
-      item.Value = reader.ReadElementContentAsDouble();
+      item.Value = reader.ReadElementContentAsFloat();
       return item;
     }
 

@@ -1,12 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace TP.Data {
   public abstract class TpDataObject {
+    private static NumberFormatInfo floatFormat;
+
+    public static NumberFormatInfo GetFloatFormat() {
+      if (floatFormat == null) {
+        floatFormat = new NumberFormatInfo {
+          NumberDecimalSeparator = ".",
+          CurrencyGroupSeparator = ""
+        };
+      }
+      return floatFormat;
+    }
+
     protected static int GetInt(IDataReader reader, string fieldName) {
       int fieldIndex = reader.GetOrdinal(fieldName);
       if (reader.IsDBNull(fieldIndex)) return 0;
@@ -29,8 +43,22 @@ namespace TP.Data {
       return reader.GetBoolean(fieldIndex);
     }
 
+    protected static float GetFloat(IDataReader reader, string fieldName) {
+      int fieldIndex = reader.GetOrdinal(fieldName);
+      if (reader.IsDBNull(fieldIndex)) return 0;
+      return reader.GetFloat(fieldIndex);
+    }
+
     protected static int GetInt(XmlReader reader, string attributeName) {
       return int.TryParse(reader.GetAttribute(attributeName), out int val) ? val : 0;
+    }
+
+    protected static float GetFloat(XmlReader reader, string attributeName) {
+      return float.TryParse(reader.GetAttribute(attributeName), GetFloatFormat(), out float val) ? val : 0;
+    }
+
+    protected static bool GetBool(XmlReader reader, string attributeName) {
+      return GetString(reader, attributeName).ToLower() == "true";
     }
 
     protected static string GetString(XmlReader reader, string attributeName) {

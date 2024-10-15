@@ -283,7 +283,7 @@ namespace ScoreboardConnectWinUI3
       MainMenuStrip = menuMain;
       Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
       Name = "FormMain";
-      Text = "Scoreboard Connect";
+      Text = "Scoreboard Connect (v$version)";
       Load += FormMain_Load;
       Shown += FormMain_Shown;
       menuMain.ResumeLayout(false);

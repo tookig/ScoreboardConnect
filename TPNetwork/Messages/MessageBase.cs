@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Xml;
 
@@ -8,6 +10,7 @@ namespace TPNetwork.Messages {
     public XmlElement VisualXMLRoot { get; private set; }
     public string ActionID { get; private set; }
     public int ResendCount { get; set; } = 0;
+
 
     public MessageBase(string password, string actionID, string ip = "127.0.0.1", string unicode = null) : base() {
       ActionID = actionID;
@@ -54,6 +57,22 @@ namespace TPNetwork.Messages {
       element.SetAttribute("ID", id);
       element.SetAttribute("TYPE", itemType);
       element.AppendChild(CreateTextNode(text));
+      return element;
+    }
+
+    protected virtual XmlElement CreateItem(string id, float value) {
+      var element = CreateElement("ITEM");
+      element.SetAttribute("ID", id);
+      element.SetAttribute("TYPE", "Float");
+      element.AppendChild(CreateTextNode(value.ToString(TP.Data.TpDataObject.GetFloatFormat())));
+      return element;
+    }
+
+    protected virtual XmlElement CreateItem(string id, bool value) {
+      var element = CreateElement("ITEM");
+      element.SetAttribute("ID", id);
+      element.SetAttribute("TYPE", "Bool");
+      element.AppendChild(CreateTextNode(value ? "true" : "false"));
       return element;
     }
 

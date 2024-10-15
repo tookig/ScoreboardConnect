@@ -18,10 +18,12 @@ namespace ScoreboardConnectUpdate {
 
     private readonly HttpClient m_client = new HttpClient();
     private readonly string m_url = "https://www.scoreboardlive.se/assets/connect/version.json";
-    private readonly double m_currentVersion = 1.3;
+    private readonly double m_currentVersion = 1.4;
 
     private CancellationTokenSource m_cancellationToken;
     private object m_cancelLock = new object();
+
+    public double Version => m_currentVersion;
 
     public UpdateForm() {
       InitializeComponent();

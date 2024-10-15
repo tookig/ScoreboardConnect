@@ -66,6 +66,12 @@ namespace TPNetwork.Messages {
     private XmlElement CreatePlayer(TP.Player player, DateTime lastTimeOnCourt) {
       var xmlPlayer = CreateGroup("Player");
       xmlPlayer.AppendChild(CreateItem("ID", "Integer", player.ID.ToString()));
+      xmlPlayer.AppendChild(CreateItem("Discount", player.Discount));
+      xmlPlayer.AppendChild(CreateItem("WeightChecked", player.WeightChecked));
+      xmlPlayer.AppendChild(CreateItem("Weight", player.Weight));
+      xmlPlayer.AppendChild(CreateItem("Weight2", player.Weight2));
+      xmlPlayer.AppendChild(CreateItem("CheckedIn", player.CheckedIn));
+      xmlPlayer.AppendChild(CreateItem("FirstCheckIn", player.FirstCheckIn));
       xmlPlayer.AppendChild(CreateItem("LastTimeOnCourt", lastTimeOnCourt));
       return xmlPlayer;
     }
